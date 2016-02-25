@@ -1,0 +1,12 @@
+body {
+    background-color: #111;
+    font-family: c64;
+    color: #ccc;
+    margin: 0px;
+    padding: 0px;
+}
+
+#mm-canvas {
+    display: block;
+    margin: auto;
+}
