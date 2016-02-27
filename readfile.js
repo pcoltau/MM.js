@@ -51,6 +51,5 @@ function readConfigFile(file) {
 			resultList[parts[0]] = parts[1];
 		}
 	}
-	console.log(resultList);
 	return resultList;
 }
