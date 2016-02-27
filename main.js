@@ -7,9 +7,9 @@ game = {
 };
 
 function onInit(stage, assets) {
-    // readWepFile(assets.getResult("wep", true))
-    readWepFile(assets.getResult("type", true))
-    // readWepFile(assets.getResult("item", true))
+    var wepList = readEncodedFile(assets.getResult("wep", true));
+    var itemList = readEncodedFile(assets.getResult("item", true));
+    var typeList = readEncodedTypeFile(assets.getResult("type", true));
 }
 
 

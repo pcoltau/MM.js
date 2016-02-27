@@ -1,56 +1,28 @@
-function readWepFile(wepFile) {
-	console.log(decodeFile(wepFile));
-
-	wepList = [];
-	wep = {};
-	var lines = decodeFile(wepFile).split("\r\n");
+function readEncodedFile(file) {
+	var resultList = [];
+	var item = {};
+	var lines = decodeFile(file).split("\r\n");
 	for (var i = 0; i < lines.length; i++) {
 		var parts = lines[i].split("=");
 		if (parts.length == 2) {
-			wep[parts[0]] = parts[1];
-			//console.log(parts[0] + "=" + wep[parts[0]]);
+			item[parts[0]] = parts[1];
 		}
-		else if (Object.keys(wep).length > 0) {
-			wepList.push(wep);
-			wep = {};
+		else if (Object.keys(item).length > 0) {
+			resultList.push(item);
+			item = {};
 		}
 	}
+}
 
-	for (i = 0; i < wepList.length; i++) {
-		for (key in wepList[i]) {
-			console.log(key + "=" + wepList[i][key]);
-		}
-
+function readEncodedTypeFile(file) {
+	var resultList = [];
+	var lines = decodeFile(file).split("\r\n");
+	for (var i = 0; i < lines.length; i += 3) {
+		var item = {};
+		item.header = lines[i];
+		item.desc = lines[i+1];
+		resultList.push(item);
 	}
-	// var variable = "name";
-	// var value = "jens";
-	// wepList.push({[variable]: value});
-	// console.log(wepList[0].name);
-	
-/*
-1
-cost=0
-name=Mortar
-dam=10
-shots=1
-class=missile
-info1=The mortar is a part of the tanks standard weapon equipment and has infinite supplies.
-height=250
-diameter=80
-weight=3
-img=wep01.pcx
-qua=1
-exponimp=false
-
-1
-cost=1500
-name=Light Armour
-arm=200
-class=armour
-img=item01.pcx
-info1=This armour is the lightest and cheapest armour you can get. But hey, bad armour is better than no armour.
-
-*/
 }
 
 function decodeFile(file) {
