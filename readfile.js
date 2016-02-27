@@ -41,3 +41,16 @@ function decodeFile(file) {
     }
     return result;
 }
+
+function readConfigFile(file) {
+	var resultList = {};
+	var lines = file.split("\r\n");
+	for (var i = 0; i < lines.length; i++) {
+		var parts = lines[i].split("=");
+		if (parts.length == 2) {
+			resultList[parts[0]] = parts[1];
+		}
+	}
+	console.log(resultList);
+	return resultList;
+}

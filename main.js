@@ -10,6 +10,7 @@ function onInit(stage, assets) {
     var wepList = readEncodedFile(assets.getResult("wep", true));
     var itemList = readEncodedFile(assets.getResult("item", true));
     var typeList = readEncodedTypeFile(assets.getResult("type", true));
+    var configList = readConfigFile(assets.getResult("config", false));
 }
 
 

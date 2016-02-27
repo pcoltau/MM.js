@@ -12,6 +12,7 @@ gameEngine.assets = [{
     src: "data/item.etx"
 }, {
     id: "config",
+    type: "text",
     src: "data/mortar.cfg"
 }, {
     id: "backbot.pcx",
