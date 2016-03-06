@@ -11,12 +11,9 @@ function putPixel(shape, color, x, y) {
 
 // TODO: Not working...yet!
 function outTextXY(stage, color, x, y, text) {
-    var text = new createjs.Text();
-    //text.font = "bold 12px san-serif";
-    text.color = color;
-    text.text = text;
+    var text = new createjs.Text(text, "bold 12px monospace", color);
     text.x = x;
     text.y = y;
-
+    text.textBaseline = "middle";
     stage.addChild(text);
 }

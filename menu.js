@@ -42,7 +42,7 @@ function createMenu(stage, assets) {
 
         // SetColor(DarkGray);
         // OutTextXY(GetMaxX div 2 + 286,GetMaxY div 2 + 230,'v'+FloatToStr(Version,0,1));
-        //outTextXY(stage, Colors.DARKGRAY, halfScreenWidth + 286, halfScreenHeight + 230, "1.0");
+        outTextXY(stage, Colors.DARKGRAY, halfScreenWidth + 286, halfScreenHeight + 230, "v1.0");
     }
 
     function onTick(stage, deltaInSeconds) {
