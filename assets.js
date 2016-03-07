@@ -26,4 +26,7 @@ gameEngine.assets = [{
 }, {
     id: "menutop.pcx",
     src: "gfx/menutop.png"
+}, {
+    id: "menuback.pcx",
+    src: "gfx/menuback.png"
 }];
