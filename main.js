@@ -19,6 +19,5 @@ function onInit(stage, assets) {
 function onTick(stage, deltaInSeconds) {
     if (game.state === "menu") {
         game.menu.onTick(stage, deltaInSeconds);
-
     }
 }
