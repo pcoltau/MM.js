@@ -1,7 +1,4 @@
-function createMenu(stage, assets) {
-    // TODO: Add a show() function to show the menu and add "fade in" to that. 
-    // TODO: Figure out how to make caching (of canvas - for performance) work with text (it resets the font).
-
+function createMenu(onSelect, assets) {
     var menuItems = ["Start Game", "Options", "About", "Quit"];
     var minTimeBetweenItemMoves = 0.15;
     var selectedItemIndex = 0;
@@ -19,11 +16,9 @@ function createMenu(stage, assets) {
 
     mainContainer.addChild(backgroundContainer, menuContainer);
 
-    // TODO: Add to show function?
-    stage.addChild(mainContainer);
-
     return {
-        onTick: onTick
+        onTick: onTick,
+        container: mainContainer
     };
 
     function createBackground() {
@@ -179,13 +174,16 @@ function createMenu(stage, assets) {
             if (gameEngine.keys[Keys.UP_ARROW]) {
                 timeSinceMenuItemMoved = 0;
                 if (selectedItemIndex > 0) {
-                    selectedItemIndex--;    
+                    selectedItemIndex--;
                 }
                 else {
                     selectedItemIndex = menuItems.length - 1;
                 }
                 selectedItemShape.y = getItemBarYPosition(selectedItemIndex);
             }
+        }
+        if (gameEngine.keys[Keys.ENTER]) {
+            onSelect(selectedItemIndex);
         }
     }
 }
