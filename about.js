@@ -3,6 +3,7 @@ function createAbout(onExit, assets) {
 
 	return {
         container: mainContainer,
+        onTick: onTick,
 		onKeyPress: onKeyPress
 	}
 
@@ -76,6 +77,12 @@ function createAbout(onExit, assets) {
 		addCenteredText(container, " with Turbo Pascal!\"", y1 + 110);
 
         return container;
+	}
+
+	function onTick(stage, deltaInSeconds) {
+		if (gameEngine.isKeyDown[Keys.ESCAPE]) {
+			onExit(stage);
+		}
 	}
 
     function onKeyPress(stage, key) {

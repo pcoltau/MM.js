@@ -11,9 +11,9 @@ Transitions = {
 }
 
 game = {
-    menuObj: null,
+    menuObj: null, // These objects are expected to be on the form (* are optional): { container, onTick*, onKeyDown*, onKeyUp*, onKeyPress* } 
     aboutObj: null,
-    currentState: null, // This is expected to be an object on the form (* are optional): { container, onTick*, onKeyDown*, onKeyUp*, onKeyPress* } 
+    currentState: "menuObj", // A reference to the *obj variables above
     nextState: null,
     currentTransition: Transitions.fadeIn,
     fadingLayer: null
@@ -25,10 +25,8 @@ function onInit(stage, assets) {
     var typeList = readEncodedTypeFile(assets.getResult("type", true));
     var configList = readConfigFile(assets.getResult("config", false));
 
-    game.menuObj = createMenu(onSelectMainMenuItem, assets);
-    game.aboutObj = createAbout(onExitAbout, assets);
+    createGameObjects(assets);
 
-    game.currentState = game.menuObj;
     stage.addChild(game.menuObj.container);
 
     // FadingLayer is just a black layer put on top of the stage content. The alpha channel then controls the fading in/out.
@@ -38,12 +36,18 @@ function onInit(stage, assets) {
     stage.addChild(game.fadingLayer);
 }
 
+function createGameObjects(assets) {
+    game.menuObj = createMenu(onSelectMainMenuItem, assets);
+    game.aboutObj = createAbout(onExitAbout, assets);
+}
+
 function onTick(stage, deltaInSeconds) {
     var fadingDuration = 0.4;
     switch(game.currentTransition) {
         case Transitions.showing:
-            if (game.currentState.onTick) {
-                game.currentState.onTick(stage, deltaInSeconds);
+            var currentObj = game[game.currentState];
+            if (currentObj.onTick) {
+                currentObj.onTick(stage, deltaInSeconds);
             }
             break;
         case Transitions.fadeIn:
@@ -74,20 +78,23 @@ function onTick(stage, deltaInSeconds) {
 }
 
 function onKeyDown(stage, key) {
-    if (game.currentState.onKeyDown) {
-        game.currentState.onKeyDown(stage, key);
+    var currentObj = game[game.currentState];
+    if (currentObj.onKeyDown) {
+        currentObj.onKeyDown(stage, key);
     }
 }
 
 function onKeyUp(stage, key) {
-    if (game.currentState.onKeyUp) {
-        game.currentState.onKeyUp(stage, key);
+    var currentObj = game[game.currentState];
+    if (currentObj.onKeyUp) {
+        currentObj.onKeyUp(stage, key);
     }
 }
 
 function onKeyPress(stage, key) {
-    if (game.currentState.onKeyPress) {
-        game.currentState.onKeyPress(stage, key);
+    var currentObj = game[game.currentState];
+    if (currentObj.onKeyPress) {
+        currentObj.onKeyPress(stage, key);
     }
 }
 
@@ -102,7 +109,7 @@ function onSelectMainMenuItem(stage, menuItemIndex) {
             // TODO: set game.nextState based on selected item
             break;
         case 2: // About
-            game.currentState = game.aboutObj;
+            game.currentState = "aboutObj";
             stage.addChild(game.aboutObj.container);   
             break;
         case 3: // Exit
@@ -114,5 +121,5 @@ function onSelectMainMenuItem(stage, menuItemIndex) {
 
 function onExitAbout(stage) {
     stage.removeChild(game.aboutObj.container);
-    game.currentState = game.menuObj;
+    game.currentState = "menuObj";
 }

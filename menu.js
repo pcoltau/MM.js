@@ -1,6 +1,6 @@
 function createMenu(onSelect, assets) {
     var menuItems = ["Start Game", "Options", "About", "Quit"];
-    var minTimeBetweenItemMoves = 0.10;
+    var minTimeBetweenItemMoves = 0.15;
     var selectedItemIndex = 0;
     var selectedItemShape = null;
     var timeSinceMenuItemMoved = 0;
