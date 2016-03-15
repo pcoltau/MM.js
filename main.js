@@ -1,20 +1,19 @@
 gameEngine.onInit = onInit;
 gameEngine.onTick = onTick;
+gameEngine.onKeyDown = onKeyDown;
+gameEngine.onKeyUp = onKeyUp;
+gameEngine.onKeyPress = onKeyPress;
 
-// Global game state
 Transitions = {
     fadeIn: "fadeIn",
     showing: "showing",
     fadeOut: "fadeOut"
 }
 
-GameStates = {
-    menu: "menu",
-}
-
 game = {
-    menu: null,
-    state: GameStates.menu,
+    menuObj: null,
+    aboutObj: null,
+    currentState: null, // This is expected to be an object on the form (* are optional): { container, onTick*, onKeyDown*, onKeyUp*, onKeyPress* } 
     nextState: null,
     currentTransition: Transitions.fadeIn,
     fadingLayer: null
@@ -26,8 +25,11 @@ function onInit(stage, assets) {
     var typeList = readEncodedTypeFile(assets.getResult("type", true));
     var configList = readConfigFile(assets.getResult("config", false));
 
-    game.menu = createMenu(onSelectMainMenuItem, assets);
-    stage.addChild(game.menu.container);
+    game.menuObj = createMenu(onSelectMainMenuItem, assets);
+    game.aboutObj = createAbout(onExitAbout, assets);
+
+    game.currentState = game.menuObj;
+    stage.addChild(game.menuObj.container);
 
     // FadingLayer is just a black layer put on top of the stage content. The alpha channel then controls the fading in/out.
     game.fadingLayer = new createjs.Shape();
@@ -40,10 +42,8 @@ function onTick(stage, deltaInSeconds) {
     var fadingDuration = 0.4;
     switch(game.currentTransition) {
         case Transitions.showing:
-            switch(game.state) {
-                case GameStates.menu:
-                    game.menu.onTick(stage, deltaInSeconds);
-                    break;
+            if (game.currentState.onTick) {
+                game.currentState.onTick(stage, deltaInSeconds);
             }
             break;
         case Transitions.fadeIn:
@@ -65,7 +65,7 @@ function onTick(stage, deltaInSeconds) {
                 game.fadingLayer.alpha = 1;
                 game.currentTransition = Transitions.fadeIn;
                 if (game.nextState !== null) {
-                    game.state = game.nextState;
+                    game.currentState = game.nextState;
                     game.nextState = null;
                 }
             }
@@ -73,7 +73,46 @@ function onTick(stage, deltaInSeconds) {
     }
 }
 
-function onSelectMainMenuItem(menuItemIndex) {
-    game.currentTransition = Transitions.fadeOut;
-    // TODO: set game.nextState based on selected item
+function onKeyDown(stage, key) {
+    if (game.currentState.onKeyDown) {
+        game.currentState.onKeyDown(stage, key);
+    }
+}
+
+function onKeyUp(stage, key) {
+    if (game.currentState.onKeyUp) {
+        game.currentState.onKeyUp(stage, key);
+    }
+}
+
+function onKeyPress(stage, key) {
+    if (game.currentState.onKeyPress) {
+        game.currentState.onKeyPress(stage, key);
+    }
+}
+
+function onSelectMainMenuItem(stage, menuItemIndex) {
+    switch (menuItemIndex) {
+        case 0: // Start Game
+            game.currentTransition = Transitions.fadeOut;
+            // TODO: set game.nextState based on selected item
+            break;
+        case 1: // Options
+            game.currentTransition = Transitions.fadeOut;
+            // TODO: set game.nextState based on selected item
+            break;
+        case 2: // About
+            game.currentState = game.aboutObj;
+            stage.addChild(game.aboutObj.container);   
+            break;
+        case 3: // Exit
+            game.currentTransition = Transitions.fadeOut;
+            // TODO: Figure out what to do when exiting
+            break;
+    }
+}
+
+function onExitAbout(stage) {
+    stage.removeChild(game.aboutObj.container);
+    game.currentState = game.menuObj;
 }

@@ -5,7 +5,9 @@
 
 body {
     background-color: #111;
-    font-family: c64;
+    font-family: TerminalVector;
+	-webkit-font-smoothing: antialiased;
+	letter-spacing: 0.65px;
     color: #ccc;
     margin: 0px;
     padding: 0px;
