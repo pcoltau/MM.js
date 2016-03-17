@@ -133,7 +133,7 @@ function onKeyPress(stage, key) {
     }
 }
 
-function onSelectMainMenuItem(stage, menuItemIndex) {
+function onSelectMainMenuItem(menuItemIndex) {
     switch (menuItemIndex) {
         case 0: // Start Game
             game.currentTransition = Transitions.fadeOut;

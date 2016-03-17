@@ -1,9 +1,6 @@
 function createMenu(onSelect, assets) {
     var menuItems = ["Start Game", "Options", "About", "Quit"];
-    var minTimeBetweenItemMoves = 0.15;
-    var selectedItemIndex = 0;
     var selectedItemShape = null;
-    var timeSinceMenuItemMoved = 0;
 
     var mainContainer = new createjs.Container();
 
@@ -13,11 +10,13 @@ function createMenu(onSelect, assets) {
 
     mainContainer.addChild(backgroundContainer, menuContainer);
 
+    var menuItemMovementHelper = createMenuItemMovementHelper(selectedItemShape, menuItems.length, getItemBarPosition, onSelect);
+
     return {
         container: mainContainer,
-        onTick: onTick,
-        onKeyUp: onKeyUp,
-        onKeyPress: onKeyPress
+        onTick: menuItemMovementHelper.onTick,
+        onKeyUp: menuItemMovementHelper.onKeyUp,
+        onKeyPress: menuItemMovementHelper.onKeyPress
     };
 
     function createBackground() {
@@ -90,8 +89,7 @@ function createMenu(onSelect, assets) {
         var frame = drawFrame(menuContainer, x1 + 16, y1 + 32, x2 - 16, y2 - 16);
 
         // bar(x[1]+19,y[1]+23+i*30,x[2]-20,y[1]+35+i*30);
-        var yPos = getItemBarYPosition(selectedItemIndex);
-        selectedItemShape = barAsShape(Colors.DARKESTGREEN, x1 + 19, yPos, x2 - 20, yPos + 12);
+        selectedItemShape = barAsShape(Colors.DARKESTGREEN, x1 + 19, 0, x2 - 20, 12); // y will be set in menuItemMovementHelper
         
         menuContainer.addChild(selectedItemShape);
 
@@ -112,53 +110,12 @@ function createMenu(onSelect, assets) {
             SetColor(White);
             OutTextXY(GetMaxX div 2 - (TextWidth(MenuItems[i]) div 2),y[1]+25+i*30,MenuItems[i]);
             */        
-            outTextXY(container, Colors.WHITE, menuItems[i], SCREEN_WIDTH_CENTER, getItemBarYPosition(i) + 2, true, Colors.BLACK);
+            outTextXY(container, Colors.WHITE, menuItems[i], SCREEN_WIDTH_CENTER, getItemBarPosition(i).y + 2, true, Colors.BLACK);
         }
         return container;
     }
 
-    function getItemBarYPosition(itemIndex) {
-        return (SCREEN_HEIGHT_CENTER - 70) + 23 + (itemIndex + 1) * 30;
-    }
-
-    function onTick(stage, deltaInSeconds) {
-        timeSinceMenuItemMoved += deltaInSeconds;
-        // Make sure that selected menu item only moves in reasonable time.
-        if (timeSinceMenuItemMoved >= minTimeBetweenItemMoves) {
-            if (gameEngine.isKeyDown[Keys.DOWN_ARROW]) {
-                timeSinceMenuItemMoved = 0;
-                if (selectedItemIndex < menuItems.length - 1) {
-                    selectedItemIndex++;    
-                }
-                else {
-                    selectedItemIndex = 0;
-                }
-                selectedItemShape.y = getItemBarYPosition(selectedItemIndex);
-            }
-            if (gameEngine.isKeyDown[Keys.UP_ARROW]) {
-                timeSinceMenuItemMoved = 0;
-                if (selectedItemIndex > 0) {
-                    selectedItemIndex--;
-                }
-                else {
-                    selectedItemIndex = menuItems.length - 1;
-                }
-                selectedItemShape.y = getItemBarYPosition(selectedItemIndex);
-            }
-        }
-    }
-
-    function onKeyUp(stage, key) {
-        if (key === Keys.DOWN_ARROW || key === Keys.UP_ARROW) {
-            // make sure that fast key presses are not suppressed by timeSinceMenuItemMoved being less than minTimeBetweenItemMoves.
-            timeSinceMenuItemMoved = minTimeBetweenItemMoves;
-        }
-    }
-
-    function onKeyPress(stage, key) {
-        if (key === Keys.ENTER) {
-            timeSinceMenuItemMoved = 0;
-            onSelect(stage, selectedItemIndex);
-        }
+    function getItemBarPosition(itemIndex) {
+        return {x: SCREEN_WIDTH_CENTER - 61, y: (SCREEN_HEIGHT_CENTER - 70) + 23 + (itemIndex + 1) * 30};
     }
 }
