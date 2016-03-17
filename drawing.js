@@ -1,4 +1,4 @@
-function drawFrame(x1, y1, x2, y2) {
+function drawFrame(container, x1, y1, x2, y2) {
     var shape = new createjs.Shape();
 
     // SetFillStyle(SolidFill,Black);
@@ -14,5 +14,30 @@ function drawFrame(x1, y1, x2, y2) {
     line(shape.graphics, Colors.WHITE, x2, y1, x2, y2);
     line(shape.graphics, Colors.GRAY, x1, y1, x2 - 1, y1);
     line(shape.graphics, Colors.GRAY, x1, y1, x1, y2);
-    return shape;
+    container.addChild(shape);
+}
+
+function drawBox(assets, container, x1, y1, x2, y2, addShadow) {
+    var mainContainer = new createjs.Container();
+    var backContainer = new createjs.Container();
+
+	if (y2 - y1 > 240) {
+		showPCX(assets, backContainer, "backtop.pcx", x1, y1, x2 - x1, 239);
+		showPCX(assets, backContainer, "backbot.pcx", x1, y1 + 240, x2 - x1, y2 - y1 - 240);
+	}
+	else {
+//      Show_PCX('Gfx\backtop.pcx',x1,y1,x2-x1,y2-y1);
+		showPCX(assets, backContainer, "backtop.pcx", x1, y1, x2 - x1, y2- y1);
+	}
+	if (addShadow) {
+		backContainer.shadow = new createjs.Shadow(Colors.DARKGRAY, 2, 2, 0);
+	}
+	mainContainer.addChild(backContainer);
+	var shape = new createjs.Shape();
+	line(shape.graphics, Colors.WHITE, x1, y1, x1, y2);
+	line(shape.graphics, Colors.WHITE, x1, y1, x2, y1);
+	line(shape.graphics, Colors.GRAY, x2, y1, x2, y2);
+	line(shape.graphics, Colors.GRAY, x1, y2, x2, y2);
+	mainContainer.addChild(shape);
+	container.addChild(mainContainer);
 }

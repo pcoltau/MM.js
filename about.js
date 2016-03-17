@@ -9,15 +9,11 @@ function createAbout(onExit, assets) {
 
 	function createAboutBox() {
 		function addCenteredText(container, text, yPos) {
-	        var text = outTextXYAsText(Colors.WHITE, text);
-	        text.textAlign = "center";
-	        text.x = SCREEN_WIDTH_CENTER;
-	        text.y = yPos;
-	        container.addChild(text);
+	        outTextXY(container, Colors.WHITE, text, SCREEN_WIDTH_CENTER, yPos, true);
 		}
 
 		function addLeftAlignedText(container, text, yPos) {
-			outTextXY(container, Colors.WHITE, SCREEN_WIDTH_CENTER - 140, yPos, text)
+			outTextXY(container, Colors.WHITE, text, SCREEN_WIDTH_CENTER - 140, yPos);
 		}
 
 		var container = new createjs.Container();
@@ -33,12 +29,7 @@ function createAbout(onExit, assets) {
 		var x2 = x1 + 300;
 		var y2 = y1 + 140;
 
-        var menuback = new createjs.Bitmap(assets.getResult("menuback.pcx"));
-        menuback.x = x1;
-        menuback.y = y1;
-        // crop bitmap
-        menuback.sourceRect = new createjs.Rectangle(0, 0, x2 - x1, y2 - y1);
-        container.addChild(menuback);
+		var menuback = showPCX(assets, container, "menuback.pcx", x1, y1, x2 - x1, y2 - y1);
 
         var shape = new createjs.Shape();
         line(shape.graphics, Colors.BRIGHTGRAY, x1, y1, x2, y1);
@@ -47,8 +38,7 @@ function createAbout(onExit, assets) {
         line(shape.graphics, Colors.GRAY, x2, y1, x2, y2);
         container.addChild(shape);
 
-        var frame = drawFrame(x1 + 8, y1 + 8, x2 - 8, y2 - 8);
-        container.addChild(frame);
+        drawFrame(container, x1 + 8, y1 + 8, x2 - 8, y2 - 8);
 
 /*
 		  SetColor(White);
@@ -80,12 +70,13 @@ function createAbout(onExit, assets) {
 	}
 
 	function onTick(stage, deltaInSeconds) {
+		// ESC is not triggered in onKeyPress, so we trigger it here
 		if (gameEngine.isKeyDown[Keys.ESCAPE]) {
 			onExit(stage);
 		}
 	}
 
     function onKeyPress(stage, key) {
-		onExit(stage);
+		onExit();
 	}
 }

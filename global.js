@@ -28,20 +28,29 @@ function barAsShape(color, x1, y1, x2, y2) {
 }
 
 function putPixel(graphics, color, x, y) {
-  line(graphics, color, x, y, x+0.5, y+0.5);
+  line(graphics, color, x, y, x + 0.5, y + 0.5);
 }
 
-function outTextXY(container, color, x, y, text) {
+function outTextXY(container, color, text, x, y, centered, shadowColor) {
   // This is the closest approximation to the DOS font and size used in the original Mortar Mayhem (combined with the font style in style.css)
-  var text = outTextXYAsText(color, text);
+  var text = new createjs.Text(text, "11px TerminalVector", color);
+  if (centered) {
+    text.textAlign = "center";
+  }
+  text.scaleY = 0.84;
   text.x = x;
   text.y = y;
+  if (shadowColor) {
+    text.shadow = new createjs.Shadow(shadowColor, 2, 2, 0);
+  }
   container.addChild(text);
 }
 
-function outTextXYAsText(color, text) {
-  // This is the closest approximation to the DOS font and size used in the original Mortar Mayhem (combined with the font style in style.css)
-  var text = new createjs.Text(text, "11px TerminalVector", color);
-  text.scaleY = 0.85;
-  return text;
+function showPCX(assets, container, name, x, y, width, height) {
+  var bitmap = new createjs.Bitmap(assets.getResult(name));
+  bitmap.x = x;
+  bitmap.y = y;
+  // crop bitmap
+  bitmap.sourceRect = new createjs.Rectangle(0, 0, width + 1, height + 1);
+  container.addChild(bitmap);
 }
