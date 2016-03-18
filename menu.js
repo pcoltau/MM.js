@@ -11,6 +11,21 @@ function createMenu(onSelect, assets) {
 
     mainContainer.addChild(backgroundContainer, menuContainer);
 
+    // The Pixel dance test..
+/*
+    var testShape = new createjs.Shape();
+    line(testShape.graphics, Colors.WHITE, 11, 11, 11, 21);
+    line(testShape.graphics, Colors.WHITE, 21, 11, 26, 11);
+    line(testShape.graphics, Colors.WHITE, 31, 11, 41, 21);
+    putPixel(testShape.graphics, Colors.WHITE, 51, 11);
+    putPixel(testShape.graphics, Colors.WHITE, 51, 15);
+    putPixel(testShape.graphics, Colors.WHITE, 51, 15);
+    bar(testShape.graphics, Colors.WHITE, 61, 11, 71, 21);
+    line(testShape.graphics, Colors.WHITE, 0, 110, SCREEN_WIDTH, 110);
+    putPixel(testShape.graphics, Colors.RED, 0, 0);
+    bar(testShape.graphics, Colors.WHITE, 0, 120, SCREEN_WIDTH, 120);
+    mainContainer.addChild(testShape);
+*/
     var menuItemMovementHelper = createMenuItemMovementHelper(onMenuItemMoved, onMenuItemSelected);
 
     return {
@@ -103,7 +118,7 @@ function createMenu(onSelect, assets) {
 
     function createMenuItems() {
         var container = new createjs.Container();
-        for (i = 0; i < menuItems.length; ++i) {
+        for (var i = 0; i < menuItems.length; ++i) {
             /*
             if i = C then SetFillStyle(SolidFill,DarkestGreen) else SetFillStyle(SolidFill,Black);
             bar(x[1]+19,y[1]+23+i*30,x[2]-20,y[1]+35+i*30);

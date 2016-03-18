@@ -4,7 +4,8 @@ SCREEN_WIDTH_CENTER = SCREEN_WIDTH / 2;
 SCREEN_HEIGHT_CENTER = SCREEN_HEIGHT / 2;
 
 function line(graphics, color, x1, y1, x2, y2) {
-  graphics.beginStroke(color).moveTo(x1, y1).lineTo(x2, y2).endStroke();
+  // TODO: What if the line is straight? Then it should only be corrected in one direction? Maybe some min/max is neccessary?
+  graphics.beginStroke(color).moveTo(x1, y1).lineTo(x2 - 0.01, y2 - 0.01).endStroke();
 }
 
 function bar(graphics, color, x1, y1, x2, y2) {
@@ -12,7 +13,7 @@ function bar(graphics, color, x1, y1, x2, y2) {
   var endX = Math.max(x1, x2);
   var startY = Math.min(y1, y2);
   var endY = Math.max(y1, y2);
-  graphics.beginFill(color).drawRect(startX, startY, endX - startX + 1, endY - startY + 1).endFill();
+  graphics.beginStroke(color).beginFill(color).drawRect(startX, startY, endX - startX, endY - startY).endStroke().endFill();
 }
 
 function barAsShape(color, x1, y1, x2, y2) {
@@ -28,7 +29,7 @@ function barAsShape(color, x1, y1, x2, y2) {
 }
 
 function putPixel(graphics, color, x, y) {
-  line(graphics, color, x, y, x + 0.5, y + 0.5);
+  graphics.beginStroke(color).moveTo(x, y).lineTo(x + 0.01, y + 0.01).endStroke();
 }
 
 function outTextXY(container, color, text, x, y, centered, shadowColor) {
