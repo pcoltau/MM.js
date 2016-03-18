@@ -1,6 +1,7 @@
 function createMenu(onSelect, assets) {
     var menuItems = ["Start Game", "Options", "About", "Quit"];
     var selectedItemShape = null;
+    var selectedItemIndex = 0;
 
     var mainContainer = new createjs.Container();
 
@@ -10,7 +11,7 @@ function createMenu(onSelect, assets) {
 
     mainContainer.addChild(backgroundContainer, menuContainer);
 
-    var menuItemMovementHelper = createMenuItemMovementHelper(selectedItemShape, menuItems.length, getItemBarPosition, onSelect);
+    var menuItemMovementHelper = createMenuItemMovementHelper(onMenuItemMoved, onMenuItemSelected);
 
     return {
         container: mainContainer,
@@ -89,7 +90,8 @@ function createMenu(onSelect, assets) {
         var frame = drawFrame(menuContainer, x1 + 16, y1 + 32, x2 - 16, y2 - 16);
 
         // bar(x[1]+19,y[1]+23+i*30,x[2]-20,y[1]+35+i*30);
-        selectedItemShape = barAsShape(Colors.DARKESTGREEN, x1 + 19, 0, x2 - 20, 12); // y will be set in menuItemMovementHelper
+        var yPos = getItemBarPosition(selectedItemIndex);
+        selectedItemShape = barAsShape(Colors.DARKESTGREEN, x1 + 19, yPos, x2 - 20, yPos + 12);
         
         menuContainer.addChild(selectedItemShape);
 
@@ -110,12 +112,39 @@ function createMenu(onSelect, assets) {
             SetColor(White);
             OutTextXY(GetMaxX div 2 - (TextWidth(MenuItems[i]) div 2),y[1]+25+i*30,MenuItems[i]);
             */        
-            outTextXY(container, Colors.WHITE, menuItems[i], SCREEN_WIDTH_CENTER, getItemBarPosition(i).y + 2, true, Colors.BLACK);
+            outTextXY(container, Colors.WHITE, menuItems[i], SCREEN_WIDTH_CENTER, getItemBarPosition(i) + 2, true, Colors.BLACK);
         }
         return container;
     }
 
     function getItemBarPosition(itemIndex) {
-        return {x: SCREEN_WIDTH_CENTER - 61, y: (SCREEN_HEIGHT_CENTER - 70) + 23 + (itemIndex + 1) * 30};
+        return (SCREEN_HEIGHT_CENTER - 70) + 23 + (itemIndex + 1) * 30;
+    }
+
+    function onMenuItemMoved(movement) {
+        switch (movement) {
+            case MenuItemMovement.DOWN:
+                if (selectedItemIndex < menuItems.length - 1) {
+                    selectedItemIndex++;    
+                }
+                else {
+                    selectedItemIndex = 0;
+                }
+                selectedItemShape.y = getItemBarPosition(selectedItemIndex);
+                break;
+            case MenuItemMovement.UP:
+                if (selectedItemIndex > 0) {
+                    selectedItemIndex--;
+                }
+                else {
+                    selectedItemIndex = menuItems.length - 1;
+                }
+                selectedItemShape.y = getItemBarPosition(selectedItemIndex);
+                break;    
+        }
+    }
+
+    function onMenuItemSelected() {
+        onSelect(selectedItemIndex);
     }
 }
