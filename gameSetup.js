@@ -4,9 +4,9 @@ function createGameSetup(onExit, assets) {
 	var colorTable = [Colors.BLUE, Colors.LIGHTRED, Colors.GREEN, Colors.YELLOW, Colors.MAGENTA, Colors.CYAN, Colors.WHITE, Colors.LIGHTGRAY];
 	var winCon = ["Survival", "Most Hits", "Most Frags", "Most Damage", "Best Damage/Shot", "Most Headshots"];
 	var menuItems = [
-		{name: "Number of Players", value: 4, min: 2, max: 8}, 
-		{name: "Number of Rounds", value: 15, min: 1, max: 99}, 
-		{name: "Points given for", value: 0, min: 0, max: winCon.length}]; 
+		{name: "Number of Players", value: 4, min: 2, max: 8, textObj: null}, 
+		{name: "Number of Rounds", value: 15, min: 1, max: 99, textObj: null}, 
+		{name: "Points given for", value: 0, min: 0, max: winCon.length - 1, textObj: null}]; 
     var selectedItemShape = null;
     var selectedItemIndex = 0;
 
@@ -93,13 +93,19 @@ function createGameSetup(onExit, assets) {
 		    DrawArrow(i,0,false);
 */
 			outTextXY(container, Colors.WHITE, menuItems[i].name, x1 + 30, getItemBarPosition(i) + 2, false, Colors.BLACK);
-			var value = (i === 2) ? winCon[menuItems[i].value] : menuItems[i].value;
-			outTextXY(container, Colors.WHITE, value, x1 + 260, getItemBarPosition(i) + 2, true, Colors.BLACK);
+			var value = getMenuItemValue(i);
+			var text = outTextXYAsText(Colors.WHITE, value, x1 + 260, getItemBarPosition(i) + 2, true, Colors.BLACK);
+			menuItems[i].textObj = text;
+			container.addChild(text);
 			container.addChild(drawArrow(i, true));
 			container.addChild(drawArrow(i, false));
 		}
 
 		return container;
+	}
+
+	function getMenuItemValue(index) {
+		return (index === 2) ? winCon[menuItems[index].value] : menuItems[index].value;
 	}
 
 	function getItemBarPosition(itemIndex) {
@@ -125,7 +131,23 @@ function createGameSetup(onExit, assets) {
                     selectedItemIndex = menuItems.length - 1;
                 }
                 selectedItemShape.y = getItemBarPosition(selectedItemIndex);
-                break;    
+                break;  
+             case MenuItemMovement.LEFT:
+             	var selectedMenuItem = menuItems[selectedItemIndex];
+             	if (selectedMenuItem.value > selectedMenuItem.min) {
+             		selectedMenuItem.value--;
+             		var newValue = getMenuItemValue(selectedItemIndex);
+             		menuItems[selectedItemIndex].textObj.text = newValue;
+             	}
+             	break;  
+             case MenuItemMovement.RIGHT:
+             	var selectedMenuItem = menuItems[selectedItemIndex];
+             	if (selectedMenuItem.value < selectedMenuItem.max) {
+             		selectedMenuItem.value++;
+             		var newValue = getMenuItemValue(selectedItemIndex);
+             		menuItems[selectedItemIndex].textObj.text = newValue;
+             	}
+             	break;  
         }
     }
 
