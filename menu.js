@@ -26,7 +26,7 @@ function createMenu(onSelect, assets) {
     bar(testShape.graphics, Colors.WHITE, 0, 120, SCREEN_WIDTH, 120);
     mainContainer.addChild(testShape);
 */
-    var menuItemMovementHelper = createMenuItemMovementHelper(onMenuItemMoved, onMenuItemSelected);
+    var menuItemMovementHelper = createMenuItemMovementHelper(onMenuItemMoved, onMenuItemSelected, onMenuItemExit);
 
     return {
         container: mainContainer,
@@ -161,5 +161,9 @@ function createMenu(onSelect, assets) {
 
     function onMenuItemSelected() {
         onSelect(selectedItemIndex);
+    }
+
+    function onMenuItemExit() {
+        // TODO: Implement quit.
     }
 }

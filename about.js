@@ -72,7 +72,7 @@ function createAbout(onExit, assets) {
 	function onTick(stage, deltaInSeconds) {
 		// ESC is not triggered in onKeyPress, so we trigger it here
 		if (gameEngine.isKeyDown[Keys.ESCAPE]) {
-			onExit(stage);
+			onExit();
 		}
 	}
 

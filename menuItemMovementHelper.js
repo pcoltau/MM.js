@@ -7,7 +7,7 @@ MenuItemMovement = {
 
 // onMenuItemMovement: function taking a MenuItemMovement as parameter
 // onSelect: function taking selectedItemIndex as parameter
-function createMenuItemMovementHelper(onMenuItemMovement, onSelect) {
+function createMenuItemMovementHelper(onMenuItemMovement, onSelect, onExit) {
     var minTimeBetweenItemMoves = 0.15;
     var timeSinceMenuItemMoved = 0;
 
@@ -25,6 +25,11 @@ function createMenuItemMovementHelper(onMenuItemMovement, onSelect) {
             checkAndHandleKeyDown(Keys.UP_ARROW);
             checkAndHandleKeyDown(Keys.LEFT_ARROW);
             checkAndHandleKeyDown(Keys.RIGHT_ARROW);
+			// ESC is not triggered in onKeyPress, so we trigger it here
+            if (gameEngine.isKeyDown[Keys.ESCAPE]) {
+	            timeSinceMenuItemMoved = 0;
+            	onExit();
+            } 
         }
     }
 

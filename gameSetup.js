@@ -16,9 +16,13 @@ function createGameSetup(onExit, assets) {
 	mainContainer.addChild(backgroundContainer);
 	mainContainer.addChild(gameSetupFrame);
 
+    var menuItemMovementHelper = createMenuItemMovementHelper(onMenuItemMoved, onMenuItemSelected, onExit);
+
 	return {
 		container: mainContainer,
-		onTick: onTick
+        onTick: menuItemMovementHelper.onTick,
+        onKeyUp: menuItemMovementHelper.onKeyUp,
+        onKeyPress: menuItemMovementHelper.onKeyPress
 	};
 
 	function createBackground() {
@@ -102,10 +106,31 @@ function createGameSetup(onExit, assets) {
 		return (SCREEN_HEIGHT_CENTER - 55) + 14 + (itemIndex + 1) * 20;
 	}
 
-	function onTick(stage, deltaInSeconds) {
-		// ESC is not triggered in onKeyPress, so we trigger it here
-		if (gameEngine.isKeyDown[Keys.ESCAPE]) {
-			onExit();
-		}
-	}
+    function onMenuItemMoved(movement) {
+        switch (movement) {
+            case MenuItemMovement.DOWN:
+                if (selectedItemIndex < menuItems.length - 1) {
+                    selectedItemIndex++;    
+                }
+                else {
+                    selectedItemIndex = 0;
+                }
+                selectedItemShape.y = getItemBarPosition(selectedItemIndex);
+                break;
+            case MenuItemMovement.UP:
+                if (selectedItemIndex > 0) {
+                    selectedItemIndex--;
+                }
+                else {
+                    selectedItemIndex = menuItems.length - 1;
+                }
+                selectedItemShape.y = getItemBarPosition(selectedItemIndex);
+                break;    
+        }
+    }
+
+    function onMenuItemSelected() {
+        onSelect(selectedItemIndex);
+    }
+
 }
