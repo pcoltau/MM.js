@@ -15,9 +15,7 @@ function createGameSetup(onDone, onExit, assets) {
 
 	return {
 		container: mainContainer,
-        onTick: onTick,
         onKeyDown: onKeyDown,
-        onKeyUp: onKeyUp,
         onKeyPress: onKeyPress
 	};
 
@@ -33,29 +31,17 @@ function createGameSetup(onDone, onExit, assets) {
         return backgroundContainer;
 	}
 
-    function onTick(stage, deltaInSeconds) {
-    	if (currentState === SettingsStates.setup) {
-    		settingsDialog.onTick(stage, deltaInSeconds);
-    	}
-	}
-
     function onKeyDown(stage, key) {
     	if (currentState === SettingsStates.getPlayerNames) {
 			playerNamesDialog.onKeyDown(stage, key);
 		}
-	}
-
-    function onKeyUp(stage, key) {
-    	if (currentState === SettingsStates.setup) {
-			settingsDialog.onKeyUp(stage, key);
+		else {
+			settingsDialog.onKeyDown(stage, key);
 		}
 	}
 
     function onKeyPress(stage, key) {
-    	if (currentState === SettingsStates.setup) {
-			settingsDialog.onKeyPress(stage, key);
-		}
-		else {
+    	if (currentState === SettingsStates.getPlayerNames) {
 			playerNamesDialog.onKeyPress(stage, key);
 		}
 	}

@@ -3,8 +3,7 @@ function createAbout(onExit, assets) {
 
 	return {
         container: mainContainer,
-        onTick: onTick,
-		onKeyPress: onKeyPress
+		onKeyDown: onKeyDown
 	}
 
 	function createAboutBox() {
@@ -69,14 +68,7 @@ function createAbout(onExit, assets) {
         return container;
 	}
 
-	function onTick(stage, deltaInSeconds) {
-		// ESC is not triggered in onKeyPress, so we trigger it here
-		if (gameEngine.isKeyDown[Keys.ESCAPE]) {
-			onExit();
-		}
-	}
-
-    function onKeyPress(stage, key) {
+    function onKeyDown(stage, key) {
 		onExit();
 	}
 }

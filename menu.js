@@ -26,13 +26,9 @@ function createMenu(onSelect, assets) {
     bar(testShape.graphics, Colors.WHITE, 0, 120, SCREEN_WIDTH, 120);
     mainContainer.addChild(testShape);
 */
-    var menuItemMovementHelper = createMenuItemMovementHelper(onMenuItemMoved, onMenuItemSelected, onMenuItemExit);
-
     return {
         container: mainContainer,
-        onTick: menuItemMovementHelper.onTick,
-        onKeyUp: menuItemMovementHelper.onKeyUp,
-        onKeyPress: menuItemMovementHelper.onKeyPress
+        onKeyDown: onKeyDown,
     };
 
     function createBackground() {
@@ -136,9 +132,9 @@ function createMenu(onSelect, assets) {
         return (SCREEN_HEIGHT_CENTER - 70) + 23 + (itemIndex + 1) * 30;
     }
 
-    function onMenuItemMoved(movement) {
-        switch (movement) {
-            case MenuItemMovement.DOWN:
+    function onKeyDown(stage, key) {
+        switch (key) {
+            case Keys.DOWN_ARROW:
                 if (selectedItemIndex < menuItems.length - 1) {
                     selectedItemIndex++;    
                 }
@@ -147,7 +143,7 @@ function createMenu(onSelect, assets) {
                 }
                 selectedItemShape.y = getItemBarPosition(selectedItemIndex);
                 break;
-            case MenuItemMovement.UP:
+            case Keys.UP_ARROW:
                 if (selectedItemIndex > 0) {
                     selectedItemIndex--;
                 }
@@ -156,14 +152,12 @@ function createMenu(onSelect, assets) {
                 }
                 selectedItemShape.y = getItemBarPosition(selectedItemIndex);
                 break;    
+            case Keys.ENTER:
+                onSelect(selectedItemIndex);
+                break;
+            case Keys.ESCAPE:
+                // TODO: Implement quit.
+                break;
         }
-    }
-
-    function onMenuItemSelected() {
-        onSelect(selectedItemIndex);
-    }
-
-    function onMenuItemExit() {
-        // TODO: Implement quit.
     }
 }

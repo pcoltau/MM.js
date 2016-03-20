@@ -61,6 +61,7 @@ function createPlayerNamesDialog(assets, onDone) {
 	}
 
     function onKeyDown(stage, key) {
+    	// BACKSPACE is not triggered by onKeyPress, because we "preventDefault" in the GameEngine to suppress the Browser's "back" functionality.
     	if (key === Keys.BACKSPACE) {
     		if (playerName.length > 0) {
     			playerName = playerName.substring(0, playerName.length - 1);
@@ -70,11 +71,11 @@ function createPlayerNamesDialog(assets, onDone) {
     }
 
     function onKeyPress(stage, key) {
-    	console.log(key);
     	if (playerName.length < 18) {
     		// Note: Pressed keys do not always translate to the values defined in "Keys", so we use Strings and chatCodeAt instead.
 	    	if ((key >= "a".charCodeAt(0) && key <= "z".charCodeAt(0)) ||
 	    		(key >= "A".charCodeAt(0) && key <= "Z".charCodeAt(0)) ||
+	    		(key >= "0".charCodeAt(0) && key <= "9".charCodeAt(0)) ||
 	    		key === " ".charCodeAt(0) || 
 	    		key === ".".charCodeAt(0) || 
 	    		key === "-".charCodeAt(0)) {

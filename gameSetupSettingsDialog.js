@@ -8,13 +8,10 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
     var selectedItemIndex = 0;
 
 	var settingsDialog = createGameSetupSettingsDialog();
-    var menuItemMovementHelper = createMenuItemMovementHelper(onMenuItemMoved, onMenuItemSelected, onExit);
 
 	return {
 		container: settingsDialog,
-        onTick: menuItemMovementHelper.onTick,
-        onKeyUp: menuItemMovementHelper.onKeyUp,
-        onKeyPress: menuItemMovementHelper.onKeyPress
+        onKeyDown: onKeyDown
 	};
 
 	function createGameSetupSettingsDialog() {
@@ -92,9 +89,9 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 		return (SCREEN_HEIGHT_CENTER - 55) + 14 + (itemIndex + 1) * 20;
 	}
 
-    function onMenuItemMoved(movement) {
-        switch (movement) {
-            case MenuItemMovement.DOWN:
+    function onKeyDown(stage, key) {
+        switch (key) {
+            case Keys.DOWN_ARROW:
                 if (selectedItemIndex < menuItems.length - 1) {
                     selectedItemIndex++;    
                 }
@@ -103,7 +100,7 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
                 }
                 selectedItemShape.y = getItemBarPosition(selectedItemIndex);
                 break;
-            case MenuItemMovement.UP:
+            case Keys.UP_ARROW:
                 if (selectedItemIndex > 0) {
                     selectedItemIndex--;
                 }
@@ -112,7 +109,7 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
                 }
                 selectedItemShape.y = getItemBarPosition(selectedItemIndex);
                 break;  
-             case MenuItemMovement.LEFT:
+             case Keys.LEFT_ARROW:
              	var selectedMenuItem = menuItems[selectedItemIndex];
              	if (selectedMenuItem.value > selectedMenuItem.min) {
              		selectedMenuItem.value--;
@@ -120,7 +117,7 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
              		menuItems[selectedItemIndex].textObj.text = newValue;
              	}
              	break;  
-             case MenuItemMovement.RIGHT:
+             case Keys.RIGHT_ARROW:
              	var selectedMenuItem = menuItems[selectedItemIndex];
              	if (selectedMenuItem.value < selectedMenuItem.max) {
              		selectedMenuItem.value++;
@@ -128,11 +125,12 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
              		menuItems[selectedItemIndex].textObj.text = newValue;
              	}
              	break;  
+             case Keys.ENTER:
+		    	onDone({ numPlayers: menuItems[0].value, numRounds: menuItems[1].value, winCon: menuItems[2].value });
+             	break;
+             case Keys.ESCAPE:
+		    	onExit();
+             	break;
         }
     }
-
-    function onMenuItemSelected() {
-    	onDone({ numPlayers: menuItems[0].value, numRounds: menuItems[1].value, winCon: menuItems[2].value });
-    }
-
 }
