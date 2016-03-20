@@ -1,3 +1,5 @@
+"use strict";
+
 function createPlayerNamesDialog(assets, onDone) {
 	var playerIndex = 0;
 	var playerName = "";
@@ -15,10 +17,10 @@ function createPlayerNamesDialog(assets, onDone) {
 	function createPlayerNamesDialog() {
         var dialogContainer = new createjs.Container();
 
-		x1 = SCREEN_WIDTH_CENTER - 91;
-		y1 = SCREEN_HEIGHT_CENTER - 16;
-		x2 = x1 + 182;
-		y2 = y1 + 32;
+		var x1 = SCREEN_WIDTH_CENTER - 91;
+		var y1 = SCREEN_HEIGHT_CENTER - 16;
+		var x2 = x1 + 182;
+		var y2 = y1 + 32;
 
 		drawBox(assets, dialogContainer, x1, y1, x2, y2);
 

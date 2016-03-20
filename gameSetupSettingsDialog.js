@@ -1,3 +1,5 @@
+"use strict";
+
 function createGameSetupSettingsDialog(assets, onDone, onExit) {
 	var winCon = ["Survival", "Most Hits", "Most Frags", "Most Damage", "Best Damage/Shot", "Most Headshots"];
 	var menuItems = [
@@ -17,10 +19,10 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 	function createGameSetupSettingsDialog() {
         var gameSetupContainer = new createjs.Container();
 
-		x1 = SCREEN_WIDTH_CENTER - 180;
-		y1 = SCREEN_HEIGHT_CENTER - 55;
-		x2 = x1 + 360;
-		y2 = y1 + 110;
+		var x1 = SCREEN_WIDTH_CENTER - 180;
+		var y1 = SCREEN_HEIGHT_CENTER - 55;
+		var x2 = x1 + 360;
+		var y2 = y1 + 110;
 
 		drawBox(assets, gameSetupContainer, x1, y1, x2, y2);
 

@@ -1,3 +1,5 @@
+"use strict";
+
 gameEngine.assets = [{
     id: "wep",
     type: "binary",

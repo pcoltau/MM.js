@@ -1,3 +1,5 @@
+"use strict";
+
 function readEncodedFile(file) {
 	var resultList = [];
 	var item = {};

@@ -1,3 +1,5 @@
+"use strict";
+
 function createMenu(onSelect, assets) {
     var menuItems = ["Start Game", "Options", "About", "Quit"];
     var selectedItemShape = null;

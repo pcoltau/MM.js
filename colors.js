@@ -1,5 +1,7 @@
-// // TODO: Figure out the correct colors - by either parsing the palette files or color pick screen shots
-Colors = {
+"use strict";
+
+// TODO: Figure out the correct colors - by either parsing the palette files or color pick screen shots
+var Colors = {
 	BLACK: "#000000",
 	RED: "#FF0000",
 	LIGHTRED: "#FF2222",

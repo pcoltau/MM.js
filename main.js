@@ -1,10 +1,12 @@
+"use strict";
+
 gameEngine.onInit = onInit;
 gameEngine.onTick = onTick;
 gameEngine.onKeyDown = onKeyDown;
 gameEngine.onKeyUp = onKeyUp;
 gameEngine.onKeyPress = onKeyPress;
 
-Transitions = {
+var Transitions = {
     fadeIn: "fadeIn",
     showing: "showing",
     fadeOut: "fadeOut",
@@ -12,7 +14,7 @@ Transitions = {
     hideDialog: "hideDialog"
 }
 
-game = {
+var game = {
     menuObj: null, // These objects are expected to be on the form (* are optional): { container, onTick*, onKeyDown*, onKeyUp*, onKeyPress* } 
     aboutObj: null,
     gameSetupObj: null,

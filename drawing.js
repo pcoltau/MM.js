@@ -1,3 +1,5 @@
+"use strict";
+
 function drawFrame(container, x1, y1, x2, y2, color) {
     var shape = new createjs.Shape();
     var c = color ? color : Colors.BLACK;

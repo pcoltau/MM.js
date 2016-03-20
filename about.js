@@ -1,3 +1,5 @@
+"use strict";
+
 function createAbout(onExit, assets) {
 	var mainContainer = createAboutBox();
 

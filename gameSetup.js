@@ -1,3 +1,5 @@
+"use strict";
+
 function createGameSetup(onDone, onExit, assets) {
 	var SettingsStates = {setup: 0, getPlayerNames: 1};
 	var currentState = SettingsStates.setup;

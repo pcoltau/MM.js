@@ -1,9 +1,11 @@
-SCREEN_WIDTH = 1024;
-SCREEN_HEIGHT = 768;
-SCREEN_WIDTH_CENTER = SCREEN_WIDTH / 2;
-SCREEN_HEIGHT_CENTER = SCREEN_HEIGHT / 2;
+"use strict";
 
-playerColorTable = [Colors.BLUE, Colors.LIGHTRED, Colors.GREEN, Colors.YELLOW, Colors.MAGENTA, Colors.CYAN, Colors.WHITE, Colors.LIGHTGRAY];
+var SCREEN_WIDTH = 1024;
+var SCREEN_HEIGHT = 768;
+var SCREEN_WIDTH_CENTER = SCREEN_WIDTH / 2;
+var SCREEN_HEIGHT_CENTER = SCREEN_HEIGHT / 2;
+
+var playerColorTable = [Colors.BLUE, Colors.LIGHTRED, Colors.GREEN, Colors.YELLOW, Colors.MAGENTA, Colors.CYAN, Colors.WHITE, Colors.LIGHTGRAY];
 
 function line(graphics, color, x1, y1, x2, y2) {
   // TODO: What if the line is straight? Then it should only be corrected in one direction? Maybe some min/max is neccessary?
