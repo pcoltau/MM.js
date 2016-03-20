@@ -13,7 +13,8 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 
 	return {
 		container: settingsDialog,
-        onKeyDown: onKeyDown
+        onKeyDown: onKeyDown,
+        onShow: onShow
 	};
 
 	function createGameSetupSettingsDialog() {
@@ -100,7 +101,7 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
                 else {
                     selectedItemIndex = 0;
                 }
-                selectedItemShape.y = getItemBarPosition(selectedItemIndex);
+                updateSelectedItemShape();
                 break;
             case Keys.UP_ARROW:
                 if (selectedItemIndex > 0) {
@@ -109,22 +110,20 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
                 else {
                     selectedItemIndex = menuItems.length - 1;
                 }
-                selectedItemShape.y = getItemBarPosition(selectedItemIndex);
+                updateSelectedItemShape();
                 break;  
              case Keys.LEFT_ARROW:
              	var selectedMenuItem = menuItems[selectedItemIndex];
              	if (selectedMenuItem.value > selectedMenuItem.min) {
              		selectedMenuItem.value--;
-             		var newValue = getMenuItemValue(selectedItemIndex);
-             		menuItems[selectedItemIndex].textObj.text = newValue;
+             		updateItemValue(selectedItemIndex)
              	}
              	break;  
              case Keys.RIGHT_ARROW:
              	var selectedMenuItem = menuItems[selectedItemIndex];
              	if (selectedMenuItem.value < selectedMenuItem.max) {
              		selectedMenuItem.value++;
-             		var newValue = getMenuItemValue(selectedItemIndex);
-             		menuItems[selectedItemIndex].textObj.text = newValue;
+             		updateItemValue(selectedItemIndex);
              	}
              	break;  
              case Keys.ENTER:
@@ -135,4 +134,24 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
              	break;
         }
     }
+
+    function updateSelectedItemShape() {
+        selectedItemShape.y = getItemBarPosition(selectedItemIndex);
+    }
+
+    function updateItemValue(index) {
+ 		var newValue = getMenuItemValue(index);
+ 		menuItems[index].textObj.text = newValue;
+    }
+
+    function onShow() {
+		menuItems[0].value = 2;
+		menuItems[1].value = 15;
+		menuItems[2].value = 0;
+		for (var i = 0; i < menuItems.length; ++i) {
+			updateItemValue(i);
+		}
+	    selectedItemIndex = 0;
+	    updateSelectedItemShape();
+	}
 }

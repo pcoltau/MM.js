@@ -18,7 +18,8 @@ function createGameSetup(onDone, onExit, assets) {
 	return {
 		container: mainContainer,
         onKeyDown: onKeyDown,
-        onKeyPress: onKeyPress
+        onKeyPress: onKeyPress,
+        onShow: onShow
 	};
 
 	function createBackground() {
@@ -63,5 +64,18 @@ function createGameSetup(onDone, onExit, assets) {
 	    else {
 	    	onDone();
 	    }
+	}
+
+	function onShow() {
+		// reset state
+		if (currentState === SettingsStates.getPlayerNames) {
+	        mainContainer.removeChild(playerNamesDialog.container);
+	        mainContainer.addChild(settingsDialog.container);
+    	}
+		currentState = SettingsStates.setup;
+		gameSettings = null;
+		currentPlayerIndex = 0;
+        playerNamesDialog.setPlayerIndex(currentPlayerIndex)
+        settingsDialog.onShow();
 	}
 }

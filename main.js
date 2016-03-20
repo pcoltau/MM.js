@@ -15,7 +15,8 @@ var Transitions = {
 }
 
 var game = {
-    menuObj: null, // These objects are expected to be on the form (* are optional): { container, onTick*, onKeyDown*, onKeyUp*, onKeyPress* } 
+     // These objects are expected to be on the form (* are optional): { container, onTick*, onKeyDown*, onKeyUp*, onKeyPress*, onShow* } 
+    menuObj: null,
     aboutObj: null,
     gameSetupObj: null,
     currentState: "menuObj", // A reference to the *Obj variables above (it is a reference so we can recreate the *Obj in a different resolution if needed)
@@ -102,6 +103,10 @@ function changeToNextState(stage) {
             var nextObj = game[game.nextState];
             var lastIndex = stage.numChildren - 1;
             stage.addChildAt(nextObj.container, lastIndex); // adds the container "under" the fadingLayer 
+            //  trigger onShow(), if available
+            if (nextObj.onShow) {
+                nextObj.onShow();
+            }
         }
         game.currentState = game.nextState;
         game.nextState = null;

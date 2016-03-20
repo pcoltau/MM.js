@@ -11,7 +11,7 @@ function createPlayerNamesDialog(assets, onDone) {
 		container: playerNamesDialog,
 		setPlayerIndex: setPlayerIndex,
         onKeyPress: onKeyPress,
-        onKeyDown: onKeyDown
+        onKeyDown: onKeyDown,
 	};
 
 	function createPlayerNamesDialog() {
