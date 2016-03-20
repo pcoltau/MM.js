@@ -1,6 +1,6 @@
-function drawFrame(container, x1, y1, x2, y2) {
+function drawFrame(container, x1, y1, x2, y2, color) {
     var shape = new createjs.Shape();
-
+    var c = color ? color : Colors.BLACK;
     // SetFillStyle(SolidFill,Black);
     // Bar(X1+1,Y1+1,X2-1,Y2-1);
     // SetColor(White);
@@ -9,7 +9,7 @@ function drawFrame(container, x1, y1, x2, y2) {
     // SetColor(Gray);
     // Line(X1,Y1,X2-1,Y1);
     // Line(X1,Y1,X1,Y2);            
-    bar(shape.graphics, Colors.BLACK, x1 + 1, y1 + 1, x2 - 1, y2 - 1);
+    bar(shape.graphics, c, x1 + 1, y1 + 1, x2 - 1, y2 - 1);
     line(shape.graphics, Colors.WHITE, x1 + 1, y2, x2, y2);
     line(shape.graphics, Colors.WHITE, x2, y1, x2, y2);
     line(shape.graphics, Colors.GRAY, x1, y1, x2 - 1, y1);

@@ -3,6 +3,8 @@ SCREEN_HEIGHT = 768;
 SCREEN_WIDTH_CENTER = SCREEN_WIDTH / 2;
 SCREEN_HEIGHT_CENTER = SCREEN_HEIGHT / 2;
 
+playerColorTable = [Colors.BLUE, Colors.LIGHTRED, Colors.GREEN, Colors.YELLOW, Colors.MAGENTA, Colors.CYAN, Colors.WHITE, Colors.LIGHTGRAY];
+
 function line(graphics, color, x1, y1, x2, y2) {
   // TODO: What if the line is straight? Then it should only be corrected in one direction? Maybe some min/max is neccessary?
   graphics.beginStroke(color).moveTo(x1, y1).lineTo(x2 - 0.01, y2 - 0.01).endStroke();
@@ -46,7 +48,7 @@ function outTextXYAsText(color, text, x, y, centered, shadowColor) {
   }
   text.scaleY = 0.84;
   text.x = x;
-  text.y = y;
+  text.y = y - 0.5;
   if (shadowColor) {
     text.shadow = new createjs.Shadow(shadowColor, 2, 2, 0);
   }

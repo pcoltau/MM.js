@@ -1,10 +1,14 @@
-function createGameSetup(onExit, assets) {
-	var mainContainer = new createjs.Container();
+function createGameSetup(onDone, onExit, assets) {
+	var SettingsStates = {setup: 0, getPlayerNames: 1};
+	var currentState = SettingsStates.setup;
+	var gameSettings = null;
+	var currentPlayerIndex = 0;
 
-	var colorTable = [Colors.BLUE, Colors.LIGHTRED, Colors.GREEN, Colors.YELLOW, Colors.MAGENTA, Colors.CYAN, Colors.WHITE, Colors.LIGHTGRAY];
+	var mainContainer = new createjs.Container();
 
 	var backgroundContainer = createBackground();
     var settingsDialog = createGameSetupSettingsDialog(assets, onSettingsDone, onExit);
+    var playerNamesDialog = createPlayerNamesDialog(assets, onPlayerNameDone);
 
 	mainContainer.addChild(backgroundContainer);
 	mainContainer.addChild(settingsDialog.container);
@@ -12,6 +16,7 @@ function createGameSetup(onExit, assets) {
 	return {
 		container: mainContainer,
         onTick: onTick,
+        onKeyDown: onKeyDown,
         onKeyUp: onKeyUp,
         onKeyPress: onKeyPress
 	};
@@ -29,18 +34,46 @@ function createGameSetup(onExit, assets) {
 	}
 
     function onTick(stage, deltaInSeconds) {
-    	settingsDialog.onTick(stage, deltaInSeconds);
+    	if (currentState === SettingsStates.setup) {
+    		settingsDialog.onTick(stage, deltaInSeconds);
+    	}
+	}
+
+    function onKeyDown(stage, key) {
+    	if (currentState === SettingsStates.getPlayerNames) {
+			playerNamesDialog.onKeyDown(stage, key);
+		}
 	}
 
     function onKeyUp(stage, key) {
-		settingsDialog.onKeyUp(stage, key);
+    	if (currentState === SettingsStates.setup) {
+			settingsDialog.onKeyUp(stage, key);
+		}
 	}
 
     function onKeyPress(stage, key) {
-		settingsDialog.onKeyPress(stage, key);
+    	if (currentState === SettingsStates.setup) {
+			settingsDialog.onKeyPress(stage, key);
+		}
+		else {
+			playerNamesDialog.onKeyPress(stage, key);
+		}
 	}
 
-	function onSettingsDone(gameSettings) {
+	function onSettingsDone(settings) {
+		gameSettings = settings;
+		currentState = SettingsStates.getPlayerNames;
         mainContainer.removeChild(settingsDialog.container);
+        mainContainer.addChild(playerNamesDialog.container);
+	}
+
+	function onPlayerNameDone(playerName) {
+		if (currentPlayerIndex < gameSettings.numPlayers - 1) {
+			currentPlayerIndex++;
+	        playerNamesDialog.setPlayerIndex(currentPlayerIndex)
+	    }
+	    else {
+	    	onDone();
+	    }
 	}
 }

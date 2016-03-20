@@ -45,7 +45,7 @@ function onInit(stage, assets) {
 function createGameObjects(assets) {
     game.menuObj = createMenu(onSelectMainMenuItem, assets);
     game.aboutObj = createAbout(onExitAbout, assets);
-    game.gameSetupObj = createGameSetup(onExitGameSetup, assets);
+    game.gameSetupObj = createGameSetup(onGameSetupDone, onExitGameSetup, assets);
 }
 
 function onTick(stage, deltaInSeconds) {
@@ -161,5 +161,11 @@ function onExitAbout() {
 
 function onExitGameSetup() {
     game.currentTransition = Transitions.fadeOut;
+    game.nextState = "menuObj";
+}
+
+function onGameSetupDone() {
+    game.currentTransition = Transitions.fadeOut;
+    // TODO: Set nextState to TEH GAME!!11
     game.nextState = "menuObj";
 }
