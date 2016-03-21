@@ -48,9 +48,10 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 
 	function createMenuItems(x1, y1, x2, y2) {
 		
-		function drawArrow(index, isRightArrow) {
+		function drawArrow(index, isShadow, isRightArrow) {
 			var shape = new createjs.Shape();
 			var v = isRightArrow ? 1 : 0;
+			var d = isShadow ? 2 : 0;
 			var ypos = getItemBarPosition(index) + 2;
 			for (var n = 4; n > 0; n--) {
 /*
@@ -58,8 +59,8 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 				Line(x[1]+196+xpos+d, y[1]+16+i*20+(8-n)+d, x[1]+196+xpos+d, y[1]+24+i*20-(8-n)+d);
 */
 				var xpos = v * 126 + (v * 2 - 1) * n;
-				line(shape.graphics, Colors.WHITE, x1 + 196 + xpos, ypos + (8 - n), x1 + 196 + xpos, ypos + 8 - (8 - n));
-			}			
+				line(shape.graphics, isShadow ? Colors.BLACK : Colors.WHITE, x1 + 196 + xpos + d, ypos + (8 - n) + d, x1 + 196 + xpos + d, ypos + 8 - (8 - n) + d);
+			}
 			return shape;
 		}
 
@@ -77,8 +78,10 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 			var text = outTextXYAsText(Colors.WHITE, value, x1 + 260, getItemBarPosition(i) + 2, true, Colors.BLACK);
 			menuItems[i].textObj = text;
 			container.addChild(text);
-			container.addChild(drawArrow(i, true));
-			container.addChild(drawArrow(i, false));
+			container.addChild(drawArrow(i, true, true));
+			container.addChild(drawArrow(i, false, true));
+			container.addChild(drawArrow(i, true, false));
+			container.addChild(drawArrow(i, false, false));
 		}
 
 		return container;

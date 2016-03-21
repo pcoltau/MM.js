@@ -8,8 +8,18 @@ var SCREEN_HEIGHT_CENTER = SCREEN_HEIGHT / 2;
 var playerColorTable = [Colors.BLUE, Colors.LIGHTRED, Colors.GREEN, Colors.YELLOW, Colors.MAGENTA, Colors.CYAN, Colors.WHITE, Colors.LIGHTGRAY];
 
 function line(graphics, color, x1, y1, x2, y2) {
-  // TODO: What if the line is straight? Then it should only be corrected in one direction? Maybe some min/max is neccessary?
-  graphics.beginStroke(color).moveTo(x1, y1).lineTo(x2 - 0.01, y2 - 0.01).endStroke();
+  // Note: We need to shorten the line to make it equivalent to the Pascal line function. We only use straight lines in MM, so it is only necessary to shorten non-dialogonally.
+  var startX = Math.min(x1, x2);
+  var endX = Math.max(x1, x2);
+  var startY = Math.min(y1, y2);
+  var endY = Math.max(y1, y2);
+  if (y1 === y2) {
+    endX -= 0.1;
+  }
+  if (x1 === x2) {
+    endY -= 0.1;
+  }
+  graphics.beginStroke(color).moveTo(startX, startY).lineTo(endX, endY).endStroke();
 }
 
 function bar(graphics, color, x1, y1, x2, y2) {
