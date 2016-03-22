@@ -14,10 +14,10 @@ function line(graphics, color, x1, y1, x2, y2) {
   var startY = Math.min(y1, y2);
   var endY = Math.max(y1, y2);
   if (y1 === y2) {
-    endX -= 0.1;
+    endX -= 0.01;
   }
   if (x1 === x2) {
-    endY -= 0.1;
+    endY -= 0.01;
   }
   graphics.beginStroke(color).moveTo(startX, startY).lineTo(endX, endY).endStroke();
 }
@@ -69,8 +69,8 @@ function outTextXYAsText(color, text, x, y, centered, shadowColor) {
 
 function showPCX(assets, container, name, x, y, width, height) {
   var bitmap = new createjs.Bitmap(assets.getResult(name));
-  bitmap.x = x;
-  bitmap.y = y;
+  bitmap.x = x - 0.5;
+  bitmap.y = y - 0.5;
   // crop bitmap
   bitmap.sourceRect = new createjs.Rectangle(0, 0, width + 1, height + 1);
   container.addChild(bitmap);
