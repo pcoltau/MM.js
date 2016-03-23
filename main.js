@@ -19,6 +19,7 @@ var game = {
     menuObj: null,
     aboutObj: null,
     gameSetupObj: null,
+    gameObj: null,
     currentState: "menuObj", // A reference to the *Obj variables above (it is a reference so we can recreate the *Obj in a different resolution if needed)
     nextState: null,
     currentTransition: Transitions.fadeIn,
@@ -36,11 +37,14 @@ function onInit(stage, assets) {
     if (game.currentState) {
         var currentObj = game[game.currentState];
         stage.addChild(currentObj.container);
+        if (currentObj.onShow) {
+            currentObj.onShow();
+        }
     }
 
     // FadingLayer is just a black layer put on top of the stage content. The alpha channel then controls the fading in/out.
     game.fadingLayer = new createjs.Shape();
-    game.fadingLayer.graphics.beginFill("#0").drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT).endFill();
+    game.fadingLayer.graphics.beginFill("black").drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT).endFill();
     game.fadingLayer.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     stage.addChild(game.fadingLayer);
 }
@@ -49,6 +53,7 @@ function createGameObjects(assets) {
     game.menuObj = createMenu(onSelectMainMenuItem, assets);
     game.aboutObj = createAbout(onExitAbout, assets);
     game.gameSetupObj = createGameSetup(onGameSetupDone, onExitGameSetup, assets);
+    game.gameObj = createGame(onExitGame, assets);
 }
 
 function onTick(stage, deltaInSeconds) {
@@ -173,6 +178,10 @@ function onExitGameSetup() {
 
 function onGameSetupDone() {
     game.currentTransition = Transitions.fadeOut;
-    // TODO: Set nextState to TEH GAME!!11
+    game.nextState = "gameObj";
+}
+
+function onExitGame() {
+    game.currentTransition = Transitions.fadeOut;
     game.nextState = "menuObj";
 }
