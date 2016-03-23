@@ -49,15 +49,15 @@ function createMenu(onSelect, assets) {
         // Line(GetMaxX div 2 - 319,GetMaxY div 2 - 239,GetMaxX div 2 + 320,GetMaxY div 2 - 239);
         // Line(GetMaxX div 2 - 319,GetMaxY div 2 - 239,GetMaxX div 2 - 319,GetMaxY div 2 + 240);
         var shape = new createjs.Shape();
-        line(shape.graphics, Colors.DARKGRAY, SCREEN_WIDTH_CENTER - 319, SCREEN_HEIGHT_CENTER + 240, SCREEN_WIDTH_CENTER + 320, SCREEN_HEIGHT_CENTER + 240);
-        line(shape.graphics, Colors.DARKGRAY, SCREEN_WIDTH_CENTER + 320, SCREEN_HEIGHT_CENTER - 239, SCREEN_WIDTH_CENTER + 320, SCREEN_HEIGHT_CENTER + 239);
-        line(shape.graphics, Colors.GRAY, SCREEN_WIDTH_CENTER - 319, SCREEN_HEIGHT_CENTER - 239, SCREEN_WIDTH_CENTER + 320, SCREEN_HEIGHT_CENTER - 239);
-        line(shape.graphics, Colors.GRAY, SCREEN_WIDTH_CENTER - 319, SCREEN_HEIGHT_CENTER - 239, SCREEN_WIDTH_CENTER - 319, SCREEN_HEIGHT_CENTER + 240);
+        line(shape.graphics, MenuColors.DARKGRAY, SCREEN_WIDTH_CENTER - 319, SCREEN_HEIGHT_CENTER + 240, SCREEN_WIDTH_CENTER + 320, SCREEN_HEIGHT_CENTER + 240);
+        line(shape.graphics, MenuColors.DARKGRAY, SCREEN_WIDTH_CENTER + 320, SCREEN_HEIGHT_CENTER - 239, SCREEN_WIDTH_CENTER + 320, SCREEN_HEIGHT_CENTER + 239);
+        line(shape.graphics, MenuColors.GRAY, SCREEN_WIDTH_CENTER - 319, SCREEN_HEIGHT_CENTER - 239, SCREEN_WIDTH_CENTER + 320, SCREEN_HEIGHT_CENTER - 239);
+        line(shape.graphics, MenuColors.GRAY, SCREEN_WIDTH_CENTER - 319, SCREEN_HEIGHT_CENTER - 239, SCREEN_WIDTH_CENTER - 319, SCREEN_HEIGHT_CENTER + 240);
         backgroundContainer.addChild(shape);
 
         // SetColor(DarkGray);
         // OutTextXY(GetMaxX div 2 + 286,GetMaxY div 2 + 230,'v'+FloatToStr(Version,0,1));
-        outTextXY(backgroundContainer, Colors.DARKGRAY, "v1.0", SCREEN_WIDTH_CENTER + 286, SCREEN_HEIGHT_CENTER + 230);
+        outTextXY(backgroundContainer, MenuColors.DARKGRAY, "v1.0", SCREEN_WIDTH_CENTER + 286, SCREEN_HEIGHT_CENTER + 230);
 
         return backgroundContainer;
     }
@@ -78,7 +78,7 @@ function createMenu(onSelect, assets) {
         var menubackContainer = new createjs.Container();
         showPCX(assets, menubackContainer, "menuback.pcx", x1, y1, x2 - x1, y2 - y1);
         // add shadow
-        menubackContainer.shadow = new createjs.Shadow(Colors.DARKGRAY, 2, 2, 0);
+        menubackContainer.shadow = new createjs.Shadow(MenuColors.DARKGRAY, 2, 2, 0);
         menuContainer.addChild(menubackContainer);
 
         /*  SetColor(BrightGray);
@@ -89,22 +89,22 @@ function createMenu(onSelect, assets) {
           Line(x[2],y[1],x[2],y[2]);
         */
         var shape = new createjs.Shape();
-        line(shape.graphics, Colors.BRIGHTGRAY, x1, y1, x2, y1);
-        line(shape.graphics, Colors.BRIGHTGRAY, x1, y1, x1, y2);
-        line(shape.graphics, Colors.GRAY, x1, y2, x2, y2);
-        line(shape.graphics, Colors.GRAY, x2, y1, x2, y2);
+        line(shape.graphics, MenuColors.BRIGHTGRAY, x1, y1, x2, y1);
+        line(shape.graphics, MenuColors.BRIGHTGRAY, x1, y1, x1, y2);
+        line(shape.graphics, MenuColors.GRAY, x1, y2, x2, y2);
+        line(shape.graphics, MenuColors.GRAY, x2, y1, x2, y2);
         menuContainer.addChild(shape);
 
         //  SetColor(DarkGray);
         //  OutTextXY(GetMaxX div 2 - 68,y[1]+10,'M A I N   M E N U');
-        outTextXY(menuContainer, Colors.DARKGRAY, "M A I N   M E N U", SCREEN_WIDTH_CENTER - 68, y1 + 10);
+        outTextXY(menuContainer, MenuColors.DARKGRAY, "M A I N   M E N U", SCREEN_WIDTH_CENTER - 68, y1 + 10);
 
         //  DrawFrame(x[1]+16,y[1]+32,x[2]-16,y[2]-16);
-        var frame = drawFrame(menuContainer, x1 + 16, y1 + 32, x2 - 16, y2 - 16);
+        var frame = drawFrame(menuContainer, MenuColors, x1 + 16, y1 + 32, x2 - 16, y2 - 16);
 
         // bar(x[1]+19,y[1]+23+i*30,x[2]-20,y[1]+35+i*30);
         var yPos = getItemBarPosition(selectedItemIndex);
-        selectedItemShape = barAsShape(Colors.DARKESTGREEN, x1 + 19, yPos, x2 - 20, yPos + 12);
+        selectedItemShape = barAsShape(MenuColors.DARKESTGREEN, x1 + 19, yPos, x2 - 20, yPos + 12);
         
         menuContainer.addChild(selectedItemShape);
 
@@ -125,7 +125,7 @@ function createMenu(onSelect, assets) {
             SetColor(White);
             OutTextXY(GetMaxX div 2 - (TextWidth(MenuItems[i]) div 2),y[1]+25+i*30,MenuItems[i]);
             */        
-            outTextXY(container, Colors.WHITE, menuItems[i], SCREEN_WIDTH_CENTER, getItemBarPosition(i) + 2, true, Colors.BLACK);
+            outTextXY(container, MenuColors.WHITE, menuItems[i], SCREEN_WIDTH_CENTER, getItemBarPosition(i) + 2, true, MenuColors.BLACK);
         }
         return container;
     }

@@ -25,19 +25,19 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 		var x2 = x1 + 360;
 		var y2 = y1 + 110;
 
-		drawBox(assets, gameSetupContainer, x1, y1, x2, y2);
+		drawBox(assets, gameSetupContainer, GameColors, x1, y1, x2, y2);
 
-		drawBox(assets, gameSetupContainer, x1, y2 + 5, x2, y2 + 21, true);
+		drawBox(assets, gameSetupContainer, GameColors, x1, y2 + 5, x2, y2 + 21, true);
 
-        outTextXY(gameSetupContainer, Colors.DARKGRAY, "Press Enter to start game or Esc to cancel.", SCREEN_WIDTH_CENTER, y2 + 9, true); 
+        outTextXY(gameSetupContainer, GameColors.DARKGRAY, "Press Enter to start game or Esc to cancel.", SCREEN_WIDTH_CENTER, y2 + 9, true); 
 
-		drawFrame(gameSetupContainer, x1 + 8, y1 + 18, x2 - 8, y2 - 8);		
+		drawFrame(gameSetupContainer, GameColors, x1 + 8, y1 + 18, x2 - 8, y2 - 8);		
 
-        outTextXY(gameSetupContainer, Colors.DARKGRAY, "G A M E   S E T U P", SCREEN_WIDTH_CENTER, y1 + 6, true); 
+        outTextXY(gameSetupContainer, GameColors.DARKGRAY, "G A M E   S E T U P", SCREEN_WIDTH_CENTER, y1 + 6, true); 
 
 	    //bar(x[1]+12,y[1]+14+i*20,x[2]-12,y[1]+26+i*20);
         var yPos = getItemBarPosition(selectedItemIndex);
-        selectedItemShape = barAsShape(Colors.DARKESTGREEN, x1 + 12, yPos, x2 - 12, yPos + 12);
+        selectedItemShape = barAsShape(GameColors.DARKESTGREEN, x1 + 12, yPos, x2 - 12, yPos + 12);
 		gameSetupContainer.addChild(selectedItemShape);
 
         var menu = createMenuItems(x1, y1, x2, y2);
@@ -59,7 +59,7 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 				Line(x[1]+196+xpos+d, y[1]+16+i*20+(8-n)+d, x[1]+196+xpos+d, y[1]+24+i*20-(8-n)+d);
 */
 				var xpos = v * 126 + (v * 2 - 1) * n;
-				line(shape.graphics, isShadow ? Colors.BLACK : Colors.WHITE, x1 + 196 + xpos + d, ypos + (8 - n) + d, x1 + 196 + xpos + d, ypos + 8 - (8 - n) + d);
+				line(shape.graphics, isShadow ? GameColors.BLACK : GameColors.WHITE, x1 + 196 + xpos + d, ypos + (8 - n) + d, x1 + 196 + xpos + d, ypos + 8 - (8 - n) + d);
 			}
 			return shape;
 		}
@@ -73,9 +73,9 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 		    DrawArrow(i,0,true);
 		    DrawArrow(i,0,false);
 */
-			outTextXY(container, Colors.WHITE, menuItems[i].name, x1 + 30, getItemBarPosition(i) + 2, false, Colors.BLACK);
+			outTextXY(container, GameColors.WHITE, menuItems[i].name, x1 + 30, getItemBarPosition(i) + 2, false, GameColors.BLACK);
 			var value = getMenuItemValue(i);
-			var text = outTextXYAsText(Colors.WHITE, value, x1 + 260, getItemBarPosition(i) + 2, true, Colors.BLACK);
+			var text = outTextXYAsText(GameColors.WHITE, value, x1 + 260, getItemBarPosition(i) + 2, true, GameColors.BLACK);
 			menuItems[i].textObj = text;
 			container.addChild(text);
 			container.addChild(drawArrow(i, true, true));

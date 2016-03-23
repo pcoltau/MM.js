@@ -22,15 +22,15 @@ function createPlayerNamesDialog(assets, onDone) {
 		var x2 = x1 + 182;
 		var y2 = y1 + 32;
 
-		drawBox(assets, dialogContainer, x1, y1, x2, y2);
+		drawBox(assets, dialogContainer, GameColors, x1, y1, x2, y2);
 
-		playerHeadlineText = outTextXYAsText(Colors.WHITE, "", x1 + 3, y1 + 3);
-	    playerHeadlineText.shadow = new createjs.Shadow(Colors.DARKGRAY, 1, 1, 0);
+		playerHeadlineText = outTextXYAsText(GameColors.WHITE, "", x1 + 3, y1 + 3);
+	    playerHeadlineText.shadow = new createjs.Shadow(GameColors.DARKGRAY, 1, 1, 0);
 		setCurrentPlayerHeadlineText();
 		dialogContainer.addChild(playerHeadlineText);
 
 //      DrawFrame(x[1]+4,y[1]+14,x[2]-4,y[2]-4);
-		drawFrame(dialogContainer, x1 + 4, y1 + 14, x2 - 4, y2 - 4, Colors.DARKGRAY);
+		drawFrame(dialogContainer, GameColors, x1 + 4, y1 + 14, x2 - 4, y2 - 4, GameColors.DARKGRAY);
 
 /*
     SetFillStyle(SolidFill,DarkGray);
@@ -38,8 +38,8 @@ function createPlayerNamesDialog(assets, onDone) {
 */
 
 //		OutTextXY(x[1]+7,y[1]+17,str+'_');
-		playerNameText = outTextXYAsText(Colors.WHITE, "", x1 + 7, y1 + 17, false, Colors.BLACK);
-	    playerNameText.shadow = new createjs.Shadow(Colors.BLACK, 1, 1, 0);
+		playerNameText = outTextXYAsText(GameColors.WHITE, "", x1 + 7, y1 + 17, false, GameColors.BLACK);
+	    playerNameText.shadow = new createjs.Shadow(GameColors.BLACK, 1, 1, 0);
 		updatePlayerNameText();
 		dialogContainer.addChild(playerNameText);
 

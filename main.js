@@ -40,7 +40,7 @@ function onInit(stage, assets) {
 
     // FadingLayer is just a black layer put on top of the stage content. The alpha channel then controls the fading in/out.
     game.fadingLayer = new createjs.Shape();
-    game.fadingLayer.graphics.beginFill(Colors.BLACK).drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT).endFill();
+    game.fadingLayer.graphics.beginFill("#0").drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT).endFill();
     game.fadingLayer.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     stage.addChild(game.fadingLayer);
 }

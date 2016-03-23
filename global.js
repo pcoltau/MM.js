@@ -5,7 +5,8 @@ var SCREEN_HEIGHT = 768;
 var SCREEN_WIDTH_CENTER = SCREEN_WIDTH / 2;
 var SCREEN_HEIGHT_CENTER = SCREEN_HEIGHT / 2;
 
-var playerColorTable = [Colors.BLUE, Colors.LIGHTRED, Colors.GREEN, Colors.YELLOW, Colors.MAGENTA, Colors.CYAN, Colors.WHITE, Colors.LIGHTGRAY];
+var playerColorTable = [GameColors.BLUE, GameColors.LIGHTRED, GameColors.GREEN, GameColors.YELLOW, GameColors.MAGENTA, GameColors.CYAN, GameColors.WHITE, GameColors.LIGHTGRAY, 
+                        GameColors.DARKBLUE, GameColors.DARKRED, GameColors.DARKGREEN, GameColors.DARKBROWN, GameColors.DARKMAGENTA, GameColors.DARKCYAN, GameColors.LIGHTGRAY, GameColors.GRAY];
 
 function line(graphics, color, x1, y1, x2, y2) {
   // Note: We need to shorten the line to make it equivalent to the Pascal line function. We only use straight lines in MM, so it is only necessary to shorten non-dialogonally.

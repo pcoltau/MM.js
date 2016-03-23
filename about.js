@@ -10,11 +10,11 @@ function createAbout(onExit, assets) {
 
 	function createAboutBox() {
 		function addCenteredText(container, text, yPos) {
-	        outTextXY(container, Colors.WHITE, text, SCREEN_WIDTH_CENTER, yPos, true);
+	        outTextXY(container, MenuColors.WHITE, text, SCREEN_WIDTH_CENTER, yPos, true);
 		}
 
 		function addLeftAlignedText(container, text, yPos) {
-			outTextXY(container, Colors.WHITE, text, SCREEN_WIDTH_CENTER - 140, yPos);
+			outTextXY(container, MenuColors.WHITE, text, SCREEN_WIDTH_CENTER - 140, yPos);
 		}
 
 		var container = new createjs.Container();
@@ -33,13 +33,13 @@ function createAbout(onExit, assets) {
 		var menuback = showPCX(assets, container, "menuback.pcx", x1, y1, x2 - x1, y2 - y1);
 
         var shape = new createjs.Shape();
-        line(shape.graphics, Colors.BRIGHTGRAY, x1, y1, x2, y1);
-        line(shape.graphics, Colors.BRIGHTGRAY, x1, y1, x1, y2);
-        line(shape.graphics, Colors.GRAY, x1, y2, x2, y2);
-        line(shape.graphics, Colors.GRAY, x2, y1, x2, y2);
+        line(shape.graphics, MenuColors.BRIGHTGRAY, x1, y1, x2, y1);
+        line(shape.graphics, MenuColors.BRIGHTGRAY, x1, y1, x1, y2);
+        line(shape.graphics, MenuColors.GRAY, x1, y2, x2, y2);
+        line(shape.graphics, MenuColors.GRAY, x2, y1, x2, y2);
         container.addChild(shape);
 
-        drawFrame(container, x1 + 8, y1 + 8, x2 - 8, y2 - 8);
+        drawFrame(container, MenuColors, x1 + 8, y1 + 8, x2 - 8, y2 - 8);
 
 /*
 		  SetColor(White);
