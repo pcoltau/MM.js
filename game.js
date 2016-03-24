@@ -36,14 +36,14 @@ function createGame(onExit, assets) {
 		
 		var breaks = [];
 		var startX = 0;
-		var startY = Math.floor(Math.random() * SCREEN_HEIGHT_CENTER + (SCREEN_HEIGHT / 3) + 10);
+		var startY = Math.floor(Math.random() * SCREEN_HEIGHT_CENTER) + Math.floor(SCREEN_HEIGHT / 3) + 10;
 		var endX = 0;
 		var endY = 0;
 		do {
 			breaks.push({x: startX, y: startY});
 			var smoothness = Math.floor(Math.random() * halfLandSmooth) + halfLandSmooth;
-			endX = Math.floor(Math.random() * Math.floor(SCREEN_WIDTH / landComplex) + startX + 10);
-			endY = Math.floor(Math.random() * Math.floor(SCREEN_HEIGHT / smoothness) - Math.floor(SCREEN_HEIGHT / (smoothness * 2) + startY));
+			endX = Math.floor(Math.random() * Math.floor(SCREEN_WIDTH / landComplex)) + startX + 10;
+			endY = Math.floor(Math.random() * Math.floor(SCREEN_HEIGHT / smoothness)) - Math.floor(SCREEN_HEIGHT / (smoothness * 2)) + startY;
 			endX = Math.min(endX, SCREEN_WIDTH - 2);
 			endY = Math.max(Math.min(endY, SCREEN_HEIGHT - 18), 75);
 			startX = endX;
@@ -52,9 +52,8 @@ function createGame(onExit, assets) {
 		breaks.push({x: endX, y: endY})
 		for (var i = 0; i < breaks.length - 1; ++i) {
 			landTop[breaks[i].x] = breaks[i].y;
-			for (var j = breaks[i].x; j < breaks[i + 1].x + 1; ++j) {
-			    // LandTop[j] := Breaks[i].y+round((Breaks[i+1].y-Breaks[i].y)*(j-Breaks[i].x)/(Breaks[i+1].x-Breaks[i].x));
-				landTop[j] = breaks[i].y + Math.floor(Math.round((breaks[i + 1].y - breaks[i].y) * (j - breaks[i].x) / (breaks[i + 1].x - breaks[i].x)));
+			for (var j = breaks[i].x; j <= breaks[i + 1].x; ++j) {
+				landTop[j] = breaks[i].y + Math.round((breaks[i + 1].y - breaks[i].y) * (j - breaks[i].x) / (breaks[i + 1].x - breaks[i].x));
 			}		
 		}
 		return landTop;
@@ -62,10 +61,10 @@ function createGame(onExit, assets) {
 
 	function drawLand(landTop) {
 		var shape = new createjs.Shape();
-		shape.regX = 2;
-		for (var x = 0; x < SCREEN_WIDTH - 4; ++x) {
-			for (var i = landTop[x] + 1; i <= SCREEN_WIDTH - 18; ++i) {
-				var r = (SCREEN_HEIGHT - i + landTop[x]) / 70;
+		shape.graphics.beginStroke()
+		for (var x = 2; x <= SCREEN_WIDTH - 2; ++x) {
+			for (var y = landTop[x] + 1; y <= SCREEN_HEIGHT - 18; ++y) {
+				var r = (SCREEN_HEIGHT - y + landTop[x]) / 70;
 				if (r < 1) {
 					r = (1 / r);
 				}
@@ -73,10 +72,12 @@ function createGame(onExit, assets) {
 					r = 2;
 				}
 				var color = (Math.floor(Math.random() * Math.round(r)) === 0) ? dirtColor2 : dirtColor;
-				putPixel(shape.graphics, x, i, color);
+				// TODO: This is _very_ slow! I think it's because we are creating thousands of small lines/strokes. Perhaps if we somehow used a "dashed" stroke, it would be faster? (see http://www.createjs.com/docs/easeljs/classes/Graphics.html#method_setStrokeDash)
+				putPixel(shape.graphics, color, x, y);
 			}
 		}
-		for (var x = 0; x <= SCREEN_WIDTH - 5; ++x) {
+		for (var x = 2; x <= SCREEN_WIDTH - 2; ++x) {
+			// TODO: This create a weird line (more notificiable if the putPixel code above is commented out)
 			line(shape.graphics, dirtColor2, x - 1, landTop[x - 1], x, landTop[x]);
 		}
 		return shape;
