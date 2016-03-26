@@ -1,6 +1,8 @@
 "use strict";
 
 function createPlayerNamesDialog(assets, onDone) {
+	// TODO: Prevent key input while fading out.
+
 	var playerIndex = 0;
 	var playerName = "";
 	var playerHeadlineText = null;

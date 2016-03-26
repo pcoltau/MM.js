@@ -1,11 +1,5 @@
 "use strict";
 
-gameEngine.onInit = onInit;
-gameEngine.onTick = onTick;
-gameEngine.onKeyDown = onKeyDown;
-gameEngine.onKeyUp = onKeyUp;
-gameEngine.onKeyPress = onKeyPress;
-
 var Transitions = {
     fadeIn: "fadeIn",
     running: "running",
@@ -28,7 +22,7 @@ var game = {
     fadingLayer: null
 };
 
-function onInit(stage, assets) {
+gameEngine.onInit = function onInit(stage, assets) {
     var wepList = readEncodedFile(assets.getResult("wep", true));
     var itemList = readEncodedFile(assets.getResult("item", true));
     var typeList = readEncodedTypeFile(assets.getResult("type", true));
@@ -55,10 +49,51 @@ function onInit(stage, assets) {
         game.aboutObj = createAbout(onExitAbout, assets);
         game.gameSetupObj = createGameSetup(onGameSetupDone, onExitGameSetup, assets);
         game.gameObj = createGame(onExitGame, assets);
+
+        function onSelectMainMenuItem(menuItemIndex) {
+            switch (menuItemIndex) {
+                case 0: // Start Game
+                    game.currentTransition = Transitions.fadeOut;
+                    game.nextState = "gameSetupObj";
+                    break;
+                case 1: // Options
+                    game.currentTransition = Transitions.fadeOut;
+                    // TODO: set game.nextState based on selected item
+                    break;
+                case 2: // About
+                    game.currentTransition = Transitions.showDialog;
+                    game.nextState = "aboutObj";
+                    break;
+                case 3: // Exit
+                    game.currentTransition = Transitions.fadeOut;
+                    // TODO: Figure out what to do when exiting
+                    break;
+            }
+        }
+
+        function onExitAbout() {
+            game.currentTransition = Transitions.hideDialog;
+            game.nextState = "menuObj";
+        }
+
+        function onExitGameSetup() {
+            game.currentTransition = Transitions.fadeOut;
+            game.nextState = "menuObj";
+        }
+
+        function onGameSetupDone() {
+            game.currentTransition = Transitions.fadeOut;
+            game.nextState = "gameObj";
+        }
+
+        function onExitGame() {
+            game.currentTransition = Transitions.fadeOut;
+            game.nextState = "menuObj";
+        }
     }
 }
 
-function onTick(stage, deltaInSeconds) {
+gameEngine.onTick = function onTick(stage, deltaInSeconds) {
     var fadingDuration = 0.4;
     switch(game.currentTransition) {
         case Transitions.running:
@@ -96,7 +131,6 @@ function onTick(stage, deltaInSeconds) {
             break;
         case Transitions.showDialog:
         case Transitions.hideDialog:
-            changeToNextState(stage)
             if (changeToNextState(stage)) {
                 game.currentTransition = Transitions.preRunning;
             }
@@ -111,34 +145,34 @@ function onTick(stage, deltaInSeconds) {
             game.currentTransition = Transitions.running;
             break;
     }
-}
 
-function changeToNextState(stage) {
-    var onShowCalled = false;
-    if (game.nextState) {
-        // remove the current container, unless we are showing a dialog
-        if (game.currentTransition !== Transitions.showDialog) {
-            var currentObj = game[game.currentState];
-            stage.removeChild(currentObj.container);
-        }
-        // add the new container, unless we are hiding a dialog
-        if (game.currentTransition !== Transitions.hideDialog) {
-            var nextObj = game[game.nextState];
-            var lastIndex = stage.numChildren - 1;
-            stage.addChildAt(nextObj.container, lastIndex); // adds the container "under" the fadingLayer 
-            //  trigger onShow(), if available
-            if (nextObj.onShow) {
-                nextObj.onShow();
-                onShowCalled = true;
+    function changeToNextState(stage) {
+        var onShowCalled = false;
+        if (game.nextState) {
+            // remove the current container, unless we are showing a dialog
+            if (game.currentTransition !== Transitions.showDialog) {
+                var currentObj = game[game.currentState];
+                stage.removeChild(currentObj.container);
             }
+            // add the new container, unless we are hiding a dialog
+            if (game.currentTransition !== Transitions.hideDialog) {
+                var nextObj = game[game.nextState];
+                var lastIndex = stage.numChildren - 1;
+                stage.addChildAt(nextObj.container, lastIndex); // adds the container "under" the fadingLayer 
+                //  trigger onShow(), if available
+                if (nextObj.onShow) {
+                    nextObj.onShow();
+                    onShowCalled = true;
+                }
+            }
+            game.currentState = game.nextState;
+            game.nextState = null;
         }
-        game.currentState = game.nextState;
-        game.nextState = null;
+        return onShowCalled;
     }
-    return onShowCalled;
 }
 
-function onKeyDown(stage, key) {
+gameEngine.onKeyDown = function onKeyDown(stage, key) {
     if (game.currentState) {
         var currentObj = game[game.currentState];
         if (currentObj.onKeyDown) {
@@ -147,7 +181,7 @@ function onKeyDown(stage, key) {
     }
 }
 
-function onKeyUp(stage, key) {
+gameEngine.onKeyUp = function onKeyUp(stage, key) {
     if (game.currentState) {
         var currentObj = game[game.currentState];
         if (currentObj.onKeyUp) {
@@ -156,52 +190,11 @@ function onKeyUp(stage, key) {
     }
 }
 
-function onKeyPress(stage, key) {
+gameEngine.onKeyPress = function onKeyPress(stage, key) {
     if (game.currentState) {
         var currentObj = game[game.currentState];
         if (currentObj.onKeyPress) {
             currentObj.onKeyPress(stage, key);
         }
     }
-}
-
-function onSelectMainMenuItem(menuItemIndex) {
-    switch (menuItemIndex) {
-        case 0: // Start Game
-            game.currentTransition = Transitions.fadeOut;
-            game.nextState = "gameSetupObj";
-            break;
-        case 1: // Options
-            game.currentTransition = Transitions.fadeOut;
-            // TODO: set game.nextState based on selected item
-            break;
-        case 2: // About
-            game.currentTransition = Transitions.showDialog;
-            game.nextState = "aboutObj";
-            break;
-        case 3: // Exit
-            game.currentTransition = Transitions.fadeOut;
-            // TODO: Figure out what to do when exiting
-            break;
-    }
-}
-
-function onExitAbout() {
-    game.currentTransition = Transitions.hideDialog;
-    game.nextState = "menuObj";
-}
-
-function onExitGameSetup() {
-    game.currentTransition = Transitions.fadeOut;
-    game.nextState = "menuObj";
-}
-
-function onGameSetupDone() {
-    game.currentTransition = Transitions.fadeOut;
-    game.nextState = "gameObj";
-}
-
-function onExitGame() {
-    game.currentTransition = Transitions.fadeOut;
-    game.nextState = "menuObj";
 }
