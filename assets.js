@@ -34,4 +34,7 @@ gameEngine.assets = [{
 }, {
     id: "frame.pcx",
     src: "gfx/frame.png"
+}, {
+    id: "bar.pcx",
+    src: "gfx/bar.png"
 }];

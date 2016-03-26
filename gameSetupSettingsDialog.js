@@ -1,7 +1,7 @@
 "use strict";
 
 function createGameSetupSettingsDialog(assets, onDone, onExit) {
-	var winCon = ["Survival", "Most Hits", "Most Frags", "Most Damage", "Best Damage/Shot", "Most Headshots"];
+	var winCon = ["Survival", "Most Hits", "Most Frags", "Most Damage", "Best Dam/Shot", "Most Headshots"];
 	var menuItems = [
 		{name: "Number of Players", value: 4, min: 2, max: 8, textObj: null}, 
 		{name: "Number of Rounds", value: 15, min: 1, max: 99, textObj: null}, 
@@ -117,17 +117,19 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
                 break;  
              case Keys.LEFT_ARROW:
              	var selectedMenuItem = menuItems[selectedItemIndex];
-             	if (selectedMenuItem.value > selectedMenuItem.min) {
-             		selectedMenuItem.value--;
-             		updateItemValue(selectedItemIndex)
+         		selectedMenuItem.value--;
+             	if (selectedMenuItem.value < selectedMenuItem.min) {
+             		selectedMenuItem.value = selectedMenuItem.max;
              	}
+         		updateItemValue(selectedItemIndex)
              	break;  
              case Keys.RIGHT_ARROW:
              	var selectedMenuItem = menuItems[selectedItemIndex];
-             	if (selectedMenuItem.value < selectedMenuItem.max) {
-             		selectedMenuItem.value++;
-             		updateItemValue(selectedItemIndex);
+         		selectedMenuItem.value++;
+             	if (selectedMenuItem.value > selectedMenuItem.max) {
+             		selectedMenuItem.value = selectedMenuItem.min;
              	}
+         		updateItemValue(selectedItemIndex);
              	break;  
              case Keys.ENTER:
 		    	onDone({ numPlayers: menuItems[0].value, numRounds: menuItems[1].value, winCon: menuItems[2].value });

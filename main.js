@@ -22,7 +22,7 @@ var game = {
     aboutObj: null,
     gameSetupObj: null,
     gameObj: null,
-    currentState: "gameObj", // A reference to the *Obj variables above (it is a reference so we can recreate the *Obj in a different resolution if needed)
+    currentState: "menuObj", // A reference to the *Obj variables above (it is a reference so we can recreate the *Obj in a different resolution if needed)
     nextState: null,
     currentTransition: Transitions.preFadeIn,
     fadingLayer: null
@@ -46,8 +46,8 @@ function onInit(stage, assets) {
 
     // FadingLayer is just a black layer put on top of the stage content. The alpha channel then controls the fading in/out.
     game.fadingLayer = new createjs.Shape();
-    game.fadingLayer.graphics.beginFill("black").drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT).endFill();
-    game.fadingLayer.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    game.fadingLayer.graphics.beginFill("black").drawRect(0, 0, GET_MAX_X, GET_MAX_Y).endFill();
+    game.fadingLayer.cache(0, 0, GET_MAX_X, GET_MAX_Y);
     stage.addChild(game.fadingLayer);
     
     function createGameObjects(assets) {

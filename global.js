@@ -1,9 +1,11 @@
 "use strict";
 
-var SCREEN_WIDTH = 1024;
-var SCREEN_HEIGHT = 768;
-var SCREEN_WIDTH_CENTER = SCREEN_WIDTH / 2;
-var SCREEN_HEIGHT_CENTER = SCREEN_HEIGHT / 2;
+var SCREEN_WIDTH = 640;
+var SCREEN_HEIGHT = 480;
+var GET_MAX_X = SCREEN_WIDTH - 1; 
+var GET_MAX_Y = SCREEN_HEIGHT - 1; 
+var SCREEN_WIDTH_CENTER = Math.floor(GET_MAX_X / 2);
+var SCREEN_HEIGHT_CENTER = Math.floor(GET_MAX_Y / 2);
 
 var playerColorTable = [GameColors.BLUE, GameColors.LIGHTRED, GameColors.GREEN, GameColors.YELLOW, GameColors.MAGENTA, GameColors.CYAN, GameColors.WHITE, GameColors.LIGHTGRAY, 
                         GameColors.DARKBLUE, GameColors.DARKRED, GameColors.DARKGREEN, GameColors.DARKBROWN, GameColors.DARKMAGENTA, GameColors.DARKCYAN, GameColors.LIGHTGRAY, GameColors.GRAY];
@@ -59,9 +61,10 @@ function outTextXYAsText(color, text, x, y, centered, shadowColor) {
   if (centered) {
     text.textAlign = "center";
   }
+  text.textBaseline = "hanging";
   text.scaleY = 0.84;
   text.x = x;
-  text.y = y - 0.5;
+  text.y = y + 0.5;
   if (shadowColor) {
     text.shadow = new createjs.Shadow(shadowColor, 2, 2, 0);
   }
