@@ -9,6 +9,12 @@ var Palette = {
 	},
 	getGameColor: function(index) {
 		return Palette.gamePalette[index];
+	},
+	getRGBFromColor: function(color) {
+		var m = color.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
+    	if (m) {
+        	return {r: m[1] & 0xFF, g: m[2] & 0xFF, b: m[3] & 0xFF};
+    	}
 	}
 }
 

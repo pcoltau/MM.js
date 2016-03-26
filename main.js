@@ -8,10 +8,12 @@ gameEngine.onKeyPress = onKeyPress;
 
 var Transitions = {
     fadeIn: "fadeIn",
-    showing: "showing",
+    running: "running",
     fadeOut: "fadeOut",
     showDialog: "showDialog",
-    hideDialog: "hideDialog"
+    hideDialog: "hideDialog",
+    preFadeIn: "preFadeIn", // a one-tick transition before fading in (likely after a fadeOut)
+    preRunning: "preRunning" // a one-tick transition before running (likely after a showDialog)
 }
 
 var game = {
@@ -20,9 +22,9 @@ var game = {
     aboutObj: null,
     gameSetupObj: null,
     gameObj: null,
-    currentState: "menuObj", // A reference to the *Obj variables above (it is a reference so we can recreate the *Obj in a different resolution if needed)
+    currentState: "gameObj", // A reference to the *Obj variables above (it is a reference so we can recreate the *Obj in a different resolution if needed)
     nextState: null,
-    currentTransition: Transitions.fadeIn,
+    currentTransition: Transitions.preFadeIn,
     fadingLayer: null
 };
 
@@ -47,19 +49,19 @@ function onInit(stage, assets) {
     game.fadingLayer.graphics.beginFill("black").drawRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT).endFill();
     game.fadingLayer.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     stage.addChild(game.fadingLayer);
-}
-
-function createGameObjects(assets) {
-    game.menuObj = createMenu(onSelectMainMenuItem, assets);
-    game.aboutObj = createAbout(onExitAbout, assets);
-    game.gameSetupObj = createGameSetup(onGameSetupDone, onExitGameSetup, assets);
-    game.gameObj = createGame(onExitGame, assets);
+    
+    function createGameObjects(assets) {
+        game.menuObj = createMenu(onSelectMainMenuItem, assets);
+        game.aboutObj = createAbout(onExitAbout, assets);
+        game.gameSetupObj = createGameSetup(onGameSetupDone, onExitGameSetup, assets);
+        game.gameObj = createGame(onExitGame, assets);
+    }
 }
 
 function onTick(stage, deltaInSeconds) {
     var fadingDuration = 0.4;
     switch(game.currentTransition) {
-        case Transitions.showing:
+        case Transitions.running:
             if (game.currentState) {
                 var currentObj = game[game.currentState];
                 if (currentObj.onTick) {
@@ -74,7 +76,7 @@ function onTick(stage, deltaInSeconds) {
             }
             else {
                 game.fadingLayer.alpha = 0;
-                game.currentTransition = Transitions.showing;
+                game.currentTransition = Transitions.running;
             }
             break;
         case Transitions.fadeOut:
@@ -84,19 +86,35 @@ function onTick(stage, deltaInSeconds) {
             }
             else {
                 game.fadingLayer.alpha = 1;
-                changeToNextState(stage)
-                game.currentTransition = Transitions.fadeIn;
+                if (changeToNextState(stage)) {
+                    game.currentTransition = Transitions.preFadeIn;
+                }
+                else {
+                    game.currentTransition = Transitions.fadeIn;
+                }
             }
             break;
         case Transitions.showDialog:
         case Transitions.hideDialog:
             changeToNextState(stage)
-            game.currentTransition = Transitions.showing;
+            if (changeToNextState(stage)) {
+                game.currentTransition = Transitions.preRunning;
+            }
+            else {
+                game.currentTransition = Transitions.running;
+            }
+            break;
+        case Transitions.preFadeIn:
+            game.currentTransition = Transitions.fadeIn;
+            break;
+        case Transitions.preRunning:
+            game.currentTransition = Transitions.running;
             break;
     }
 }
 
 function changeToNextState(stage) {
+    var onShowCalled = false;
     if (game.nextState) {
         // remove the current container, unless we are showing a dialog
         if (game.currentTransition !== Transitions.showDialog) {
@@ -111,11 +129,13 @@ function changeToNextState(stage) {
             //  trigger onShow(), if available
             if (nextObj.onShow) {
                 nextObj.onShow();
+                onShowCalled = true;
             }
         }
         game.currentState = game.nextState;
         game.nextState = null;
     }
+    return onShowCalled;
 }
 
 function onKeyDown(stage, key) {

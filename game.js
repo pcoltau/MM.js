@@ -10,6 +10,7 @@ function createGame(onExit, assets) {
 
 	return {
 		container: mainContainer,
+		onTick: onTick,
 		onShow: onShow
 	}
 
@@ -21,9 +22,6 @@ function createGame(onExit, assets) {
 
 	function onShow() {
 		var landTop = generateLand();
-		for (var i = 0; i < landTop.length; ++i) {
-			console.log(i + ": " + landTop[i]);
-		}
 		var shape = drawLand(landTop);
 		mainContainer.addChild(shape);
 	}
@@ -60,26 +58,41 @@ function createGame(onExit, assets) {
 	}
 
 	function drawLand(landTop) {
-		var shape = new createjs.Shape();
-		shape.graphics.beginStroke()
-		for (var x = 2; x <= SCREEN_WIDTH - 2; ++x) {
-			for (var y = landTop[x] + 1; y <= SCREEN_HEIGHT - 18; ++y) {
-				var r = (SCREEN_HEIGHT - y + landTop[x]) / 70;
-				if (r < 1) {
-					r = (1 / r);
+  		var shape = new createjs.Shape();
+		var dirtRGB = Palette.getRGBFromColor(dirtColor);
+		var dirtRGB2 = Palette.getRGBFromColor(dirtColor2);
+		shape.graphics.append({exec:function(ctx, shape) {
+        	var imageData = ctx.getImageData(0,0,SCREEN_WIDTH, SCREEN_HEIGHT);
+        	var data = imageData.data;
+			for (var x = 2; x <= SCREEN_WIDTH - 2; ++x) {
+				for (var y = landTop[x] + 1; y <= SCREEN_HEIGHT - 18; ++y) {
+					var r = (SCREEN_HEIGHT - y + landTop[x]) / 70;
+					if (r < 1) {
+						r = (1 / r);
+					}
+					var rr = Math.round(r);
+					if (rr <= 1) {
+						rr = 2;
+					}
+					var rgb = (Math.floor(Math.random() * rr) === 0) ? dirtRGB2 : dirtRGB;
+					var index = (x + y * SCREEN_WIDTH) * 4;
+					data[index + 0] = rgb.r;
+					data[index + 1] = rgb.g;
+					data[index + 2] = rgb.b;
+					data[index + 3] = 0xFF; 
 				}
-				if (Math.round(r) <= 1) {
-					r = 2;
-				}
-				var color = (Math.floor(Math.random() * Math.round(r)) === 0) ? dirtColor2 : dirtColor;
-				// TODO: This is _very_ slow! I think it's because we are creating thousands of small lines/strokes. Perhaps if we somehow used a "dashed" stroke, it would be faster? (see http://www.createjs.com/docs/easeljs/classes/Graphics.html#method_setStrokeDash)
-				putPixel(shape.graphics, color, x, y);
 			}
-		}
+			ctx.putImageData(imageData, 0, 0);
+    	}});
 		for (var x = 2; x <= SCREEN_WIDTH - 2; ++x) {
-			// TODO: This create a weird line (more notificiable if the putPixel code above is commented out)
 			line(shape.graphics, dirtColor2, x - 1, landTop[x - 1], x, landTop[x]);
 		}
+		shape.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		shape.graphics.store();
 		return shape;
 	}
+
+	function onTick(stage, deltaInSeconds) {
+	}
+
 }

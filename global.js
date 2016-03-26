@@ -9,7 +9,7 @@ var playerColorTable = [GameColors.BLUE, GameColors.LIGHTRED, GameColors.GREEN, 
                         GameColors.DARKBLUE, GameColors.DARKRED, GameColors.DARKGREEN, GameColors.DARKBROWN, GameColors.DARKMAGENTA, GameColors.DARKCYAN, GameColors.LIGHTGRAY, GameColors.GRAY];
 
 function line(graphics, color, x1, y1, x2, y2) {
-  // Note: We need to shorten the line to make it equivalent to the Pascal line function. We only use straight lines in MM, so it is only necessary to shorten non-dialogonally.
+  // Note: We need to shorten the line to make it equivalent to the Pascal line function. We mainly use straight lines in MM, so it is only necessary to shorten non-dialogonally.
   var startX = Math.min(x1, x2);
   var endX = Math.max(x1, x2);
   var startY = Math.min(y1, y2);
@@ -44,7 +44,7 @@ function barAsShape(color, x1, y1, x2, y2) {
 }
 
 function putPixel(graphics, color, x, y) {
-  graphics.beginStroke(color).moveTo(x, y).lineTo(x + 0.01, y + 0.01).endStroke();
+  graphics.beginStroke(color).drawRect(x, y, 1, 1).endStroke();
 }
 
 function outTextXY(container, color, text, x, y, centered, shadowColor) {
