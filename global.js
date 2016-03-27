@@ -30,7 +30,11 @@ function bar(graphics, color, x1, y1, x2, y2) {
   var endX = Math.max(x1, x2);
   var startY = Math.min(y1, y2);
   var endY = Math.max(y1, y2);
-  graphics.beginStroke(color).beginFill(color).drawRect(startX, startY, endX - startX, endY - startY).endStroke().endFill();
+  var width = endX - startX;
+  var height = endY - startY;
+  if (width > 0 && height > 0) {
+    graphics.beginStroke(color).beginFill(color).drawRect(startX, startY, endX - startX, endY - startY).endStroke().endFill();
+  }
 }
 
 function barAsShape(color, x1, y1, x2, y2) {

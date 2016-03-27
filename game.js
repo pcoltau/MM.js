@@ -3,6 +3,9 @@
 function createGame(onExit, assets) {
 	var dirtColor = GameColors.BROWN;
 	var dirtColor2 = GameColors.DARKESTBROWN;
+	var noWind = false; // TODO: Get from config (on/off)
+	var wind = 0; // will be set in updateWind()
+	var windShape = null;
 	var mainContainer = new createjs.Container();
 
 	var sky = createSky();
@@ -13,6 +16,9 @@ function createGame(onExit, assets) {
 
 	var bottomMenu = createBottomMenu();
 	mainContainer.addChild(bottomMenu);
+
+	var wind = createWind();
+	mainContainer.addChild(wind);
 
 	return {
 		container: mainContainer,
@@ -140,6 +146,33 @@ function createGame(onExit, assets) {
 	    line(shape.graphics, GameColors.GRAY, GET_MAX_X, y + 16, GET_MAX_X, y);
 	    container.addChild(shape);
 	    return container;
+	}
+
+	function createWind() {
+		var container = new createjs.Container();
+		windShape = new createjs.Shape();
+		var x = GET_MAX_X - 90;
+		var y = GET_MAX_Y - 11;
+		outTextXY(container, GameColors.DARKGRAY, "Wind:", x - 42, y);
+		drawFrame(container, GameColors, x - 1, y, x + 82, y + 7);
+
+		updateWind(windShape);
+		container.addChild(windShape);
+		return container;
+	}
+
+	function updateWind(windShape) {
+		wind = noWind ? 0 : Math.floor(Math.random() * 41) - 20;
+
+		var doubleWind = wind * 2;
+		var x = GET_MAX_X - 90;
+		var y = GET_MAX_Y - 11;
+		bar(windShape.graphics, GameColors.BLUE, x + 41 + doubleWind, y + 2, x + 41, y + 5);
+		line(windShape.graphics, GameColors.MEDBLUE, x + 41 + doubleWind, y + 5, x + 41, y + 5);
+		var color = doubleWind < 0 ? GameColors.BRIGHTBLUE : GameColors.MEDBLUE;
+		line(windShape.graphics, color, x + 41 + doubleWind, y + 2, x + 41 + doubleWind, y + 5);
+		line(windShape.graphics, GameColors.BRIGHTBLUE, x + 41 + doubleWind, y + 2, x + 41, y + 2);
+		line(windShape.graphics, GameColors.WHITE, x + 41, y + 1, x + 41, y + 6);
 	}
 
 	function onTick(stage, deltaInSeconds) {
