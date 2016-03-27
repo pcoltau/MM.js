@@ -10,7 +10,7 @@ function createAbout(onExit, assets) {
 
 	function createAboutBox() {
 		function addCenteredText(container, text, yPos) {
-	        outTextXY(container, MenuColors.WHITE, text, SCREEN_WIDTH_CENTER, yPos, true);
+	        outTextXY(container, MenuColors.WHITE, text, SCREEN_WIDTH_CENTER, yPos, "center");
 		}
 
 		function addLeftAlignedText(container, text, yPos) {

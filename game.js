@@ -5,7 +5,23 @@ function createGame(onExit, assets) {
 	var dirtColor2 = GameColors.DARKESTBROWN;
 	var noWind = false; // TODO: Get from config (on/off)
 	var wind = 0; // will be set in updateWind()
+	// TODO: Move to a player array:
+	var armour = 0;
+	var parachutes = 0;
+	var shield = true;
+	var name = "p";
+	var playerColor = GameColors.BLUE;
+	var power = 800;
+	var maxPower = 1000;
+	var angle = 45;
+
 	var windShape = null;
+	var armourText = null;
+	var parachutesText = null;
+	var shieldText = null;
+	var nameText = null;
+	var powerText = null;
+	var angleText = null;
 	var mainContainer = new createjs.Container();
 
 	var sky = createSky();
@@ -16,9 +32,6 @@ function createGame(onExit, assets) {
 
 	var bottomMenu = createBottomMenu();
 	mainContainer.addChild(bottomMenu);
-
-	var wind = createWind();
-	mainContainer.addChild(wind);
 
 	return {
 		container: mainContainer,
@@ -110,7 +123,45 @@ function createGame(onExit, assets) {
 	    drawFrame(container, GameColors, 188, 3, 222, 13);
 	    drawFrame(container, GameColors, GET_MAX_X - 26, 3, GET_MAX_X - 8, 13);
 	    drawFrame(container, GameColors, GET_MAX_X - 192, 3, GET_MAX_X - 30, 13);
+
+		outTextXY(container, GameColors.DARKGRAY, "Power:", 8, 5);
+		outTextXY(container, GameColors.DARKGRAY, "Angle:", 140, 5);
+		outTextXY(container, GameColors.DARKGRAY, "Weapon:", GET_MAX_X - 248, 5);
+
+		nameText = outTextXYAsText(playerColor, name, SCREEN_WIDTH_CENTER, 4, "center");
+		nameText.shadow = new createjs.Shadow(getPlayerNameShadow(playerColor), 1, 1, 0);
+		container.addChild(nameText);
+
+		powerText = outTextXYAsText(GameColors.WHITE, power + "/" + maxPower, 58 + 8 * 9 /*"MakeSpaces" Calculation*/, 5, "right");
+		container.addChild(powerText);
+
+		// TODO:
+		//angleText = outTextXYAsText(GameColors.WHITE, angle, 58 + 8 * 9 /*"MakeSpaces" Calculation*/, 5, "right");
+		//container.addChild(powerText);
+
 		return container;
+	}
+
+	function getPlayerNameShadow(playerColor) {
+		/*
+	    if (C <> Gray) and (C <> DarkMagenta) and (C <> DarkGreen) and
+	       (C <> DarkBrown) and (C <> Blue) and (C <> Red) and (C <> Magenta) then
+			SetColor(Gray)
+		else
+			SetColor(DarkGray);
+*/
+		if (playerColor !== GameColors.GRAY &&
+			playerColor !== GameColors.DARKMAGENTA && 
+			playerColor !== GameColors.DARKGREEN && 
+			playerColor !== GameColors.DARKBROWN && 
+			playerColor !== GameColors.BLUE && 
+			playerColor !== GameColors.RED &&
+			playerColor !== GameColors.MAGENTA) {
+			return GameColors.GRAY;
+		} 
+		else {
+			return GameColors.DARKGRAY;
+		}
 	}
 
 	function createBottomMenu() {
@@ -118,23 +169,25 @@ function createGame(onExit, assets) {
 	    drawFrame(container, GameColors, 64, GET_MAX_Y - 13, 98, GET_MAX_Y - 3);
 	    drawFrame(container, GameColors, 200, GET_MAX_Y - 13, 210, GET_MAX_Y - 3);
 	    drawFrame(container, GameColors, 312, GET_MAX_Y - 13, 340, GET_MAX_Y - 3);
-/*
-    OutTextXY(8,5,'Power:');
-    OutTextXY(140,5,'Angle:');
-    OutTextXY(GetMaxX-248,5,'Weapon:');
-    OutTextXY(8,GetMaxY-11,'Armour:');
-    OutTextXY(112,GetMaxY-11,'Parachutes:');
-    OutTextXY(224,GetMaxY-11,'Mag.Shield:');
-*/
-		outTextXY(container, GameColors.DARKGRAY, "Power:", 8, 5);
-		outTextXY(container, GameColors.DARKGRAY, "Angle:", 140, 5);
-		outTextXY(container, GameColors.DARKGRAY, "Weapon:", GET_MAX_X - 248, 5);
+
 		outTextXY(container, GameColors.DARKGRAY, "Armour:", 8, GET_MAX_Y - 11);
 		outTextXY(container, GameColors.DARKGRAY, "Parachutes:", 112, GET_MAX_Y - 11);
 		outTextXY(container, GameColors.DARKGRAY, "Mag.Shield:", 224, GET_MAX_Y - 11);
 
+		armourText = outTextXYAsText(GameColors.WHITE, armour, 66 + 8 * 4 /*"MakeSpaces" Calculation*/, GET_MAX_Y - 11, "right");
+		container.addChild(armourText);
+
+		parachutesText = outTextXYAsText(GameColors.WHITE, parachutes, 202, GET_MAX_Y - 11);
+		container.addChild(parachutesText);
+
+		shieldText = outTextXYAsText(shield ? GameColors.WHITE : GameColors.LIGHTGRAY, shield ? "On" : "Off", 314, GET_MAX_Y - 11);
+		container.addChild(shieldText);
+
+		var wind = createWind();
+		container.addChild(wind);
 		return container;
 	}
+
 
 	function createMenuBars(y) {
 		var container = new createjs.Container();
@@ -150,12 +203,12 @@ function createGame(onExit, assets) {
 
 	function createWind() {
 		var container = new createjs.Container();
-		windShape = new createjs.Shape();
 		var x = GET_MAX_X - 90;
 		var y = GET_MAX_Y - 11;
 		outTextXY(container, GameColors.DARKGRAY, "Wind:", x - 42, y);
 		drawFrame(container, GameColors, x - 1, y, x + 82, y + 7);
 
+		windShape = new createjs.Shape();
 		updateWind(windShape);
 		container.addChild(windShape);
 		return container;

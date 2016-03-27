@@ -125,7 +125,7 @@ function createMenu(onSelect, assets) {
             SetColor(White);
             OutTextXY(GetMaxX div 2 - (TextWidth(MenuItems[i]) div 2),y[1]+25+i*30,MenuItems[i]);
             */        
-            outTextXY(container, MenuColors.WHITE, menuItems[i], SCREEN_WIDTH_CENTER, getItemBarPosition(i) + 2, true, MenuColors.BLACK);
+            outTextXY(container, MenuColors.WHITE, menuItems[i], SCREEN_WIDTH_CENTER, getItemBarPosition(i) + 2, "center", MenuColors.BLACK);
         }
         return container;
     }

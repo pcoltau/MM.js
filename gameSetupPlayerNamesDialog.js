@@ -40,7 +40,7 @@ function createPlayerNamesDialog(assets, onDone) {
 */
 
 //		OutTextXY(x[1]+7,y[1]+17,str+'_');
-		playerNameText = outTextXYAsText(GameColors.WHITE, "", x1 + 7, y1 + 17, false, GameColors.BLACK);
+		playerNameText = outTextXYAsText(GameColors.WHITE, "", x1 + 7, y1 + 17, "left", GameColors.BLACK);
 	    playerNameText.shadow = new createjs.Shadow(GameColors.BLACK, 1, 1, 0);
 		updatePlayerNameText();
 		dialogContainer.addChild(playerNameText);

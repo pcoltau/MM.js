@@ -53,17 +53,17 @@ function putPixel(graphics, color, x, y) {
   graphics.beginStroke(color).drawRect(x, y, 1, 1).endStroke();
 }
 
-function outTextXY(container, color, text, x, y, centered, shadowColor) {
+function outTextXY(container, color, text, x, y, textAlign, shadowColor) {
   // This is the closest approximation to the DOS font and size used in the original Mortar Mayhem (combined with the font style in style.css)
-  var text = outTextXYAsText(color, text, x, y, centered, shadowColor);
+  var text = outTextXYAsText(color, text, x, y, textAlign, shadowColor);
   container.addChild(text);
 }
 
-function outTextXYAsText(color, text, x, y, centered, shadowColor) {
+function outTextXYAsText(color, text, x, y, textAlign, shadowColor) {
   // This is the closest approximation to the DOS font and size used in the original Mortar Mayhem (combined with the font style in style.css)
   var text = new createjs.Text(text, "11px TerminalVector", color);
-  if (centered) {
-    text.textAlign = "center";
+  if (textAlign) {
+    text.textAlign = textAlign;
   }
   text.textBaseline = "hanging";
   text.scaleY = 0.84;

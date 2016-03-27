@@ -29,11 +29,11 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 
 		drawBox(assets, gameSetupContainer, GameColors, x1, y2 + 5, x2, y2 + 21, true);
 
-        outTextXY(gameSetupContainer, GameColors.DARKGRAY, "Press Enter to start game or Esc to cancel.", SCREEN_WIDTH_CENTER, y2 + 9, true); 
+        outTextXY(gameSetupContainer, GameColors.DARKGRAY, "Press Enter to start game or Esc to cancel.", SCREEN_WIDTH_CENTER, y2 + 9, "center"); 
 
 		drawFrame(gameSetupContainer, GameColors, x1 + 8, y1 + 18, x2 - 8, y2 - 8);		
 
-        outTextXY(gameSetupContainer, GameColors.DARKGRAY, "G A M E   S E T U P", SCREEN_WIDTH_CENTER, y1 + 6, true); 
+        outTextXY(gameSetupContainer, GameColors.DARKGRAY, "G A M E   S E T U P", SCREEN_WIDTH_CENTER, y1 + 6, "center"); 
 
 	    //bar(x[1]+12,y[1]+14+i*20,x[2]-12,y[1]+26+i*20);
         var yPos = getItemBarPosition(selectedItemIndex);
@@ -73,9 +73,9 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 		    DrawArrow(i,0,true);
 		    DrawArrow(i,0,false);
 */
-			outTextXY(container, GameColors.WHITE, menuItems[i].name, x1 + 30, getItemBarPosition(i) + 2, false, GameColors.BLACK);
+			outTextXY(container, GameColors.WHITE, menuItems[i].name, x1 + 30, getItemBarPosition(i) + 2, "left", GameColors.BLACK);
 			var value = getMenuItemValue(i);
-			var text = outTextXYAsText(GameColors.WHITE, value, x1 + 260, getItemBarPosition(i) + 2, true, GameColors.BLACK);
+			var text = outTextXYAsText(GameColors.WHITE, value, x1 + 260, getItemBarPosition(i) + 2, "center", GameColors.BLACK);
 			menuItems[i].textObj = text;
 			container.addChild(text);
 			container.addChild(drawArrow(i, true, true));
