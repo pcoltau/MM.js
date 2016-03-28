@@ -13,7 +13,10 @@ function createGame(onExit, assets) {
 	var playerColor = GameColors.BLUE;
 	var power = 800;
 	var maxPower = 1000;
-	var angle = 45;
+	var angle = Math.PI / 4;
+	var weaponName = "Mortar";
+	var weaponAmmo = -1;
+	var guidanceFuel = 50;
 
 	var windShape = null;
 	var armourText = null;
@@ -22,6 +25,11 @@ function createGame(onExit, assets) {
 	var nameText = null;
 	var powerText = null;
 	var angleText = null;
+	var weaponNameText = null;
+	var weaponAmmoText = null;
+	var guidanceContainer = null;
+	var guidanceShape = null;
+
 	var mainContainer = new createjs.Container();
 
 	var sky = createSky();
@@ -135,11 +143,24 @@ function createGame(onExit, assets) {
 		powerText = outTextXYAsText(GameColors.WHITE, power + "/" + maxPower, 58 + 8 * 9 /*"MakeSpaces" Calculation*/, 5, "right");
 		container.addChild(powerText);
 
-		// TODO:
-		//angleText = outTextXYAsText(GameColors.WHITE, angle, 58 + 8 * 9 /*"MakeSpaces" Calculation*/, 5, "right");
-		//container.addChild(powerText);
+		angleText = outTextXYAsText(GameColors.WHITE, getAngleText(angle), 190 + 8 * 4 /*"MakeSpaces" Calculation*/, 5, "right");
+		container.addChild(angleText);
+
+		weaponNameText = outTextXYAsText(GameColors.WHITE, weaponName, GET_MAX_X - 190, 5);
+		container.addChild(weaponNameText);
+
+		weaponAmmoText = outTextXYAsText(GameColors.WHITE, getWeaponAmmoText(weaponAmmo), GET_MAX_X - 24 + 8 * 2 /*"MakeSpaces" Calculation*/, 5, "right");
+		container.addChild(weaponAmmoText);
 
 		return container;
+	}
+
+	function getAngleText(angle) {
+		return Math.round(angle * (180 / Math.PI)) + " " + ((angle > Math.PI / 2) ? "L" : "R");
+	}
+
+	function getWeaponAmmoText(ammo) {
+		return ammo == -1 ? 99 : ammo;
 	}
 
 	function getPlayerNameShadow(playerColor) {
@@ -185,9 +206,11 @@ function createGame(onExit, assets) {
 
 		var wind = createWind();
 		container.addChild(wind);
+
+		// we don't add the guidance yet
+		guidanceContainer = createGuidance();
 		return container;
 	}
-
 
 	function createMenuBars(y) {
 		var container = new createjs.Container();
@@ -216,6 +239,7 @@ function createGame(onExit, assets) {
 
 	function updateWind(windShape) {
 		wind = noWind ? 0 : Math.floor(Math.random() * 41) - 20;
+		windShape.graphics.clear();
 
 		var doubleWind = wind * 2;
 		var x = GET_MAX_X - 90;
@@ -226,6 +250,26 @@ function createGame(onExit, assets) {
 		line(windShape.graphics, color, x + 41 + doubleWind, y + 2, x + 41 + doubleWind, y + 5);
 		line(windShape.graphics, GameColors.BRIGHTBLUE, x + 41 + doubleWind, y + 2, x + 41, y + 2);
 		line(windShape.graphics, GameColors.WHITE, x + 41, y + 1, x + 41, y + 6);
+	}
+
+	function createGuidance() {
+		var container = new createjs.Container();
+		outTextXY(container, GameColors.DARKGRAY, "Guid. Fuel:", 354, GET_MAX_Y - 11);
+		drawFrame(container, GameColors, 442, GET_MAX_Y - 11, 495, GET_MAX_Y - 4);
+
+		guidanceShape = new createjs.Shape();
+		updateGuidance(guidanceShape)
+		container.addChild(guidanceShape);
+		return container;
+	}
+
+	function updateGuidance(guidanceShape) {
+		guidanceShape.graphics.clear();
+
+		bar(guidanceShape.graphics, GameColors.RED, 443, GET_MAX_Y - 9, 443 + guidanceFuel, GET_MAX_Y - 6);
+		line(guidanceShape.graphics, GameColors.DARKRED, 443, GET_MAX_Y - 6, 443 + guidanceFuel, GET_MAX_Y - 6);
+		line(guidanceShape.graphics, GameColors.DARKRED, 443 + guidanceFuel, GET_MAX_Y - 9, 443 + guidanceFuel, GET_MAX_Y - 6);
+		line(guidanceShape.graphics, GameColors.LIGHTRED, 443, GET_MAX_Y - 9, 443 + guidanceFuel, GET_MAX_Y - 9);
 	}
 
 	function onTick(stage, deltaInSeconds) {
