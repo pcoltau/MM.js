@@ -29,17 +29,25 @@ function createGame(onExit, assets) {
 	var weaponAmmoText = null;
 	var guidanceContainer = null;
 	var guidanceShape = null;
+	var landContainer = null;
 
 	var mainContainer = new createjs.Container();
 
 	var sky = createSky();
 	mainContainer.addChild(sky);
 
+	// the container for the land that will be generated later	(in onShow or whenever a new round is started)
+	var landContainer = new createjs.Container();
+	mainContainer.addChild(landContainer);
+
 	var topMenu = createTopMenu();
 	mainContainer.addChild(topMenu);
 
 	var bottomMenu = createBottomMenu();
 	mainContainer.addChild(bottomMenu);
+
+	var screenEdges = createScreenEdges();
+	mainContainer.addChild(screenEdges);
 
 	return {
 		container: mainContainer,
@@ -55,8 +63,7 @@ function createGame(onExit, assets) {
 
 	function onShow() {
 		var landTop = generateLand();
-		var shape = drawLand(landTop);
-		mainContainer.addChild(shape);
+		drawLand(landTop);
 	}
 
 	function generateLand() {
@@ -91,11 +98,14 @@ function createGame(onExit, assets) {
 	}
 
 	function drawLand(landTop) {
-  		var shape = new createjs.Shape();
+  		var landShape = new createjs.Shape();
+  		// magic to compensate for the snapToPixel magic we do on the stage in gameEngine.js
+  		landShape.regX = 0.5; 
+  		landShape.regY = 0.5;
 		var dirtRGB = Palette.getRGBFromColor(dirtColor);
 		var dirtRGB2 = Palette.getRGBFromColor(dirtColor2);
-		shape.graphics.append({exec:function(ctx, shape) {
-        	var imageData = ctx.getImageData(0,0,GET_MAX_X, GET_MAX_Y);
+		landShape.graphics.append({exec:function(ctx, shape) {
+        	var imageData = ctx.createImageData(GET_MAX_X, GET_MAX_Y);
         	var data = imageData.data;
 			for (var x = 2; x <= GET_MAX_X - 2; ++x) {
 				for (var y = landTop[x] + 1; y <= GET_MAX_Y - 18; ++y) {
@@ -117,12 +127,14 @@ function createGame(onExit, assets) {
 			}
 			ctx.putImageData(imageData, 0, 0);
     	}});
-		for (var x = 2; x <= GET_MAX_X - 2; ++x) {
-			line(shape.graphics, dirtColor2, x - 1, landTop[x - 1], x, landTop[x]);
+		landShape.cache(0, 0, GET_MAX_X, GET_MAX_Y);
+		landShape.graphics.store();
+		landContainer.addChild(landShape);
+  		var landTopShape = new createjs.Shape();
+		for (var x = 3; x <= GET_MAX_X - 2; ++x) {
+			line(landTopShape.graphics, dirtColor2, x - 1, landTop[x - 1], x, landTop[x]);
 		}
-		shape.cache(0, 0, GET_MAX_X, GET_MAX_Y);
-		shape.graphics.store();
-		return shape;
+		landContainer.addChild(landTopShape);
 	}
 
 	function createTopMenu() {
@@ -270,6 +282,13 @@ function createGame(onExit, assets) {
 		line(guidanceShape.graphics, GameColors.DARKRED, 443, GET_MAX_Y - 6, 443 + guidanceFuel, GET_MAX_Y - 6);
 		line(guidanceShape.graphics, GameColors.DARKRED, 443 + guidanceFuel, GET_MAX_Y - 9, 443 + guidanceFuel, GET_MAX_Y - 6);
 		line(guidanceShape.graphics, GameColors.LIGHTRED, 443, GET_MAX_Y - 9, 443 + guidanceFuel, GET_MAX_Y - 9);
+	}
+
+	function createScreenEdges() {
+		var shape = new createjs.Shape();
+		rectangle(shape.graphics, GameColors.MAGENTA, 0, 17, GET_MAX_X, GET_MAX_Y - 17);
+		rectangle(shape.graphics, GameColors.DARKMAGENTA, 1, 18, GET_MAX_X - 1, GET_MAX_Y - 18);
+		return shape;
 	}
 
 	function onTick(stage, deltaInSeconds) {

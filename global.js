@@ -1,7 +1,7 @@
 "use strict";
 
-var SCREEN_WIDTH = 640;
-var SCREEN_HEIGHT = 480;
+var SCREEN_WIDTH = 800;
+var SCREEN_HEIGHT = 600;
 var GET_MAX_X = SCREEN_WIDTH - 1; 
 var GET_MAX_Y = SCREEN_HEIGHT - 1; 
 var SCREEN_WIDTH_CENTER = Math.floor(GET_MAX_X / 2);
@@ -11,18 +11,7 @@ var playerColorTable = [GameColors.BLUE, GameColors.LIGHTRED, GameColors.GREEN, 
                         GameColors.DARKBLUE, GameColors.DARKRED, GameColors.DARKGREEN, GameColors.DARKBROWN, GameColors.DARKMAGENTA, GameColors.DARKCYAN, GameColors.LIGHTGRAY, GameColors.GRAY];
 
 function line(graphics, color, x1, y1, x2, y2) {
-  // Note: We need to shorten the line to make it equivalent to the Pascal line function. We mainly use straight lines in MM, so it is only necessary to shorten non-dialogonally.
-  var startX = Math.min(x1, x2);
-  var endX = Math.max(x1, x2);
-  var startY = Math.min(y1, y2);
-  var endY = Math.max(y1, y2);
-  if (y1 === y2) {
-    endX -= 0.01;
-  }
-  if (x1 === x2) {
-    endY -= 0.01;
-  }
-  graphics.beginStroke(color).moveTo(startX, startY).lineTo(endX, endY).endStroke();
+  graphics.beginStroke(color).moveTo(x1, y1).lineTo(x2, y2).endStroke();
 }
 
 function bar(graphics, color, x1, y1, x2, y2) {
@@ -33,7 +22,7 @@ function bar(graphics, color, x1, y1, x2, y2) {
   var width = endX - startX;
   var height = endY - startY;
   if (width > 0 && height > 0) {
-    graphics.beginStroke(color).beginFill(color).drawRect(startX, startY, endX - startX, endY - startY).endStroke().endFill();
+    graphics.beginStroke(color).beginFill(color).drawRect(startX, startY, width, height).endFill().endStroke();
   }
 }
 
@@ -49,8 +38,20 @@ function barAsShape(color, x1, y1, x2, y2) {
   return shape;
 }
 
+function rectangle(graphics, color, x1, y1, x2, y2) {
+  var startX = Math.min(x1, x2);
+  var endX = Math.max(x1, x2);
+  var startY = Math.min(y1, y2);
+  var endY = Math.max(y1, y2);
+  var width = endX - startX;
+  var height = endY - startY;
+  if (width > 0 && height > 0) {
+    graphics.beginStroke(color).drawRect(startX, startY, width, height).endStroke();
+  }
+}
+
 function putPixel(graphics, color, x, y) {
-  graphics.beginStroke(color).drawRect(x, y, 1, 1).endStroke();
+  graphics.beginStroke(color).drawRect(x, y, 0.001, 0.001).endStroke();
 }
 
 function outTextXY(container, color, text, x, y, textAlign, shadowColor) {
@@ -80,6 +81,6 @@ function showPCX(assets, container, name, x, y, width, height) {
   bitmap.x = x - 0.5;
   bitmap.y = y - 0.5;
   // crop bitmap
-  bitmap.sourceRect = new createjs.Rectangle(0, 0, width + 1, height + 1);
+  bitmap.sourceRect = new createjs.Rectangle(0, 0, width + 1, height + 1); // +1, because that's how Show_PCX() worked in MM.
   container.addChild(bitmap);
 }

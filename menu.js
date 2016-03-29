@@ -16,16 +16,17 @@ function createMenu(onSelect, assets) {
     // The Pixel dance test..
 /*
     var testShape = new createjs.Shape();
-    line(testShape.graphics, Colors.WHITE, 11, 11, 11, 21);
-    line(testShape.graphics, Colors.WHITE, 21, 11, 26, 11);
-    line(testShape.graphics, Colors.WHITE, 31, 11, 41, 21);
-    putPixel(testShape.graphics, Colors.WHITE, 51, 11);
-    putPixel(testShape.graphics, Colors.WHITE, 51, 15);
-    putPixel(testShape.graphics, Colors.WHITE, 51, 15);
-    bar(testShape.graphics, Colors.WHITE, 61, 11, 71, 21);
-    line(testShape.graphics, Colors.WHITE, 0, 110, SCREEN_WIDTH, 110);
-    putPixel(testShape.graphics, Colors.RED, 0, 0);
-    bar(testShape.graphics, Colors.WHITE, 0, 120, SCREEN_WIDTH, 120);
+    line(testShape.graphics, MenuColors.WHITE, 11, 11, 11, 21);
+    line(testShape.graphics, MenuColors.WHITE, 21, 11, 26, 11);
+    line(testShape.graphics, MenuColors.WHITE, 31, 11, 41, 21);
+    putPixel(testShape.graphics, MenuColors.WHITE, 51, 11);
+    putPixel(testShape.graphics, MenuColors.WHITE, 51, 15);
+    putPixel(testShape.graphics, MenuColors.WHITE, 51, 15);
+    bar(testShape.graphics, MenuColors.WHITE, 61, 11, 71, 21);
+    line(testShape.graphics, MenuColors.WHITE, 0, 110, SCREEN_WIDTH, 110);
+    putPixel(testShape.graphics, MenuColors.RED, 0, 0);
+    bar(testShape.graphics, MenuColors.WHITE, 0, 120, SCREEN_WIDTH, 120);
+    showPCX(assets, mainContainer, "bar.pcx", 40, 80, 10, 10);
     mainContainer.addChild(testShape);
 */
     return {
