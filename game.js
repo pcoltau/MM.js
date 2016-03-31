@@ -1,23 +1,16 @@
 "use strict";
 
 function createGame(onExit, assets) {
+	// TODO: Get weapons from config
+	var weapons = [{name: "Mortar"}]
 	var dirtColor = GameColors.BROWN;
 	var dirtColor2 = GameColors.DARKESTBROWN;
 	var noWind = false; // TODO: Get from config (on/off)
 	var wind = 0; // will be set in updateWind()
-	// TODO: Move to a player array:
-	var armour = 0;
-	var parachutes = 0;
-	var shield = true;
-	var name = "p";
-	var playerColor = GameColors.BLUE;
-	var power = 800;
-	var maxPower = 1000;
-	var angle = Math.PI / 4;
-	var weaponName = "Mortar";
-	var weaponAmmo = -1;
-	var guidanceFuel = 50;
-
+	var currentPlayerIndex = 0;
+	var pList = []; // playerList - it's called PList in pascal
+	
+	// TODO: Move all the creation of the graphics to a different file.
 	var windShape = null;
 	var armourText = null;
 	var parachutesText = null;
@@ -52,7 +45,8 @@ function createGame(onExit, assets) {
 	return {
 		container: mainContainer,
 		onTick: onTick,
-		onShow: onShow
+		onShow: onShow,
+		setPlayerNames: setPlayerNames
 	}
 
 	function createSky() {
@@ -62,6 +56,8 @@ function createGame(onExit, assets) {
 	}
 
 	function onShow() {
+		currentPlayerIndex = 0;
+		updateOverviewAfterCurrentPlayerChange();
 		var landTop = generateLand();
 		drawLand(landTop);
 	}
@@ -148,31 +144,48 @@ function createGame(onExit, assets) {
 		outTextXY(container, GameColors.DARKGRAY, "Angle:", 140, 5);
 		outTextXY(container, GameColors.DARKGRAY, "Weapon:", GET_MAX_X - 248, 5);
 
-		nameText = outTextXYAsText(playerColor, name, SCREEN_WIDTH_CENTER, 4, "center");
-		nameText.shadow = new createjs.Shadow(getPlayerNameShadow(playerColor), 1, 1, 0);
+		nameText = outTextXYAsText(GameColors.WHITE, "", SCREEN_WIDTH_CENTER, 4, "center");
+		nameText.shadow = new createjs.Shadow(GameColors.BLACK, 1, 1, 0);
 		container.addChild(nameText);
 
-		powerText = outTextXYAsText(GameColors.WHITE, power + "/" + maxPower, 58 + 8 * 9 /*"MakeSpaces" Calculation*/, 5, "right");
+		powerText = outTextXYAsText(GameColors.WHITE, "", 58 + 8 * 9 /*"MakeSpaces" Calculation*/, 5, "right");
 		container.addChild(powerText);
 
-		angleText = outTextXYAsText(GameColors.WHITE, getAngleText(angle), 190 + 8 * 4 /*"MakeSpaces" Calculation*/, 5, "right");
+		angleText = outTextXYAsText(GameColors.WHITE, "", 190 + 8 * 4 /*"MakeSpaces" Calculation*/, 5, "right");
 		container.addChild(angleText);
 
-		weaponNameText = outTextXYAsText(GameColors.WHITE, weaponName, GET_MAX_X - 190, 5);
+		weaponNameText = outTextXYAsText(GameColors.WHITE, "", GET_MAX_X - 190, 5);
 		container.addChild(weaponNameText);
 
-		weaponAmmoText = outTextXYAsText(GameColors.WHITE, getWeaponAmmoText(weaponAmmo), GET_MAX_X - 24 + 8 * 2 /*"MakeSpaces" Calculation*/, 5, "right");
+		weaponAmmoText = outTextXYAsText(GameColors.WHITE, "", GET_MAX_X - 24 + 8 * 2 /*"MakeSpaces" Calculation*/, 5, "right");
 		container.addChild(weaponAmmoText);
 
 		return container;
 	}
 
-	function getAngleText(angle) {
-		return Math.round(angle * (180 / Math.PI)) + " " + ((angle > Math.PI / 2) ? "L" : "R");
+	function updateAngleText(player) {
+		var angle = player.angle
+		angleText.text = Math.round(angle * (180 / Math.PI)) + " " + ((angle > Math.PI / 2) ? "L" : "R");
 	}
 
-	function getWeaponAmmoText(ammo) {
-		return ammo == -1 ? 99 : ammo;
+	function updateWeaponAmmoText(player) {
+		var ammo = player.weaponList[player.currentWep].ammo;
+		weaponAmmoText.text = (ammo == -1 ? 99 : ammo);
+	}
+
+	function updateWeaponNameText(player) {
+		var weaponName = weapons[player.weaponList[player.currentWep].weaponIndex].name;
+		weaponNameText.text = weaponName;
+	}
+
+	function updatePlayerNameText(player) {
+		nameText.text = player.name;
+		nameText.color = player.color;
+		nameText.shadow.color = getPlayerNameShadow(player.color);
+	}
+
+	function updatePowerText(player) {
+		powerText.text = player.power + "/" + player.maxPower; 
 	}
 
 	function getPlayerNameShadow(playerColor) {
@@ -207,13 +220,13 @@ function createGame(onExit, assets) {
 		outTextXY(container, GameColors.DARKGRAY, "Parachutes:", 112, GET_MAX_Y - 11);
 		outTextXY(container, GameColors.DARKGRAY, "Mag.Shield:", 224, GET_MAX_Y - 11);
 
-		armourText = outTextXYAsText(GameColors.WHITE, armour, 66 + 8 * 4 /*"MakeSpaces" Calculation*/, GET_MAX_Y - 11, "right");
+		armourText = outTextXYAsText(GameColors.WHITE, "", 66 + 8 * 4 /*"MakeSpaces" Calculation*/, GET_MAX_Y - 11, "right");
 		container.addChild(armourText);
 
-		parachutesText = outTextXYAsText(GameColors.WHITE, parachutes, 202, GET_MAX_Y - 11);
+		parachutesText = outTextXYAsText(GameColors.WHITE, "", 202, GET_MAX_Y - 11);
 		container.addChild(parachutesText);
 
-		shieldText = outTextXYAsText(shield ? GameColors.WHITE : GameColors.LIGHTGRAY, shield ? "On" : "Off", 314, GET_MAX_Y - 11);
+		shieldText = outTextXYAsText(GameColors.WHITE, "", 314, GET_MAX_Y - 11);
 		container.addChild(shieldText);
 
 		var wind = createWind();
@@ -270,18 +283,30 @@ function createGame(onExit, assets) {
 		drawFrame(container, GameColors, 442, GET_MAX_Y - 11, 495, GET_MAX_Y - 4);
 
 		guidanceShape = new createjs.Shape();
-		updateGuidance(guidanceShape)
 		container.addChild(guidanceShape);
 		return container;
 	}
 
-	function updateGuidance(guidanceShape) {
+	function updateGuidance() {
 		guidanceShape.graphics.clear();
 
 		bar(guidanceShape.graphics, GameColors.RED, 443, GET_MAX_Y - 9, 443 + guidanceFuel, GET_MAX_Y - 6);
 		line(guidanceShape.graphics, GameColors.DARKRED, 443, GET_MAX_Y - 6, 443 + guidanceFuel, GET_MAX_Y - 6);
 		line(guidanceShape.graphics, GameColors.DARKRED, 443 + guidanceFuel, GET_MAX_Y - 9, 443 + guidanceFuel, GET_MAX_Y - 6);
 		line(guidanceShape.graphics, GameColors.LIGHTRED, 443, GET_MAX_Y - 9, 443 + guidanceFuel, GET_MAX_Y - 9);
+	}
+
+	function updateArmourText(player) {
+		armourText.text = player.armour;
+	}
+
+	function updateParachutesText(player) {
+		parachutesText.text = player.parachutes;
+	}
+
+	function updateShieldText(player) {
+		shieldText.text = player.shield ? "On" : "Off";
+		shieldText.color = player.shield ? GameColors.WHITE : GameColors.LIGHTGRAY;
 	}
 
 	function createScreenEdges() {
@@ -292,6 +317,45 @@ function createGame(onExit, assets) {
 	}
 
 	function onTick(stage, deltaInSeconds) {
+	}
+
+	function setPlayerNames(playerNames) {
+		pList = [];
+		for (var i = 0; i < playerNames.length; ++i) {
+			var player = createNewPlayer(playerNames[i]);
+			pList.push(player);
+		}
+	}
+
+	function updateOverviewAfterCurrentPlayerChange() {
+		var currentPlayer = pList[currentPlayerIndex];
+		updatePlayerNameText(currentPlayer);
+		updateAngleText(currentPlayer);
+		updatePowerText(currentPlayer);
+		updateWeaponNameText(currentPlayer);
+		updateWeaponAmmoText(currentPlayer);
+		updateArmourText(currentPlayer);
+		updateParachutesText(currentPlayer);
+		updateShieldText(currentPlayer);
+	}
+
+	function createNewPlayer(playerName) {
+		var player = {
+			name: playerName,
+			power: 800,
+			maxPower: 1000,
+			armour: 0,
+			parachutes: 0,
+			shield: true,
+			angle: Math.PI / 4,
+			posX: 0,
+			posY: 0,
+			color: GameColors.BLUE,
+			secColor: GameColors.BLUE,
+			weaponList: [{ammo: -1, weaponIndex: 0}],
+			currentWep: 0
+		};
+		return player;
 	}
 
 }

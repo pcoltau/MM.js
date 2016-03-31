@@ -81,9 +81,10 @@ gameEngine.onInit = function onInit(stage, assets) {
             game.nextState = "menuObj";
         }
 
-        function onGameSetupDone() {
+        function onGameSetupDone(playerNames) {
             game.currentTransition = Transitions.fadeOut;
             game.nextState = "gameObj";
+            game.gameObj.setPlayerNames(playerNames);
         }
 
         function onExitGame() {

@@ -5,6 +5,7 @@ function createGameSetup(onDone, onExit, assets) {
 	var currentState = SettingsStates.setup;
 	var gameSettings = null;
 	var currentPlayerIndex = 0;
+	var playerNames = [];
 
 	var mainContainer = new createjs.Container();
 
@@ -57,12 +58,13 @@ function createGameSetup(onDone, onExit, assets) {
 	}
 
 	function onPlayerNameDone(playerName) {
+		playerNames[currentPlayerIndex] = playerName;
 		if (currentPlayerIndex < gameSettings.numPlayers - 1) {
 			currentPlayerIndex++;
 	        playerNamesDialog.setPlayerIndex(currentPlayerIndex)
 	    }
 	    else {
-	    	onDone();
+	    	onDone(playerNames);
 	    }
 	}
 
@@ -75,6 +77,7 @@ function createGameSetup(onDone, onExit, assets) {
 		currentState = SettingsStates.setup;
 		gameSettings = null;
 		currentPlayerIndex = 0;
+		playerNames = [];
         playerNamesDialog.setPlayerIndex(currentPlayerIndex)
         settingsDialog.onShow();
 	}
