@@ -16,6 +16,7 @@ function createGameGraphics(assets, weapons) {
 	var guidanceContainer = null;
 	var guidanceShape = null;
 	var landContainer = null;
+	var tankShapes = {}; // all 8 tanks, {color:shape} 
 
 	var mainContainer = new createjs.Container();
 
@@ -35,11 +36,16 @@ function createGameGraphics(assets, weapons) {
 	var screenEdges = createScreenEdges();
 	mainContainer.addChild(screenEdges);
 
+	createTanks();
+
 	return {
 		container: mainContainer,
 		updateOverviewAfterCurrentPlayerChange: updateOverviewAfterCurrentPlayerChange,
 		updateWind: updateWind,
-		drawLand: drawLand
+		drawLand: drawLand,
+		updateTankPosition: updateTankPosition,
+		showTank: showTank,
+		hideTank: hideTank
 		//showGuidance:	
 	};
 
@@ -280,5 +286,47 @@ function createGameGraphics(assets, weapons) {
 		rectangle(shape.graphics, GameColors.MAGENTA, 0, 17, GET_MAX_X, GET_MAX_Y - 17);
 		rectangle(shape.graphics, GameColors.DARKMAGENTA, 1, 18, GET_MAX_X - 1, GET_MAX_Y - 18);
 		return shape;
+	}
+
+	function createTanks() {
+		for (var i = 0; i < 8; ++i) {
+			var tankShape = new createjs.Shape();
+			var color = playerColorTable[i];
+			var secColor = playerColorTable[i+8];
+			tankShape.regX = 3; // in this way, the tankShape.x and y can be places precisely at the tank position
+			tankShape.regY = 2;
+/*
+  bar(PList[P].PosX-3,PList[P].PosY-2,PList[P].PosX+3,PList[P].PosY+1);
+  if C = Sky then
+  begin
+    PutPixel(PList[P].PosX-3,PList[P].PosY-2,C);
+    PutPixel(PList[P].PosX+3,PList[P].PosY-2,C);
+  end
+  else
+  begin
+    PutPixel(PList[P].PosX-3,PList[P].PosY-2,PList[P].SecColor);
+    PutPixel(PList[P].PosX+3,PList[P].PosY-2,PList[P].SecColor);
+
+*/			
+			bar(tankShape.graphics, color, 0, 0, 6, 3);
+			putPixel(tankShape.graphics, secColor, 0, 0);
+			putPixel(tankShape.graphics, secColor, 6, 0);
+			tankShapes[color] = tankShape;
+		}
+	}
+
+	function updateTankPosition(tankColor, x, y) {
+		var tankShape = tankShapes[tankColor];
+		tankShape.x = x;
+		tankShape.y = y; 
+	}
+
+	function showTank(tankColor) {
+		var tankShape = tankShapes[tankColor];
+		mainContainer.addChild(tankShape);
+	}
+
+	function hideTank(tankColor) {
+		mainContainer.removeChild(tankShape);
 	}
 }

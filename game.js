@@ -2,7 +2,7 @@
 
 function createGame(onExit, assets) {
 	// TODO: Get weapons from config
-	var weapons = [{name: "Mortar"}]
+	var weapons = [{name: "Mortar"}, {name: "Large Mortar"}, {name: "Missile"}]
 	var noWind = false; // TODO: Get from config (on/off)
 	var wind = 0; // will be set in updateWind()
 	var currentPlayerIndex = 0;
@@ -31,6 +31,7 @@ function createGame(onExit, assets) {
 		if (shouldShufflePlayers) {
 			shufflePlayers(pList);
 		}
+		showAllTanks();
 	}
 
 	function generateLand() {
@@ -79,7 +80,7 @@ function createGame(onExit, assets) {
 	function createNewPlayer(playerName, playerIndex) {
 		var player = {
 			name: playerName,
-			power: 800,
+			power: 500,
 			maxPower: 1000,
 			armour: 0,
 			parachutes: 0,
@@ -89,8 +90,21 @@ function createGame(onExit, assets) {
 			posY: 0,
 			color: playerColorTable[playerIndex],
 			secColor: playerColorTable[playerIndex + 8],
-			weaponList: [{ammo: -1, weaponIndex: 0}],
-			currentWep: 0
+			weaponList: [
+				{ammo: -1, weaponIndex: 0},
+				{ammo: 5, weaponIndex: 1},
+				{ammo: 1, weaponIndex: 2}],
+			currentWep: 0,
+			stats: {
+				shots: 0,
+				headshots: 0,
+				misses: 0,
+				damage: 0,
+				kills: 0,
+				profit: 0,
+				points: 0,
+				place: 1
+			}
 		};
 		return player;
 	}
@@ -119,6 +133,8 @@ function createGame(onExit, assets) {
 			var posY = landTop[players[i].posX];
 			posY = (posY === GET_MAX_Y - 18) ? posY - 2 : posY - 1;
 			players[i].posY = posY;
+
+			gameGraphics.updateTankPosition(players[i].color, players[i].posX, players[i].posY);
 		}
 	}
 
@@ -133,6 +149,12 @@ function createGame(onExit, assets) {
 			players[m] = players[n];
 			players[n] = playerMem;
 		}
+	}
+
+	function showAllTanks() {
+		for (var i = 0; i < pList.length; ++i) {
+			gameGraphics.showTank(pList[i].color);
+		}		
 	}
 
 }
