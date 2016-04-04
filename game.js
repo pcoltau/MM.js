@@ -1,15 +1,13 @@
 "use strict";
 
-function createGame(onExit, assets) {
-	// TODO: Get weapons from config
-	var weapons = [{name: "Mortar"}, {name: "Large Mortar"}, {name: "Missile"}]
+function createGame(wepList, onExit, assets) {
 	var noWind = false; // TODO: Get from config (on/off)
 	var wind = 0; // will be set in updateWind()
 	var currentPlayerIndex = 0;
 	var pList = []; // playerList - it's called PList in MM
 	var shouldShufflePlayers = true; // FRoundRandom in MM
 
-	var gameGraphics = createGameGraphics(assets, weapons);
+	var gameGraphics = createGameGraphics(assets, wepList);
 
 	return {
 		container: gameGraphics.container,

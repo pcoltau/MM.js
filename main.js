@@ -48,7 +48,7 @@ gameEngine.onInit = function onInit(stage, assets) {
         game.menuObj = createMenu(onSelectMainMenuItem, assets);
         game.aboutObj = createAbout(onExitAbout, assets);
         game.gameSetupObj = createGameSetup(onGameSetupDone, onExitGameSetup, assets);
-        game.gameObj = createGame(onExitGame, assets);
+        game.gameObj = createGame(wepList, onExitGame, assets);
 
         function onSelectMainMenuItem(menuItemIndex) {
             switch (menuItemIndex) {

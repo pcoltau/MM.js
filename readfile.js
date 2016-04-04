@@ -14,6 +14,7 @@ function readEncodedFile(file) {
 			item = {};
 		}
 	}
+	return resultList;
 }
 
 function readEncodedTypeFile(file) {
@@ -25,6 +26,7 @@ function readEncodedTypeFile(file) {
 		item.desc = lines[i+1];
 		resultList.push(item);
 	}
+	return resultList;
 }
 
 function decodeFile(file) {
