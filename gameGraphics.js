@@ -16,6 +16,8 @@ function createGameGraphics(assets, weapons) {
 	var guidanceContainer = null;
 	var guidanceShape = null;
 	var landContainer = null;
+	var roundNumberText = null;
+	var roundSign = null;
 	var tanks = {}; // all 8 tanks, {color:{container, cannonShape, shieldShape, arrowShape} 
 
 	var mainContainer = new createjs.Container();
@@ -39,6 +41,9 @@ function createGameGraphics(assets, weapons) {
 	var tanksContainer = createTanks();
 	mainContainer.addChild(tanksContainer);
 
+	roundSign = createRoundSign();
+	mainContainer.addChild(roundSign)
+
 	return {
 		container: mainContainer,
 		updateOverviewAfterCurrentPlayerChange: updateOverviewAfterCurrentPlayerChange,
@@ -48,7 +53,9 @@ function createGameGraphics(assets, weapons) {
 		updateCannonAngle: updateCannonAngle,
 		setTankVisibility: setTankVisibility,
 		setTankShieldVisibility: setTankShieldVisibility,
-		setTankArrowVisibility: setTankArrowVisibility
+		setTankArrowVisibility: setTankArrowVisibility,
+		showRoundSign: showRoundSign,
+		hideRoundSign: hideRoundSign
 		//showGuidance:	
 	};
 
@@ -208,8 +215,9 @@ function createGameGraphics(assets, weapons) {
 		var wind = createWind();
 		container.addChild(wind);
 
-		// we don't add the guidance yet
 		guidanceContainer = createGuidance();
+		container.addChild(guidanceContainer);
+
 		return container;
 	}
 
@@ -259,6 +267,8 @@ function createGameGraphics(assets, weapons) {
 
 		guidanceShape = new createjs.Shape();
 		container.addChild(guidanceShape);
+
+		container.visible = false;
 		return container;
 	}
 
@@ -328,12 +338,6 @@ function createGameGraphics(assets, weapons) {
 			tankContainer.addChild(shieldShape);
 
 			var arrowShape = new createjs.Shape();
-
-/*
-  line(PList[P].PosX-2,PList[P].PosY-16,PList[P].PosX+2,PList[P].PosY-16);
-  line(PList[P].PosX-1,PList[P].PosY-15,PList[P].PosX+1,PList[P].PosY-15);
-  PutPixel(PList[P].PosX,PList[P].PosY-14,C);
-*/
 			 // in this way, the tankContainer.x and y can be places precisely at the tank position
 			arrowShape.regX = 0;
 			arrowShape.regY = 16;
@@ -357,6 +361,33 @@ function createGameGraphics(assets, weapons) {
 			tanks[color] = tankObj;
 		}
 		return tanksContainer;
+	}
+
+	function createRoundSign() {
+		var roundContainer = new createjs.Container();
+
+		var x1 = SCREEN_WIDTH_CENTER - 57;
+		var y1 = SCREEN_HEIGHT_CENTER - 8;
+		var x2 = x1 + 114;
+		var y2 = y1 + 14;
+
+		drawBox(assets, roundContainer, GameColors, x1, y1, x2, y2);
+
+		roundNumberText = outTextXYAsText(GameColors.WHITE, "", x1 + 6, y1 + 4);
+		roundNumberText.shadow = new createjs.Shadow(GameColors.DARKGRAY, 1, 1, 0);
+		roundContainer.addChild(roundNumberText);
+
+		roundContainer.visible = false;
+		return roundContainer;
+	}
+
+	function showRoundSign(roundNumber) {
+		roundNumberText.text = "R O U N D  " + roundNumber;
+		roundSign.visible = true;
+	}
+
+	function hideRoundSign() {
+		roundSign.visible = false;
 	}
 
 	function updateTankPosition(tankColor, x, y) {

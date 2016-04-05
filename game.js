@@ -1,20 +1,23 @@
 "use strict";
 
 function createGame(wepList, onExit, assets) {
+	var noWind = false; // TODO: Get from config (on/off)
+	var shouldShufflePlayers = true; // FRoundRandom in MM
+
 	var States = {
-		SHOW_ROUND_NUMBER: 0, // TODO: Implement
+		SHOW_ROUND_NUMBER: 0,
 		PLAYER_READY: 1, // arrow blinking, waiting for input
 		ADJUSTING_CANNON: 2,
 		SELECTING_WEAPON: 3
 	} 
-	var currentState = States.PLAYER_READY;
-	var noWind = false; // TODO: Get from config (on/off)
+	var currentState = States.SHOW_ROUND_NUMBER;
+
 	var wind = 0; // will be set in updateWind()
 	var currentPlayerIndex = 0;
 	var pList = []; // playerList - it's called PList in MM
-	var shouldShufflePlayers = true; // FRoundRandom in MM
+	var currentRound = 1;
 
-	var blinkingArrowSpeed = 0.3; // approximate value - the value in MM (0.1) seems too fast, and is semi CPU dependent
+	var blinkingArrowSpeed = 0.2; // approximate value - the value in MM (0.1) seems too fast, and is semi CPU dependent
 	var blinkingArrowCounter = 0;
 	var blinkingArrowVisible = false;
 
@@ -22,6 +25,7 @@ function createGame(wepList, onExit, assets) {
 
 	return {
 		container: gameGraphics.container,
+        onKeyDown: onKeyDown,
 		onTick: onTick,
 		onShow: onShow,
 		setPlayerNames: setPlayerNames
@@ -41,6 +45,7 @@ function createGame(wepList, onExit, assets) {
 			shufflePlayers(pList);
 		}
 		showAllTanks();
+		gameGraphics.showRoundSign(currentRound)
 	}
 
 	function generateLand() {
@@ -74,6 +79,14 @@ function createGame(wepList, onExit, assets) {
 		return landTop;
 	}
 
+    function onKeyDown(stage, key) {
+		switch (currentState) {
+			case States.SHOW_ROUND_NUMBER:
+				gameGraphics.hideRoundSign();
+				currentState = States.PLAYER_READY;
+				break;
+		}
+	}
 
 	function onTick(stage, deltaInSeconds) {
 		var currentPlayer = pList[currentPlayerIndex];
