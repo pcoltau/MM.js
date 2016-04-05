@@ -80,10 +80,33 @@ function createGame(wepList, onExit, assets) {
 	}
 
     function onKeyDown(stage, key) {
+		var currentPlayer = pList[currentPlayerIndex];
 		switch (currentState) {
 			case States.SHOW_ROUND_NUMBER:
 				gameGraphics.hideRoundSign();
 				currentState = States.PLAYER_READY;
+				break;
+			case States.PLAYER_READY:
+				blinkingArrowCounter = 0;
+				blinkingArrowVisible = true;
+				gameGraphics.setTankArrowVisibility(currentPlayer.color, blinkingArrowVisible);
+				currentState = States.ADJUSTING_CANNON;
+				break;
+			case States.ADJUSTING_CANNON:
+				if (key === Keys.LEFT_ARROW) {
+					currentPlayer.angle += Math.PI/45;
+					if (currentPlayer.angle > Math.PI) {
+						currentPlayer.angle = 0;
+					}
+					gameGraphics.updateCannonAngle(currentPlayer);
+				}
+				if (key === Keys.RIGHT_ARROW) {
+					currentPlayer.angle -= Math.PI/45;
+					if (currentPlayer.angle < 0) {
+						currentPlayer.angle = Math.PI;
+					}					
+					gameGraphics.updateCannonAngle(currentPlayer);
+				}
 				break;
 		}
 	}
