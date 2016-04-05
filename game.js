@@ -1,11 +1,22 @@
 "use strict";
 
 function createGame(wepList, onExit, assets) {
+	var States = {
+		SHOW_ROUND_NUMBER: 0, // TODO: Implement
+		PLAYER_READY: 1, // arrow blinking, waiting for input
+		ADJUSTING_CANNON: 2,
+		SELECTING_WEAPON: 3
+	} 
+	var currentState = States.PLAYER_READY;
 	var noWind = false; // TODO: Get from config (on/off)
 	var wind = 0; // will be set in updateWind()
 	var currentPlayerIndex = 0;
 	var pList = []; // playerList - it's called PList in MM
 	var shouldShufflePlayers = true; // FRoundRandom in MM
+
+	var blinkingArrowSpeed = 0.3; // approximate value - the value in MM (0.1) seems too fast, and is semi CPU dependent
+	var blinkingArrowCounter = 0;
+	var blinkingArrowVisible = false;
 
 	var gameGraphics = createGameGraphics(assets, wepList);
 
@@ -25,7 +36,7 @@ function createGame(wepList, onExit, assets) {
 		wind = noWind ? 0 : Math.floor(Math.random() * 41) - 20;
 		gameGraphics.updateWind(wind);
 
-		setPlayerPositions(pList, landTop);
+		setRandomPlayerPositions(pList, landTop);
 		if (shouldShufflePlayers) {
 			shufflePlayers(pList);
 		}
@@ -65,6 +76,30 @@ function createGame(wepList, onExit, assets) {
 
 
 	function onTick(stage, deltaInSeconds) {
+		var currentPlayer = pList[currentPlayerIndex];
+		switch (currentState) {
+			case States.PLAYER_READY:
+			    handleBlinkingArrow(currentPlayer, deltaInSeconds);
+				break;
+		}
+	}
+
+	function handleBlinkingArrow(currentPlayer, deltaInSeconds) {
+		blinkingArrowCounter += deltaInSeconds;
+		if (blinkingArrowVisible) {
+			if (blinkingArrowCounter >= blinkingArrowSpeed) {
+				blinkingArrowCounter = 0;
+				blinkingArrowVisible = false;
+				gameGraphics.setTankArrowVisibility(currentPlayer.color, blinkingArrowVisible);
+			}
+		}
+		else {
+			if (blinkingArrowCounter >= blinkingArrowSpeed / 2) {
+				blinkingArrowCounter = 0;
+				blinkingArrowVisible = true;
+				gameGraphics.setTankArrowVisibility(currentPlayer.color, blinkingArrowVisible);
+			}
+		}
 	}
 
 	function setPlayerNames(playerNames) {
@@ -107,7 +142,7 @@ function createGame(wepList, onExit, assets) {
 		return player;
 	}
 
-	function setPlayerPositions(players, landTop) {
+	function setRandomPlayerPositions(players, landTop) {
 		var averagePlayerSpace = Math.floor(GET_MAX_X / (players.length * 2));
 		var n = 0;
 		var ok = false
@@ -133,7 +168,6 @@ function createGame(wepList, onExit, assets) {
 			players[i].posY = posY;
 
 			gameGraphics.updateTankPosition(players[i].color, players[i].posX, players[i].posY);
-			gameGraphics.updateCannonAngle(players[i]);
 		}
 	}
 
@@ -152,7 +186,11 @@ function createGame(wepList, onExit, assets) {
 
 	function showAllTanks() {
 		for (var i = 0; i < pList.length; ++i) {
-			gameGraphics.showTank(pList[i].color);
+			gameGraphics.updateCannonAngle(pList[i]);
+			if (pList[i].shield) {
+				gameGraphics.setTankShieldVisibility(pList[i].color, true);
+			}
+			gameGraphics.setTankVisibility(pList[i].color, true);
 		}		
 	}
 

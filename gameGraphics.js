@@ -16,7 +16,7 @@ function createGameGraphics(assets, weapons) {
 	var guidanceContainer = null;
 	var guidanceShape = null;
 	var landContainer = null;
-	var tanks = {}; // all 8 tanks, {color:{container, cannonShape, shieldShape} 
+	var tanks = {}; // all 8 tanks, {color:{container, cannonShape, shieldShape, arrowShape} 
 
 	var mainContainer = new createjs.Container();
 
@@ -46,8 +46,9 @@ function createGameGraphics(assets, weapons) {
 		drawLand: drawLand,
 		updateTankPosition: updateTankPosition,
 		updateCannonAngle: updateCannonAngle,
-		showTank: showTank,
-		hideTank: hideTank
+		setTankVisibility: setTankVisibility,
+		setTankShieldVisibility: setTankShieldVisibility,
+		setTankArrowVisibility: setTankArrowVisibility
 		//showGuidance:	
 	};
 
@@ -312,13 +313,45 @@ function createGameGraphics(assets, weapons) {
 			cannonShape.regY = 3;
 			tankContainer.addChild(cannonShape);
 
+			var shieldShape = new createjs.Shape();
+			 // in this way, the tankContainer.x and y can be places precisely at the tank position
+			shieldShape.regX = 0;
+			shieldShape.regY = 12;
+
+			line(shieldShape.graphics, GameColors.LIGHTGRAY, -2, 0, 2, 0);
+			line(shieldShape.graphics, GameColors.LIGHTGRAY, -2, 0, -5, 2);
+			line(shieldShape.graphics, GameColors.LIGHTGRAY, 2, 0, 5, 2);
+			line(shieldShape.graphics, GameColors.GRAY, -1, 2, 1, 2);
+			line(shieldShape.graphics, GameColors.GRAY, -1, 2, -4, 3);
+			line(shieldShape.graphics, GameColors.GRAY, 1, 2, 4, 3);
+			shieldShape.visible = false;
+			tankContainer.addChild(shieldShape);
+
+			var arrowShape = new createjs.Shape();
+
+/*
+  line(PList[P].PosX-2,PList[P].PosY-16,PList[P].PosX+2,PList[P].PosY-16);
+  line(PList[P].PosX-1,PList[P].PosY-15,PList[P].PosX+1,PList[P].PosY-15);
+  PutPixel(PList[P].PosX,PList[P].PosY-14,C);
+*/
+			 // in this way, the tankContainer.x and y can be places precisely at the tank position
+			arrowShape.regX = 0;
+			arrowShape.regY = 16;
+
+			line(arrowShape.graphics, color, -2, 0, 2, 0);
+			line(arrowShape.graphics, color, -1, 1, 1, 1);
+			putPixel(arrowShape.graphics, color, 0, 2);
+			arrowShape.visible = false;
+			tankContainer.addChild(arrowShape);
+
 			tankContainer.visible = false;
 			tanksContainer.addChild(tankContainer);
 
 			var tankObj = {
 				container: tankContainer,
 				cannonShape: cannonShape,
-				shieldShape: null // TODO
+				shieldShape: shieldShape,
+				arrowShape: arrowShape
 			}
 
 			tanks[color] = tankObj;
@@ -330,46 +363,27 @@ function createGameGraphics(assets, weapons) {
 		var tankContainer = tanks[tankColor].container;
 		tankContainer.x = x;
 		tankContainer.y = y; 
-
-		var shape = new createjs.Shape();
-		putPixel(shape.graphics, GameColors.WHITE, x, y);
-		mainContainer.addChild(shape);
 	}
 
 	function updateCannonAngle(player) {
 		var cannonShape = tanks[player.color].cannonShape;
-/*
-  px := PList[P].PosX;
-  py := PList[P].PosY;
-  if C = Black then C := Sky;
-  SetColor(C);
-  Line(px,
-       py-3,
-       round(Cos(PList[P].Angle)*5)+px,
-       -round(Sin(PList[P].Angle)*5)+py-3);
-  if (PList[P].Shield) then
-  begin
-    if (C <> Sky) then SetColor(LightGray) else SetColor(Sky);
-    line(px-2,py-12,px+2,py-12);
-    line(px-2,py-12,px-5,py-10);
-    line(px+2,py-12,px+5,py-10);
-    if (C <> Sky) then SetColor(Gray);
-    line(px-1,py-10,px+1,py-10);
-    line(px-1,py-10,px-4,py-9);
-    line(px+1,py-10,px+4,py-9);
-  end;
-*/
 		cannonShape.graphics.clear();
 		line(cannonShape.graphics, GameColors.WHITE, 0, 0, Math.round(Math.cos(player.angle) * 5), -Math.round(Math.sin(player.angle) * 5));
 	}
 
-	function showTank(tankColor) {
+	function setTankVisibility(tankColor, visible) {
 		var tankContainer = tanks[tankColor].container;
-		tankContainer.visible = true;
+		tankContainer.visible = visible;
 	}
 
-	function hideTank(tankColor) {
-		var tankContainer = tanks[tankColor].container;
-		tankContainer.visible = false;
+	function setTankShieldVisibility(tankColor, visible) {
+		var shieldShape = tanks[tankColor].shieldShape;
+		shieldShape.visible = visible;
 	}
+
+	function setTankArrowVisibility(tankColor, visible) {
+		var arrowShape = tanks[tankColor].arrowShape;
+		arrowShape.visible = visible;
+	}
+
 }

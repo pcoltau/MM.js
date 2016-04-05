@@ -16,7 +16,7 @@ var game = {
     aboutObj: null,
     gameSetupObj: null,
     gameObj: null,
-    currentState: "menuObj", // A reference to the *Obj variables above (it is a reference so we can recreate the *Obj in a different resolution if needed)
+    currentState: "gameObj", // A reference to the *Obj variables above (it is a reference so we can recreate the *Obj in a different resolution if needed)
     nextState: null,
     currentTransition: Transitions.preFadeIn,
     fadingLayer: null
@@ -31,6 +31,11 @@ gameEngine.onInit = function onInit(stage, assets) {
     createGameObjects(assets);
 
     if (game.currentState) {
+        // <begin> FOR TESTING:
+        if (game.currentState === "gameObj") {
+            game.gameObj.setPlayerNames(["test1", "test2", "test3", "test4"]);
+        }
+        // <end> FOR TESTING
         var currentObj = game[game.currentState];
         stage.addChild(currentObj.container);
         if (currentObj.onShow) {
