@@ -133,6 +133,7 @@ function createGame(wepList, onExit, assets) {
 			players[i].posY = posY;
 
 			gameGraphics.updateTankPosition(players[i].color, players[i].posX, players[i].posY);
+			gameGraphics.updateCannonAngle(players[i]);
 		}
 	}
 

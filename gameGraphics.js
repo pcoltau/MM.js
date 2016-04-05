@@ -16,7 +16,7 @@ function createGameGraphics(assets, weapons) {
 	var guidanceContainer = null;
 	var guidanceShape = null;
 	var landContainer = null;
-	var tankShapes = {}; // all 8 tanks, {color:shape} 
+	var tanks = {}; // all 8 tanks, {color:{container, cannonShape, shieldShape} 
 
 	var mainContainer = new createjs.Container();
 
@@ -36,7 +36,8 @@ function createGameGraphics(assets, weapons) {
 	var screenEdges = createScreenEdges();
 	mainContainer.addChild(screenEdges);
 
-	createTanks();
+	var tanksContainer = createTanks();
+	mainContainer.addChild(tanksContainer);
 
 	return {
 		container: mainContainer,
@@ -44,6 +45,7 @@ function createGameGraphics(assets, weapons) {
 		updateWind: updateWind,
 		drawLand: drawLand,
 		updateTankPosition: updateTankPosition,
+		updateCannonAngle: updateCannonAngle,
 		showTank: showTank,
 		hideTank: hideTank
 		//showGuidance:	
@@ -289,44 +291,85 @@ function createGameGraphics(assets, weapons) {
 	}
 
 	function createTanks() {
+		var tanksContainer = new createjs.Container();
 		for (var i = 0; i < 8; ++i) {
+			var tankContainer = new createjs.Container();
 			var tankShape = new createjs.Shape();
 			var color = playerColorTable[i];
 			var secColor = playerColorTable[i+8];
-			tankShape.regX = 3; // in this way, the tankShape.x and y can be places precisely at the tank position
+			// in this way, the tankContainer.x and y can be places precisely at the tank position
+			tankShape.regX = 3;
 			tankShape.regY = 2;
-/*
-  bar(PList[P].PosX-3,PList[P].PosY-2,PList[P].PosX+3,PList[P].PosY+1);
-  if C = Sky then
-  begin
-    PutPixel(PList[P].PosX-3,PList[P].PosY-2,C);
-    PutPixel(PList[P].PosX+3,PList[P].PosY-2,C);
-  end
-  else
-  begin
-    PutPixel(PList[P].PosX-3,PList[P].PosY-2,PList[P].SecColor);
-    PutPixel(PList[P].PosX+3,PList[P].PosY-2,PList[P].SecColor);
 
-*/			
 			bar(tankShape.graphics, color, 0, 0, 6, 3);
 			putPixel(tankShape.graphics, secColor, 0, 0);
 			putPixel(tankShape.graphics, secColor, 6, 0);
-			tankShapes[color] = tankShape;
+			tankContainer.addChild(tankShape);
+
+			var cannonShape = new createjs.Shape();
+			 // in this way, the tankContainer.x and y can be places precisely at the tank position
+			cannonShape.regX = 0;
+			cannonShape.regY = 3;
+			tankContainer.addChild(cannonShape);
+
+			tankContainer.visible = false;
+			tanksContainer.addChild(tankContainer);
+
+			var tankObj = {
+				container: tankContainer,
+				cannonShape: cannonShape,
+				shieldShape: null // TODO
+			}
+
+			tanks[color] = tankObj;
 		}
+		return tanksContainer;
 	}
 
 	function updateTankPosition(tankColor, x, y) {
-		var tankShape = tankShapes[tankColor];
-		tankShape.x = x;
-		tankShape.y = y; 
+		var tankContainer = tanks[tankColor].container;
+		tankContainer.x = x;
+		tankContainer.y = y; 
+
+		var shape = new createjs.Shape();
+		putPixel(shape.graphics, GameColors.WHITE, x, y);
+		mainContainer.addChild(shape);
+	}
+
+	function updateCannonAngle(player) {
+		var cannonShape = tanks[player.color].cannonShape;
+/*
+  px := PList[P].PosX;
+  py := PList[P].PosY;
+  if C = Black then C := Sky;
+  SetColor(C);
+  Line(px,
+       py-3,
+       round(Cos(PList[P].Angle)*5)+px,
+       -round(Sin(PList[P].Angle)*5)+py-3);
+  if (PList[P].Shield) then
+  begin
+    if (C <> Sky) then SetColor(LightGray) else SetColor(Sky);
+    line(px-2,py-12,px+2,py-12);
+    line(px-2,py-12,px-5,py-10);
+    line(px+2,py-12,px+5,py-10);
+    if (C <> Sky) then SetColor(Gray);
+    line(px-1,py-10,px+1,py-10);
+    line(px-1,py-10,px-4,py-9);
+    line(px+1,py-10,px+4,py-9);
+  end;
+*/
+		cannonShape.graphics.clear();
+		line(cannonShape.graphics, GameColors.WHITE, 0, 0, Math.round(Math.cos(player.angle) * 5), -Math.round(Math.sin(player.angle) * 5));
 	}
 
 	function showTank(tankColor) {
-		var tankShape = tankShapes[tankColor];
-		mainContainer.addChild(tankShape);
+		var tankContainer = tanks[tankColor].container;
+		tankContainer.visible = true;
 	}
 
 	function hideTank(tankColor) {
-		mainContainer.removeChild(tankShape);
+		var tankContainer = tanks[tankColor].container;
+		tankContainer.visible = false;
 	}
 }
