@@ -94,18 +94,32 @@ function createGame(wepList, onExit, assets) {
 				break;
 			case States.ADJUSTING_CANNON:
 				if (key === Keys.LEFT_ARROW) {
-					currentPlayer.angle += Math.PI/45;
+					currentPlayer.angle += gameEngine.isKeyDown[Keys.SHIFT] ? Math.PI/180 : Math.PI/45;
 					if (currentPlayer.angle > Math.PI) {
 						currentPlayer.angle = 0;
 					}
 					gameGraphics.updateCannonAngle(currentPlayer);
 				}
 				if (key === Keys.RIGHT_ARROW) {
-					currentPlayer.angle -= Math.PI/45;
+					currentPlayer.angle -= gameEngine.isKeyDown[Keys.SHIFT] ? Math.PI/180 : Math.PI/45;
 					if (currentPlayer.angle < 0) {
 						currentPlayer.angle = Math.PI;
-					}					
+					}
 					gameGraphics.updateCannonAngle(currentPlayer);
+				}
+				if (key === Keys.UP_ARROW) {
+					currentPlayer.power += gameEngine.isKeyDown[Keys.SHIFT] ? 1 : 25;
+					if (currentPlayer.power > currentPlayer.maxPower) {
+						currentPlayer.power = currentPlayer.maxPower;
+					}
+					gameGraphics.updatePowerText(currentPlayer);
+				}
+				if (key === Keys.DOWN_ARROW) {
+					currentPlayer.power -= gameEngine.isKeyDown[Keys.SHIFT] ? 1 : 25;
+					if (currentPlayer.power < 0) {
+						currentPlayer.power = 0;
+					}
+					gameGraphics.updatePowerText(currentPlayer);
 				}
 				break;
 		}

@@ -51,6 +51,7 @@ function createGameGraphics(assets, weapons) {
 		drawLand: drawLand,
 		updateTankPosition: updateTankPosition,
 		updateCannonAngle: updateCannonAngle,
+		updatePowerText: updatePowerText,
 		setTankVisibility: setTankVisibility,
 		setTankShieldVisibility: setTankShieldVisibility,
 		setTankArrowVisibility: setTankArrowVisibility,
@@ -148,7 +149,12 @@ function createGameGraphics(assets, weapons) {
 
 	function updateAngleText(player) {
 		var angle = player.angle
-		angleText.text = Math.round(angle * (180 / Math.PI)) + " " + ((angle > Math.PI / 2) ? "L" : "R");
+		if (angle > Math.PI / 2) {
+			angleText.text = Math.round((Math.PI - angle) * (180 / Math.PI)) + " L";
+		}
+		else {
+			angleText.text = Math.round(angle * (180 / Math.PI)) + " R";
+		}
 	}
 
 	function updateWeaponAmmoText(player) {
@@ -400,6 +406,8 @@ function createGameGraphics(assets, weapons) {
 		var cannonShape = tanks[player.color].cannonShape;
 		cannonShape.graphics.clear();
 		line(cannonShape.graphics, GameColors.WHITE, 0, 0, Math.round(Math.cos(player.angle) * 5), -Math.round(Math.sin(player.angle) * 5));
+
+		updateAngleText(player);
 	}
 
 	function setTankVisibility(tankColor, visible) {
