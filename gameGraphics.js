@@ -50,8 +50,10 @@ function createGameGraphics(assets, weapons) {
 		updateWind: updateWind,
 		drawLand: drawLand,
 		updateTankPosition: updateTankPosition,
-		updateCannonAngle: updateCannonAngle,
+		updateCannonAngleAndText: updateCannonAngleAndText,
+		setCannonAngle: setCannonAngle,
 		updatePowerText: updatePowerText,
+		updateWeaponNameAndAmmoText: updateWeaponNameAndAmmoText,
 		setTankVisibility: setTankVisibility,
 		setTankShieldVisibility: setTankShieldVisibility,
 		setTankArrowVisibility: setTankArrowVisibility,
@@ -104,8 +106,7 @@ function createGameGraphics(assets, weapons) {
 		updatePlayerNameText(newPlayer);
 		updateAngleText(newPlayer);
 		updatePowerText(newPlayer);
-		updateWeaponNameText(newPlayer);
-		updateWeaponAmmoText(newPlayer);
+		updateWeaponNameAndAmmoText(newPlayer);
 		updateArmourText(newPlayer);
 		updateParachutesText(newPlayer);
 		updateShieldText(newPlayer);
@@ -162,9 +163,10 @@ function createGameGraphics(assets, weapons) {
 		weaponAmmoText.text = (ammo == -1 ? 99 : ammo);
 	}
 
-	function updateWeaponNameText(player) {
+	function updateWeaponNameAndAmmoText(player) {
 		var weaponName = weapons[player.weaponList[player.currentWep].weaponIndex].name;
 		weaponNameText.text = weaponName;
+		updateWeaponAmmoText(player);
 	}
 
 	function updatePlayerNameText(player) {
@@ -402,12 +404,15 @@ function createGameGraphics(assets, weapons) {
 		tankContainer.y = y; 
 	}
 
-	function updateCannonAngle(player) {
+	function updateCannonAngleAndText(player) {
+		setCannonAngle(player);
+		updateAngleText(player);
+	}
+
+	function setCannonAngle(player) {
 		var cannonShape = tanks[player.color].cannonShape;
 		cannonShape.graphics.clear();
 		line(cannonShape.graphics, GameColors.WHITE, 0, 0, Math.round(Math.cos(player.angle) * 5), -Math.round(Math.sin(player.angle) * 5));
-
-		updateAngleText(player);
 	}
 
 	function setTankVisibility(tankColor, visible) {

@@ -88,68 +88,116 @@ function createGame(wepList, onExit, assets) {
 				break;
 			case States.PLAYER_READY:
 				blinkingArrowCounter = 0;
-				blinkingArrowVisible = true;
-				gameGraphics.setTankArrowVisibility(currentPlayer.color, blinkingArrowVisible);
+				setCurrentTankArrowVisibility(true);
 				currentState = States.ADJUSTING_CANNON;
-				break;
+				// no break - we want to handle the key
 			case States.ADJUSTING_CANNON:
-				if (key === Keys.LEFT_ARROW) {
-					currentPlayer.angle += gameEngine.isKeyDown[Keys.SHIFT] ? Math.PI/180 : Math.PI/45;
-					if (currentPlayer.angle > Math.PI) {
-						currentPlayer.angle = 0;
-					}
-					gameGraphics.updateCannonAngle(currentPlayer);
-				}
-				if (key === Keys.RIGHT_ARROW) {
-					currentPlayer.angle -= gameEngine.isKeyDown[Keys.SHIFT] ? Math.PI/180 : Math.PI/45;
-					if (currentPlayer.angle < 0) {
-						currentPlayer.angle = Math.PI;
-					}
-					gameGraphics.updateCannonAngle(currentPlayer);
-				}
-				if (key === Keys.UP_ARROW) {
-					currentPlayer.power += gameEngine.isKeyDown[Keys.SHIFT] ? 1 : 25;
-					if (currentPlayer.power > currentPlayer.maxPower) {
-						currentPlayer.power = currentPlayer.maxPower;
-					}
-					gameGraphics.updatePowerText(currentPlayer);
-				}
-				if (key === Keys.DOWN_ARROW) {
-					currentPlayer.power -= gameEngine.isKeyDown[Keys.SHIFT] ? 1 : 25;
-					if (currentPlayer.power < 0) {
-						currentPlayer.power = 0;
-					}
-					gameGraphics.updatePowerText(currentPlayer);
-				}
+				handleAdjustingCannon(currentPlayer, key)
 				break;
 		}
+	}
+
+	function handleAdjustingCannon(currentPlayer, key) {
+		switch (key) {
+			case Keys.LEFT_ARROW:
+			case Keys.NUMPAD_4:
+				currentPlayer.angle += (gameEngine.isKeyDown[Keys.SHIFT] || key === Keys.NUMPAD_4) ? Math.PI/180 : Math.PI/45;
+				if (currentPlayer.angle > Math.PI) {
+					currentPlayer.angle = 0;
+				}
+				gameGraphics.updateCannonAngleAndText(currentPlayer);
+				break;
+			case Keys.RIGHT_ARROW:
+			case Keys.NUMPAD_6:
+				currentPlayer.angle -= (gameEngine.isKeyDown[Keys.SHIFT] || key === Keys.NUMPAD_6) ? Math.PI/180 : Math.PI/45;
+				if (currentPlayer.angle < 0) {
+					currentPlayer.angle = Math.PI;
+				}
+				gameGraphics.updateCannonAngleAndText(currentPlayer);
+				break;
+			case Keys.UP_ARROW:
+			case Keys.NUMPAD_8:
+				currentPlayer.power += (gameEngine.isKeyDown[Keys.SHIFT] || key === Keys.NUMPAD_8) ? 1 : 25;
+				if (currentPlayer.power > currentPlayer.maxPower) {
+					currentPlayer.power = currentPlayer.maxPower;
+				}
+				gameGraphics.updatePowerText(currentPlayer);
+				break;
+			case Keys.DOWN_ARROW:
+			case Keys.NUMPAD_2:
+				currentPlayer.power -= (gameEngine.isKeyDown[Keys.SHIFT] || key === Keys.NUMPAD_2) ? 1 : 25;
+				if (currentPlayer.power < 0) {
+					currentPlayer.power = 0;
+				}
+				gameGraphics.updatePowerText(currentPlayer);
+				break;
+			case Keys.HOME:
+				currentPlayer.power = currentPlayer.maxPower;
+				gameGraphics.updatePowerText(currentPlayer);
+				break;
+			case Keys.END:
+				currentPlayer.power = 0;
+				gameGraphics.updatePowerText(currentPlayer);
+				break;
+			case Keys.TAB:
+				// TODO: Switch state and show weapon list
+				break;
+			case Keys.KEY_P:
+				switchToNextPlayer();
+				break;
+			case Keys.PAGE_UP:
+				currentPlayer.currentWep--;
+				if (currentPlayer.currentWep < 0) {
+					currentPlayer.currentWep = currentPlayer.weaponList.length - 1;
+				}
+				gameGraphics.updateWeaponNameAndAmmoText(currentPlayer);
+				break;
+			case Keys.PAGE_DOWN:
+				currentPlayer.currentWep++;
+				if (currentPlayer.currentWep === currentPlayer.weaponList.length) {
+					currentPlayer.currentWep = 0;
+				}
+				gameGraphics.updateWeaponNameAndAmmoText(currentPlayer);
+				break;
+		}		
+	}
+
+	function switchToNextPlayer() {
+		setCurrentTankArrowVisibility(false);
+		currentPlayerIndex++;
+		if (currentPlayerIndex === pList.length) {
+			currentPlayerIndex = 0;
+		}
+		currentState = States.PLAYER_READY;
 	}
 
 	function onTick(stage, deltaInSeconds) {
-		var currentPlayer = pList[currentPlayerIndex];
 		switch (currentState) {
 			case States.PLAYER_READY:
-			    handleBlinkingArrow(currentPlayer, deltaInSeconds);
+			    handleBlinkingArrow(deltaInSeconds);
 				break;
 		}
 	}
 
-	function handleBlinkingArrow(currentPlayer, deltaInSeconds) {
+	function handleBlinkingArrow(deltaInSeconds) {
 		blinkingArrowCounter += deltaInSeconds;
 		if (blinkingArrowVisible) {
 			if (blinkingArrowCounter >= blinkingArrowSpeed) {
 				blinkingArrowCounter = 0;
-				blinkingArrowVisible = false;
-				gameGraphics.setTankArrowVisibility(currentPlayer.color, blinkingArrowVisible);
+				setCurrentTankArrowVisibility(false);
 			}
 		}
 		else {
 			if (blinkingArrowCounter >= blinkingArrowSpeed / 2) {
 				blinkingArrowCounter = 0;
-				blinkingArrowVisible = true;
-				gameGraphics.setTankArrowVisibility(currentPlayer.color, blinkingArrowVisible);
+				setCurrentTankArrowVisibility(true);
 			}
 		}
+	}
+
+	function setCurrentTankArrowVisibility(visible) {
+		blinkingArrowVisible = visible;
+		gameGraphics.setTankArrowVisibility(pList[currentPlayerIndex].color, blinkingArrowVisible);
 	}
 
 	function setPlayerNames(playerNames) {
@@ -236,7 +284,7 @@ function createGame(wepList, onExit, assets) {
 
 	function showAllTanks() {
 		for (var i = 0; i < pList.length; ++i) {
-			gameGraphics.updateCannonAngle(pList[i]);
+			gameGraphics.setCannonAngle(pList[i]);
 			if (pList[i].shield) {
 				gameGraphics.setTankShieldVisibility(pList[i].color, true);
 			}
