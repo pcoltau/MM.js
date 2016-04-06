@@ -1,15 +1,15 @@
 "use strict";
 
 function createGameSetupSettingsDialog(assets, onDone, onExit) {
-	var winCon = ["Survival", "Most Hits", "Most Frags", "Most Damage", "Best Dam/Shot", "Most Headshots"];
-	var menuItems = [
+	let winCon = ["Survival", "Most Hits", "Most Frags", "Most Damage", "Best Dam/Shot", "Most Headshots"];
+	let menuItems = [
 		{name: "Number of Players", value: 4, min: 2, max: 8, textObj: null}, 
 		{name: "Number of Rounds", value: 15, min: 1, max: 99, textObj: null}, 
 		{name: "Points given for", value: 0, min: 0, max: winCon.length - 1, textObj: null}]; 
-    var selectedItemShape = null;
-    var selectedItemIndex = 0;
+    let selectedItemShape = null;
+    let selectedItemIndex = 0;
 
-	var settingsDialog = createGameSetupSettingsDialog();
+	let settingsDialog = createGameSetupSettingsDialog();
 
 	return {
 		container: settingsDialog,
@@ -18,12 +18,12 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 	};
 
 	function createGameSetupSettingsDialog() {
-        var gameSetupContainer = new createjs.Container();
+        let gameSetupContainer = new createjs.Container();
 
-		var x1 = SCREEN_WIDTH_CENTER - 180;
-		var y1 = SCREEN_HEIGHT_CENTER - 55;
-		var x2 = x1 + 360;
-		var y2 = y1 + 110;
+		let x1 = SCREEN_WIDTH_CENTER - 180;
+		let y1 = SCREEN_HEIGHT_CENTER - 55;
+		let x2 = x1 + 360;
+		let y2 = y1 + 110;
 
 		drawBox(assets, gameSetupContainer, GameColors, x1, y1, x2, y2);
 
@@ -36,11 +36,11 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
         outTextXY(gameSetupContainer, GameColors.DARKGRAY, "G A M E   S E T U P", SCREEN_WIDTH_CENTER, y1 + 6, "center"); 
 
 	    //bar(x[1]+12,y[1]+14+i*20,x[2]-12,y[1]+26+i*20);
-        var yPos = getItemBarPosition(selectedItemIndex);
+        let yPos = getItemBarPosition(selectedItemIndex);
         selectedItemShape = barAsShape(GameColors.DARKESTGREEN, x1 + 12, yPos, x2 - 12, yPos + 12);
 		gameSetupContainer.addChild(selectedItemShape);
 
-        var menu = createMenuItems(x1, y1, x2, y2);
+        let menu = createMenuItems(x1, y1, x2, y2);
 		gameSetupContainer.addChild(menu);
 
 		return gameSetupContainer;
@@ -49,23 +49,23 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 	function createMenuItems(x1, y1, x2, y2) {
 		
 		function drawArrow(index, isShadow, isRightArrow) {
-			var shape = new createjs.Shape();
-			var v = isRightArrow ? 1 : 0;
-			var d = isShadow ? 2 : 0;
-			var ypos = getItemBarPosition(index) + 2;
-			for (var n = 4; n > 0; n--) {
+			let shape = new createjs.Shape();
+			let v = isRightArrow ? 1 : 0;
+			let d = isShadow ? 2 : 0;
+			let ypos = getItemBarPosition(index) + 2;
+			for (let n = 4; n > 0; n--) {
 /*
 				xpos := ord(T)*126+(ord(T)*2-1)*n;
 				Line(x[1]+196+xpos+d, y[1]+16+i*20+(8-n)+d, x[1]+196+xpos+d, y[1]+24+i*20-(8-n)+d);
 */
-				var xpos = v * 126 + (v * 2 - 1) * n;
+				let xpos = v * 126 + (v * 2 - 1) * n;
 				line(shape.graphics, isShadow ? GameColors.BLACK : GameColors.WHITE, x1 + 196 + xpos + d, ypos + (8 - n) + d, x1 + 196 + xpos + d, ypos + 8 - (8 - n) + d);
 			}
 			return shape;
 		}
 
-		var container = new createjs.Container();
-		for (var i = 0; i < menuItems.length; ++i) {
+		let container = new createjs.Container();
+		for (let i = 0; i < menuItems.length; ++i) {
 /*
 		    SetColor(White);
 		    OutTextXY(x[1]+30,y[1]+16+i*20,MenuItems[i].Name);
@@ -74,8 +74,8 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 		    DrawArrow(i,0,false);
 */
 			outTextXY(container, GameColors.WHITE, menuItems[i].name, x1 + 30, getItemBarPosition(i) + 2, "left", GameColors.BLACK);
-			var value = getMenuItemValue(i);
-			var text = outTextXYAsText(GameColors.WHITE, value, x1 + 260, getItemBarPosition(i) + 2, "center", GameColors.BLACK);
+			let value = getMenuItemValue(i);
+			let text = outTextXYAsText(GameColors.WHITE, value, x1 + 260, getItemBarPosition(i) + 2, "center", GameColors.BLACK);
 			menuItems[i].textObj = text;
 			container.addChild(text);
 			container.addChild(drawArrow(i, true, true));
@@ -97,7 +97,7 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 
     function onKeyDown(stage, key) {
         switch (key) {
-            case Keys.DOWN_ARROW:
+            case Keys.DOWN_ARROW: {
                 if (selectedItemIndex < menuItems.length - 1) {
                     selectedItemIndex++;    
                 }
@@ -106,7 +106,8 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
                 }
                 updateSelectedItemShape();
                 break;
-            case Keys.UP_ARROW:
+            }
+            case Keys.UP_ARROW: {
                 if (selectedItemIndex > 0) {
                     selectedItemIndex--;
                 }
@@ -115,28 +116,33 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
                 }
                 updateSelectedItemShape();
                 break;  
-             case Keys.LEFT_ARROW:
-             	var selectedMenuItem = menuItems[selectedItemIndex];
+            }
+            case Keys.LEFT_ARROW: {
+             	let selectedMenuItem = menuItems[selectedItemIndex];
          		selectedMenuItem.value--;
              	if (selectedMenuItem.value < selectedMenuItem.min) {
              		selectedMenuItem.value = selectedMenuItem.max;
              	}
          		updateItemValue(selectedItemIndex)
              	break;  
-             case Keys.RIGHT_ARROW:
-             	var selectedMenuItem = menuItems[selectedItemIndex];
+            }
+            case Keys.RIGHT_ARROW: {
+             	let selectedMenuItem = menuItems[selectedItemIndex];
          		selectedMenuItem.value++;
              	if (selectedMenuItem.value > selectedMenuItem.max) {
              		selectedMenuItem.value = selectedMenuItem.min;
              	}
          		updateItemValue(selectedItemIndex);
              	break;  
-             case Keys.ENTER:
+            }
+            case Keys.ENTER: {
 		    	onDone({ numPlayers: menuItems[0].value, numRounds: menuItems[1].value, winCon: menuItems[2].value });
              	break;
-             case Keys.ESCAPE:
+            }
+            case Keys.ESCAPE: {
 		    	onExit();
              	break;
+            }
         }
     }
 
@@ -145,7 +151,7 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
     }
 
     function updateItemValue(index) {
- 		var newValue = getMenuItemValue(index);
+ 		let newValue = getMenuItemValue(index);
  		menuItems[index].textObj.text = newValue;
     }
 
@@ -153,7 +159,7 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
 		menuItems[0].value = 2;
 		menuItems[1].value = 15;
 		menuItems[2].value = 0;
-		for (var i = 0; i < menuItems.length; ++i) {
+		for (let i = 0; i < menuItems.length; ++i) {
 			updateItemValue(i);
 		}
 	    selectedItemIndex = 0;

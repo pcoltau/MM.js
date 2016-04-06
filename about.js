@@ -1,7 +1,7 @@
 "use strict";
 
 function createAbout(onExit, assets) {
-	var mainContainer = createAboutBox();
+	let mainContainer = createAboutBox();
 
 	return {
         container: mainContainer,
@@ -17,7 +17,7 @@ function createAbout(onExit, assets) {
 			outTextXY(container, MenuColors.WHITE, text, SCREEN_WIDTH_CENTER - 140, yPos);
 		}
 
-		var container = new createjs.Container();
+		let container = new createjs.Container();
 		/*
 		x1 := GetMaxX div 2 - 150;
 		y1 := GetMaxY div 2 - 70;
@@ -25,14 +25,14 @@ function createAbout(onExit, assets) {
 		y2 := y1 + 140;
 		Show_PCX('Gfx\menuback.pcx',x1,y1,x2-x1,y2-y1)
 		*/
-		var x1 = SCREEN_WIDTH_CENTER - 150;
-		var y1 = SCREEN_HEIGHT_CENTER - 70;
-		var x2 = x1 + 300;
-		var y2 = y1 + 140;
+		let x1 = SCREEN_WIDTH_CENTER - 150;
+		let y1 = SCREEN_HEIGHT_CENTER - 70;
+		let x2 = x1 + 300;
+		let y2 = y1 + 140;
 
-		var menuback = showPCX(assets, container, "menuback.pcx", x1, y1, x2 - x1, y2 - y1);
+		let menuback = showPCX(assets, container, "menuback.pcx", x1, y1, x2 - x1, y2 - y1);
 
-        var shape = new createjs.Shape();
+        let shape = new createjs.Shape();
         line(shape.graphics, MenuColors.BRIGHTGRAY, x1, y1, x2, y1);
         line(shape.graphics, MenuColors.BRIGHTGRAY, x1, y1, x1, y2);
         line(shape.graphics, MenuColors.GRAY, x1, y2, x2, y2);

@@ -3,11 +3,11 @@
 function createPlayerNamesDialog(assets, onDone) {
 	// TODO: Prevent key input while fading out.
 
-	var playerIndex = 0;
-	var playerName = "";
-	var playerHeadlineText = null;
-	var playerNameText = null;
-	var playerNamesDialog = createPlayerNamesDialog();
+	let playerIndex = 0;
+	let playerName = "";
+	let playerHeadlineText = null;
+	let playerNameText = null;
+	let playerNamesDialog = createPlayerNamesDialog();
 
 	return {
 		container: playerNamesDialog,
@@ -17,12 +17,12 @@ function createPlayerNamesDialog(assets, onDone) {
 	};
 
 	function createPlayerNamesDialog() {
-        var dialogContainer = new createjs.Container();
+        let dialogContainer = new createjs.Container();
 
-		var x1 = SCREEN_WIDTH_CENTER - 91;
-		var y1 = SCREEN_HEIGHT_CENTER - 16;
-		var x2 = x1 + 182;
-		var y2 = y1 + 32;
+		let x1 = SCREEN_WIDTH_CENTER - 91;
+		let y1 = SCREEN_HEIGHT_CENTER - 16;
+		let x2 = x1 + 182;
+		let y2 = y1 + 32;
 
 		drawBox(assets, dialogContainer, GameColors, x1, y1, x2, y2);
 
@@ -83,7 +83,7 @@ function createPlayerNamesDialog(assets, onDone) {
 	    		key === " ".charCodeAt(0) || 
 	    		key === ".".charCodeAt(0) || 
 	    		key === "-".charCodeAt(0)) {
-	    		var chr = String.fromCharCode(key);
+	    		let chr = String.fromCharCode(key);
 	    		playerName += chr;
 	    		updatePlayerNameText();
 			}

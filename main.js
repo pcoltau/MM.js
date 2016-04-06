@@ -1,6 +1,6 @@
 "use strict";
 
-var Transitions = {
+let Transitions = {
     fadeIn: "fadeIn",
     running: "running",
     fadeOut: "fadeOut",
@@ -10,23 +10,23 @@ var Transitions = {
     preRunning: "preRunning" // a one-tick transition before running (likely after a showDialog)
 }
 
-var game = {
+let game = {
      // These objects are expected to be on the form (* are optional): { container, onTick*, onKeyDown*, onKeyUp*, onKeyPress*, onShow* } 
     menuObj: null,
     aboutObj: null,
     gameSetupObj: null,
     gameObj: null,
-    currentState: "gameObj", // A reference to the *Obj variables above (it is a reference so we can recreate the *Obj in a different resolution if needed)
+    currentState: "gameObj", // A reference to the *Obj letiables above (it is a reference so we can recreate the *Obj in a different resolution if needed)
     nextState: null,
     currentTransition: Transitions.preFadeIn,
     fadingLayer: null
 };
 
 gameEngine.onInit = function onInit(stage, assets) {
-    var wepList = readEncodedFile(assets.getResult("wep", true));
-    var itemList = readEncodedFile(assets.getResult("item", true));
-    var typeList = readEncodedTypeFile(assets.getResult("type", true));
-    var configList = readConfigFile(assets.getResult("config", false));
+    let wepList = readEncodedFile(assets.getResult("wep", true));
+    let itemList = readEncodedFile(assets.getResult("item", true));
+    let typeList = readEncodedTypeFile(assets.getResult("type", true));
+    let configList = readConfigFile(assets.getResult("config", false));
 
     createGameObjects(assets);
 
@@ -36,7 +36,7 @@ gameEngine.onInit = function onInit(stage, assets) {
             game.gameObj.setPlayerNames(["test1", "test2", "test3", "test4"]);
         }
         // <end> FOR TESTING
-        var currentObj = game[game.currentState];
+        let currentObj = game[game.currentState];
         stage.addChild(currentObj.container);
         if (currentObj.onShow) {
             currentObj.onShow();
@@ -100,18 +100,18 @@ gameEngine.onInit = function onInit(stage, assets) {
 }
 
 gameEngine.onTick = function onTick(stage, deltaInSeconds) {
-    var fadingDuration = 0.4;
+    let fadingDuration = 0.4;
     switch(game.currentTransition) {
         case Transitions.running:
             if (game.currentState) {
-                var currentObj = game[game.currentState];
+                let currentObj = game[game.currentState];
                 if (currentObj.onTick) {
                     currentObj.onTick(stage, deltaInSeconds);
                 }
             }
             break;
         case Transitions.fadeIn:
-            var decrement = deltaInSeconds / fadingDuration; 
+            let decrement = deltaInSeconds / fadingDuration; 
             if (game.fadingLayer.alpha - decrement > 0) {
                 game.fadingLayer.alpha -= decrement;
             }
@@ -121,7 +121,7 @@ gameEngine.onTick = function onTick(stage, deltaInSeconds) {
             }
             break;
         case Transitions.fadeOut:
-            var increment = deltaInSeconds / fadingDuration; 
+            let increment = deltaInSeconds / fadingDuration; 
             if (game.fadingLayer.alpha + increment < 1) {
                 game.fadingLayer.alpha += increment;
             }
@@ -153,17 +153,17 @@ gameEngine.onTick = function onTick(stage, deltaInSeconds) {
     }
 
     function changeToNextState(stage) {
-        var onShowCalled = false;
+        let onShowCalled = false;
         if (game.nextState) {
             // remove the current container, unless we are showing a dialog
             if (game.currentTransition !== Transitions.showDialog) {
-                var currentObj = game[game.currentState];
+                let currentObj = game[game.currentState];
                 stage.removeChild(currentObj.container);
             }
             // add the new container, unless we are hiding a dialog
             if (game.currentTransition !== Transitions.hideDialog) {
-                var nextObj = game[game.nextState];
-                var lastIndex = stage.numChildren - 1;
+                let nextObj = game[game.nextState];
+                let lastIndex = stage.numChildren - 1;
                 stage.addChildAt(nextObj.container, lastIndex); // adds the container "under" the fadingLayer 
                 //  trigger onShow(), if available
                 if (nextObj.onShow) {
@@ -180,7 +180,7 @@ gameEngine.onTick = function onTick(stage, deltaInSeconds) {
 
 gameEngine.onKeyDown = function onKeyDown(stage, key) {
     if (game.currentState) {
-        var currentObj = game[game.currentState];
+        let currentObj = game[game.currentState];
         if (currentObj.onKeyDown) {
             currentObj.onKeyDown(stage, key);
         }
@@ -189,7 +189,7 @@ gameEngine.onKeyDown = function onKeyDown(stage, key) {
 
 gameEngine.onKeyUp = function onKeyUp(stage, key) {
     if (game.currentState) {
-        var currentObj = game[game.currentState];
+        let currentObj = game[game.currentState];
         if (currentObj.onKeyUp) {
             currentObj.onKeyUp(stage, key);
         }
@@ -198,7 +198,7 @@ gameEngine.onKeyUp = function onKeyUp(stage, key) {
 
 gameEngine.onKeyPress = function onKeyPress(stage, key) {
     if (game.currentState) {
-        var currentObj = game[game.currentState];
+        let currentObj = game[game.currentState];
         if (currentObj.onKeyPress) {
             currentObj.onKeyPress(stage, key);
         }

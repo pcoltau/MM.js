@@ -1,44 +1,44 @@
 "use strict";
 
 function createGameGraphics(assets, weapons) {
-	var dirtColor = GameColors.BROWN;
-	var dirtColor2 = GameColors.DARKESTBROWN;
+	let dirtColor = GameColors.BROWN;
+	let dirtColor2 = GameColors.DARKESTBROWN;
 
-	var windShape = null;
-	var armourText = null;
-	var parachutesText = null;
-	var shieldText = null;
-	var nameText = null;
-	var powerText = null;
-	var angleText = null;
-	var weaponNameText = null;
-	var weaponAmmoText = null;
-	var guidanceContainer = null;
-	var guidanceShape = null;
-	var landContainer = null;
-	var roundNumberText = null;
-	var roundSign = null;
-	var tanks = {}; // all 8 tanks, {color:{container, cannonShape, shieldShape, arrowShape} 
+	let windShape = null;
+	let armourText = null;
+	let parachutesText = null;
+	let shieldText = null;
+	let nameText = null;
+	let powerText = null;
+	let angleText = null;
+	let weaponNameText = null;
+	let weaponAmmoText = null;
+	let guidanceContainer = null;
+	let guidanceShape = null;
+	let landContainer = null;
+	let roundNumberText = null;
+	let roundSign = null;
+	let tanks = {}; // all 8 tanks, {color:{container, cannonShape, shieldShape, arrowShape} 
 
-	var mainContainer = new createjs.Container();
+	let mainContainer = new createjs.Container();
 
-	var sky = createSky();
+	let sky = createSky();
 	mainContainer.addChild(sky);
 
 	// the container for the land that will be generated later	(in onShow or whenever a new round is started)
-	var landContainer = new createjs.Container();
+	landContainer = new createjs.Container();
 	mainContainer.addChild(landContainer);
 
-	var topMenu = createTopMenu();
+	let topMenu = createTopMenu();
 	mainContainer.addChild(topMenu);
 
-	var bottomMenu = createBottomMenu();
+	let bottomMenu = createBottomMenu();
 	mainContainer.addChild(bottomMenu);
 
-	var screenEdges = createScreenEdges();
+	let screenEdges = createScreenEdges();
 	mainContainer.addChild(screenEdges);
 
-	var tanksContainer = createTanks();
+	let tanksContainer = createTanks();
 	mainContainer.addChild(tanksContainer);
 
 	roundSign = createRoundSign();
@@ -63,27 +63,27 @@ function createGameGraphics(assets, weapons) {
 	};
 
 	function drawLand(landTop) {
-  		var landShape = new createjs.Shape();
+  		let landShape = new createjs.Shape();
   		// magic to compensate for the snapToPixel magic we do on the stage in gameEngine.js
   		landShape.regX = 0.5; 
   		landShape.regY = 0.5;
-		var dirtRGB = Palette.getRGBFromColor(dirtColor);
-		var dirtRGB2 = Palette.getRGBFromColor(dirtColor2);
+		let dirtRGB = Palette.getRGBFromColor(dirtColor);
+		let dirtRGB2 = Palette.getRGBFromColor(dirtColor2);
 		landShape.graphics.append({exec:function(ctx, shape) {
-        	var imageData = ctx.createImageData(GET_MAX_X, GET_MAX_Y);
-        	var data = imageData.data;
-			for (var x = 2; x <= GET_MAX_X - 2; ++x) {
-				for (var y = landTop[x] + 1; y <= GET_MAX_Y - 18; ++y) {
-					var r = (GET_MAX_Y - y + landTop[x]) / 70;
+        	let imageData = ctx.createImageData(GET_MAX_X, GET_MAX_Y);
+        	let data = imageData.data;
+			for (let x = 2; x <= GET_MAX_X - 2; ++x) {
+				for (let y = landTop[x] + 1; y <= GET_MAX_Y - 18; ++y) {
+					let r = (GET_MAX_Y - y + landTop[x]) / 70;
 					if (r < 1) {
 						r = (1 / r);
 					}
-					var rr = Math.round(r);
+					let rr = Math.round(r);
 					if (rr <= 1) {
 						rr = 2;
 					}
-					var rgb = (Math.floor(Math.random() * rr) === 0) ? dirtRGB2 : dirtRGB;
-					var index = (x + y * GET_MAX_X) * 4;
+					let rgb = (Math.floor(Math.random() * rr) === 0) ? dirtRGB2 : dirtRGB;
+					let index = (x + y * GET_MAX_X) * 4;
 					data[index + 0] = rgb.r;
 					data[index + 1] = rgb.g;
 					data[index + 2] = rgb.b;
@@ -95,8 +95,8 @@ function createGameGraphics(assets, weapons) {
 		landShape.cache(0, 0, GET_MAX_X, GET_MAX_Y);
 		landShape.graphics.store();
 		landContainer.addChild(landShape);
-  		var landTopShape = new createjs.Shape();
-		for (var x = 3; x <= GET_MAX_X - 2; ++x) {
+  		let landTopShape = new createjs.Shape();
+		for (let x = 3; x <= GET_MAX_X - 2; ++x) {
 			line(landTopShape.graphics, dirtColor2, x - 1, landTop[x - 1], x, landTop[x]);
 		}
 		landContainer.addChild(landTopShape);
@@ -113,13 +113,13 @@ function createGameGraphics(assets, weapons) {
 	}
 
 	function createSky() {
-		var sky = new createjs.Shape();
+		let sky = new createjs.Shape();
 		sky.graphics.beginFill(GameColors.SKY).drawRect(0, 0, GET_MAX_X, GET_MAX_Y).endFill();
 		return sky;
 	}
 
 	function createTopMenu() {
-		var container = createMenuBars(0);
+		let container = createMenuBars(0);
 	    drawFrame(container, GameColors, 57, 3, 130, 13);
 	    drawFrame(container, GameColors, 188, 3, 222, 13);
 	    drawFrame(container, GameColors, GET_MAX_X - 26, 3, GET_MAX_X - 8, 13);
@@ -149,7 +149,7 @@ function createGameGraphics(assets, weapons) {
 	}
 
 	function updateAngleText(player) {
-		var angle = player.angle
+		let angle = player.angle
 		if (angle > Math.PI / 2) {
 			angleText.text = Math.round((Math.PI - angle) * (180 / Math.PI)) + " L";
 		}
@@ -159,12 +159,12 @@ function createGameGraphics(assets, weapons) {
 	}
 
 	function updateWeaponAmmoText(player) {
-		var ammo = player.weaponList[player.currentWep].ammo;
+		let ammo = player.weaponList[player.currentWep].ammo;
 		weaponAmmoText.text = (ammo == -1 ? 99 : ammo);
 	}
 
 	function updateWeaponNameAndAmmoText(player) {
-		var weaponName = weapons[player.weaponList[player.currentWep].weaponIndex].name;
+		let weaponName = weapons[player.weaponList[player.currentWep].weaponIndex].name;
 		weaponNameText.text = weaponName;
 		updateWeaponAmmoText(player);
 	}
@@ -202,7 +202,7 @@ function createGameGraphics(assets, weapons) {
 	}
 
 	function createBottomMenu() {
-		var container = createMenuBars(GET_MAX_Y - 16);
+		let container = createMenuBars(GET_MAX_Y - 16);
 	    drawFrame(container, GameColors, 64, GET_MAX_Y - 13, 98, GET_MAX_Y - 3);
 	    drawFrame(container, GameColors, 200, GET_MAX_Y - 13, 210, GET_MAX_Y - 3);
 	    drawFrame(container, GameColors, 312, GET_MAX_Y - 13, 340, GET_MAX_Y - 3);
@@ -220,7 +220,7 @@ function createGameGraphics(assets, weapons) {
 		shieldText = outTextXYAsText(GameColors.WHITE, "", 314, GET_MAX_Y - 11);
 		container.addChild(shieldText);
 
-		var wind = createWind();
+		let wind = createWind();
 		container.addChild(wind);
 
 		guidanceContainer = createGuidance();
@@ -230,9 +230,9 @@ function createGameGraphics(assets, weapons) {
 	}
 
 	function createMenuBars(y) {
-		var container = new createjs.Container();
+		let container = new createjs.Container();
         showPCX(assets, container, "bar.pcx", 0, y, GET_MAX_X, 16);
-        var shape = new createjs.Shape();
+        let shape = new createjs.Shape();
 	    line(shape.graphics, GameColors.WHITE, 0, y, GET_MAX_X, y);
 	    line(shape.graphics, GameColors.WHITE, 0, y, 0, y + 16);
 	    line(shape.graphics, GameColors.GRAY, 0, y + 16, GET_MAX_X, y + 16);
@@ -242,9 +242,9 @@ function createGameGraphics(assets, weapons) {
 	}
 
 	function createWind() {
-		var container = new createjs.Container();
-		var x = GET_MAX_X - 90;
-		var y = GET_MAX_Y - 11;
+		let container = new createjs.Container();
+		let x = GET_MAX_X - 90;
+		let y = GET_MAX_Y - 11;
 		outTextXY(container, GameColors.DARKGRAY, "Wind:", x - 42, y);
 		drawFrame(container, GameColors, x - 1, y, x + 82, y + 7);
 
@@ -257,19 +257,19 @@ function createGameGraphics(assets, weapons) {
 	function updateWind(wind) {
 		windShape.graphics.clear();
 
-		var doubleWind = wind * 2;
-		var x = GET_MAX_X - 90;
-		var y = GET_MAX_Y - 11;
+		let doubleWind = wind * 2;
+		let x = GET_MAX_X - 90;
+		let y = GET_MAX_Y - 11;
 		bar(windShape.graphics, GameColors.BLUE, x + 41 + doubleWind, y + 2, x + 41, y + 5);
 		line(windShape.graphics, GameColors.MEDBLUE, x + 41 + doubleWind, y + 5, x + 41, y + 5);
-		var color = doubleWind < 0 ? GameColors.BRIGHTBLUE : GameColors.MEDBLUE;
+		let color = doubleWind < 0 ? GameColors.BRIGHTBLUE : GameColors.MEDBLUE;
 		line(windShape.graphics, color, x + 41 + doubleWind, y + 2, x + 41 + doubleWind, y + 5);
 		line(windShape.graphics, GameColors.BRIGHTBLUE, x + 41 + doubleWind, y + 2, x + 41, y + 2);
 		line(windShape.graphics, GameColors.WHITE, x + 41, y + 1, x + 41, y + 6);
 	}
 
 	function createGuidance() {
-		var container = new createjs.Container();
+		let container = new createjs.Container();
 		outTextXY(container, GameColors.DARKGRAY, "Guid. Fuel:", 354, GET_MAX_Y - 11);
 		drawFrame(container, GameColors, 442, GET_MAX_Y - 11, 495, GET_MAX_Y - 4);
 
@@ -303,19 +303,19 @@ function createGameGraphics(assets, weapons) {
 	}
 
 	function createScreenEdges() {
-		var shape = new createjs.Shape();
+		let shape = new createjs.Shape();
 		rectangle(shape.graphics, GameColors.MAGENTA, 0, 17, GET_MAX_X, GET_MAX_Y - 17);
 		rectangle(shape.graphics, GameColors.DARKMAGENTA, 1, 18, GET_MAX_X - 1, GET_MAX_Y - 18);
 		return shape;
 	}
 
 	function createTanks() {
-		var tanksContainer = new createjs.Container();
-		for (var i = 0; i < 8; ++i) {
-			var tankContainer = new createjs.Container();
-			var tankShape = new createjs.Shape();
-			var color = playerColorTable[i];
-			var secColor = playerColorTable[i+8];
+		let tanksContainer = new createjs.Container();
+		for (let i = 0; i < 8; ++i) {
+			let tankContainer = new createjs.Container();
+			let tankShape = new createjs.Shape();
+			let color = playerColorTable[i];
+			let secColor = playerColorTable[i+8];
 			// in this way, the tankContainer.x and y can be places precisely at the tank position
 			tankShape.regX = 3;
 			tankShape.regY = 2;
@@ -325,13 +325,13 @@ function createGameGraphics(assets, weapons) {
 			putPixel(tankShape.graphics, secColor, 6, 0);
 			tankContainer.addChild(tankShape);
 
-			var cannonShape = new createjs.Shape();
+			let cannonShape = new createjs.Shape();
 			 // in this way, the tankContainer.x and y can be places precisely at the tank position
 			cannonShape.regX = 0;
 			cannonShape.regY = 3;
 			tankContainer.addChild(cannonShape);
 
-			var shieldShape = new createjs.Shape();
+			let shieldShape = new createjs.Shape();
 			 // in this way, the tankContainer.x and y can be places precisely at the tank position
 			shieldShape.regX = 0;
 			shieldShape.regY = 12;
@@ -345,7 +345,7 @@ function createGameGraphics(assets, weapons) {
 			shieldShape.visible = false;
 			tankContainer.addChild(shieldShape);
 
-			var arrowShape = new createjs.Shape();
+			let arrowShape = new createjs.Shape();
 			 // in this way, the tankContainer.x and y can be places precisely at the tank position
 			arrowShape.regX = 0;
 			arrowShape.regY = 16;
@@ -359,7 +359,7 @@ function createGameGraphics(assets, weapons) {
 			tankContainer.visible = false;
 			tanksContainer.addChild(tankContainer);
 
-			var tankObj = {
+			let tankObj = {
 				container: tankContainer,
 				cannonShape: cannonShape,
 				shieldShape: shieldShape,
@@ -372,12 +372,12 @@ function createGameGraphics(assets, weapons) {
 	}
 
 	function createRoundSign() {
-		var roundContainer = new createjs.Container();
+		let roundContainer = new createjs.Container();
 
-		var x1 = SCREEN_WIDTH_CENTER - 57;
-		var y1 = SCREEN_HEIGHT_CENTER - 8;
-		var x2 = x1 + 114;
-		var y2 = y1 + 14;
+		let x1 = SCREEN_WIDTH_CENTER - 57;
+		let y1 = SCREEN_HEIGHT_CENTER - 8;
+		let x2 = x1 + 114;
+		let y2 = y1 + 14;
 
 		drawBox(assets, roundContainer, GameColors, x1, y1, x2, y2);
 
@@ -399,7 +399,7 @@ function createGameGraphics(assets, weapons) {
 	}
 
 	function updateTankPosition(tankColor, x, y) {
-		var tankContainer = tanks[tankColor].container;
+		let tankContainer = tanks[tankColor].container;
 		tankContainer.x = x;
 		tankContainer.y = y; 
 	}
@@ -410,23 +410,23 @@ function createGameGraphics(assets, weapons) {
 	}
 
 	function setCannonAngle(player) {
-		var cannonShape = tanks[player.color].cannonShape;
+		let cannonShape = tanks[player.color].cannonShape;
 		cannonShape.graphics.clear();
 		line(cannonShape.graphics, GameColors.WHITE, 0, 0, Math.round(Math.cos(player.angle) * 5), -Math.round(Math.sin(player.angle) * 5));
 	}
 
 	function setTankVisibility(tankColor, visible) {
-		var tankContainer = tanks[tankColor].container;
+		let tankContainer = tanks[tankColor].container;
 		tankContainer.visible = visible;
 	}
 
 	function setTankShieldVisibility(tankColor, visible) {
-		var shieldShape = tanks[tankColor].shieldShape;
+		let shieldShape = tanks[tankColor].shieldShape;
 		shieldShape.visible = visible;
 	}
 
 	function setTankArrowVisibility(tankColor, visible) {
-		var arrowShape = tanks[tankColor].arrowShape;
+		let arrowShape = tanks[tankColor].arrowShape;
 		arrowShape.visible = visible;
 	}
 

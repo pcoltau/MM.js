@@ -1,13 +1,13 @@
 "use strict";
 
-var SCREEN_WIDTH = 800;
-var SCREEN_HEIGHT = 600;
-var GET_MAX_X = SCREEN_WIDTH - 1; 
-var GET_MAX_Y = SCREEN_HEIGHT - 1; 
-var SCREEN_WIDTH_CENTER = Math.floor(GET_MAX_X / 2);
-var SCREEN_HEIGHT_CENTER = Math.floor(GET_MAX_Y / 2);
+let SCREEN_WIDTH = 800;
+let SCREEN_HEIGHT = 600;
+let GET_MAX_X = SCREEN_WIDTH - 1; 
+let GET_MAX_Y = SCREEN_HEIGHT - 1; 
+let SCREEN_WIDTH_CENTER = Math.floor(GET_MAX_X / 2);
+let SCREEN_HEIGHT_CENTER = Math.floor(GET_MAX_Y / 2);
 
-var playerColorTable = [GameColors.BLUE, GameColors.LIGHTRED, GameColors.GREEN, GameColors.YELLOW, GameColors.MAGENTA, GameColors.CYAN, GameColors.WHITE, GameColors.LIGHTGRAY, 
+let playerColorTable = [GameColors.BLUE, GameColors.LIGHTRED, GameColors.GREEN, GameColors.YELLOW, GameColors.MAGENTA, GameColors.CYAN, GameColors.WHITE, GameColors.LIGHTGRAY, 
                         GameColors.DARKBLUE, GameColors.DARKRED, GameColors.DARKGREEN, GameColors.DARKBROWN, GameColors.DARKMAGENTA, GameColors.DARKCYAN, GameColors.LIGHTGRAY, GameColors.GRAY];
 
 function line(graphics, color, x1, y1, x2, y2) {
@@ -15,23 +15,23 @@ function line(graphics, color, x1, y1, x2, y2) {
 }
 
 function bar(graphics, color, x1, y1, x2, y2) {
-  var startX = Math.min(x1, x2);
-  var endX = Math.max(x1, x2);
-  var startY = Math.min(y1, y2);
-  var endY = Math.max(y1, y2);
-  var width = endX - startX;
-  var height = endY - startY;
+  let startX = Math.min(x1, x2);
+  let endX = Math.max(x1, x2);
+  let startY = Math.min(y1, y2);
+  let endY = Math.max(y1, y2);
+  let width = endX - startX;
+  let height = endY - startY;
   if (width > 0 && height > 0) {
     graphics.beginStroke(color).beginFill(color).drawRect(startX, startY, width, height).endFill().endStroke();
   }
 }
 
 function barAsShape(color, x1, y1, x2, y2) {
-  var startX = Math.min(x1, x2);
-  var endX = Math.max(x1, x2);
-  var startY = Math.min(y1, y2);
-  var endY = Math.max(y1, y2);
-  var shape = new createjs.Shape();
+  let startX = Math.min(x1, x2);
+  let endX = Math.max(x1, x2);
+  let startY = Math.min(y1, y2);
+  let endY = Math.max(y1, y2);
+  let shape = new createjs.Shape();
   bar(shape.graphics, color, 0, 0, endX - startX, endY - startY);
   shape.x = startX;
   shape.y = startY;
@@ -39,12 +39,12 @@ function barAsShape(color, x1, y1, x2, y2) {
 }
 
 function rectangle(graphics, color, x1, y1, x2, y2) {
-  var startX = Math.min(x1, x2);
-  var endX = Math.max(x1, x2);
-  var startY = Math.min(y1, y2);
-  var endY = Math.max(y1, y2);
-  var width = endX - startX;
-  var height = endY - startY;
+  let startX = Math.min(x1, x2);
+  let endX = Math.max(x1, x2);
+  let startY = Math.min(y1, y2);
+  let endY = Math.max(y1, y2);
+  let width = endX - startX;
+  let height = endY - startY;
   if (width > 0 && height > 0) {
     graphics.beginStroke(color).drawRect(startX, startY, width, height).endStroke();
   }
@@ -56,28 +56,28 @@ function putPixel(graphics, color, x, y) {
 
 function outTextXY(container, color, text, x, y, textAlign, shadowColor) {
   // This is the closest approximation to the DOS font and size used in the original Mortar Mayhem (combined with the font style in style.css)
-  var text = outTextXYAsText(color, text, x, y, textAlign, shadowColor);
-  container.addChild(text);
+  let textObj = outTextXYAsText(color, text, x, y, textAlign, shadowColor);
+  container.addChild(textObj);
 }
 
 function outTextXYAsText(color, text, x, y, textAlign, shadowColor) {
   // This is the closest approximation to the DOS font and size used in the original Mortar Mayhem (combined with the font style in style.css)
-  var text = new createjs.Text(text, "11px TerminalVector", color);
+  let textObj = new createjs.Text(text, "11px TerminalVector", color);
   if (textAlign) {
-    text.textAlign = textAlign;
+    textObj.textAlign = textAlign;
   }
-  text.textBaseline = "hanging";
-  text.scaleY = 0.84;
-  text.x = x;
-  text.y = y + 0.5;
+  textObj.textBaseline = "hanging";
+  textObj.scaleY = 0.84;
+  textObj.x = x;
+  textObj.y = y + 0.5;
   if (shadowColor) {
-    text.shadow = new createjs.Shadow(shadowColor, 2, 2, 0);
+    textObj.shadow = new createjs.Shadow(shadowColor, 2, 2, 0);
   }
-  return text;
+  return textObj;
 }
 
 function showPCX(assets, container, name, x, y, width, height) {
-  var bitmap = new createjs.Bitmap(assets.getResult(name));
+  let bitmap = new createjs.Bitmap(assets.getResult(name));
   bitmap.x = x - 0.5;
   bitmap.y = y - 0.5;
   // crop bitmap

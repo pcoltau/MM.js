@@ -1,21 +1,21 @@
 "use strict";
 
 function createMenu(onSelect, assets) {
-    var menuItems = ["Start Game", "Options", "About", "Quit"];
-    var selectedItemShape = null;
-    var selectedItemIndex = 0;
+    let menuItems = ["Start Game", "Options", "About", "Quit"];
+    let selectedItemShape = null;
+    let selectedItemIndex = 0;
 
-    var mainContainer = new createjs.Container();
+    let mainContainer = new createjs.Container();
 
-    var backgroundContainer = createBackground();
+    let backgroundContainer = createBackground();
     //backgroundContainer.cache(0,0,SCREEN_WIDTH, SCREEN_WIDTH);
-    var menuContainer = createMainMenu();
+    let menuContainer = createMainMenu();
 
     mainContainer.addChild(backgroundContainer, menuContainer);
 
     // The Pixel dance test..
 /*
-    var testShape = new createjs.Shape();
+    let testShape = new createjs.Shape();
     line(testShape.graphics, MenuColors.WHITE, 11, 11, 11, 21);
     line(testShape.graphics, MenuColors.WHITE, 21, 11, 26, 11);
     line(testShape.graphics, MenuColors.WHITE, 31, 11, 41, 21);
@@ -35,7 +35,7 @@ function createMenu(onSelect, assets) {
     };
 
     function createBackground() {
-        var backgroundContainer = new createjs.Container();
+        let backgroundContainer = new createjs.Container();
 
         //Show_PCX('Gfx\menutop.pcx',GetMaxX div 2 - 319,GetMaxY div 2 - 240,639,239);
         //Show_PCX('Gfx\menubot.pcx',GetMaxX div 2 - 319,GetMaxY div 2      ,639,239);
@@ -49,7 +49,7 @@ function createMenu(onSelect, assets) {
         // SetColor(Gray);
         // Line(GetMaxX div 2 - 319,GetMaxY div 2 - 239,GetMaxX div 2 + 320,GetMaxY div 2 - 239);
         // Line(GetMaxX div 2 - 319,GetMaxY div 2 - 239,GetMaxX div 2 - 319,GetMaxY div 2 + 240);
-        var shape = new createjs.Shape();
+        let shape = new createjs.Shape();
         line(shape.graphics, MenuColors.DARKGRAY, SCREEN_WIDTH_CENTER - 319, SCREEN_HEIGHT_CENTER + 240, SCREEN_WIDTH_CENTER + 320, SCREEN_HEIGHT_CENTER + 240);
         line(shape.graphics, MenuColors.DARKGRAY, SCREEN_WIDTH_CENTER + 320, SCREEN_HEIGHT_CENTER - 239, SCREEN_WIDTH_CENTER + 320, SCREEN_HEIGHT_CENTER + 239);
         line(shape.graphics, MenuColors.GRAY, SCREEN_WIDTH_CENTER - 319, SCREEN_HEIGHT_CENTER - 239, SCREEN_WIDTH_CENTER + 320, SCREEN_HEIGHT_CENTER - 239);
@@ -64,19 +64,19 @@ function createMenu(onSelect, assets) {
     }
 
     function createMainMenu() {
-        var menuContainer = new createjs.Container();
+        let menuContainer = new createjs.Container();
         //  x[1] := GetMaxX div 2 - 80;
         //  y[1] := GetMaxY div 2 - 70;
         //  x[2] := x[1] + 159;
         //  y[2] := y[1] + 193;
         //  SetFillStyle(SolidFill,DarkGray);
         //  bar(x[1]+2,y[1]+2,x[2]+2,y[2]+2);
-        var x1 = SCREEN_WIDTH_CENTER - 80;
-        var y1 = SCREEN_HEIGHT_CENTER - 70;
-        var x2 = x1 + 159;
-        var y2 = y1 + 193;
+        let x1 = SCREEN_WIDTH_CENTER - 80;
+        let y1 = SCREEN_HEIGHT_CENTER - 70;
+        let x2 = x1 + 159;
+        let y2 = y1 + 193;
 
-        var menubackContainer = new createjs.Container();
+        let menubackContainer = new createjs.Container();
         showPCX(assets, menubackContainer, "menuback.pcx", x1, y1, x2 - x1, y2 - y1);
         // add shadow
         menubackContainer.shadow = new createjs.Shadow(MenuColors.DARKGRAY, 2, 2, 0);
@@ -89,7 +89,7 @@ function createMenu(onSelect, assets) {
           Line(x[1],y[2],x[2],y[2]);
           Line(x[2],y[1],x[2],y[2]);
         */
-        var shape = new createjs.Shape();
+        let shape = new createjs.Shape();
         line(shape.graphics, MenuColors.BRIGHTGRAY, x1, y1, x2, y1);
         line(shape.graphics, MenuColors.BRIGHTGRAY, x1, y1, x1, y2);
         line(shape.graphics, MenuColors.GRAY, x1, y2, x2, y2);
@@ -101,23 +101,23 @@ function createMenu(onSelect, assets) {
         outTextXY(menuContainer, MenuColors.DARKGRAY, "M A I N   M E N U", SCREEN_WIDTH_CENTER - 68, y1 + 10);
 
         //  DrawFrame(x[1]+16,y[1]+32,x[2]-16,y[2]-16);
-        var frame = drawFrame(menuContainer, MenuColors, x1 + 16, y1 + 32, x2 - 16, y2 - 16);
+        let frame = drawFrame(menuContainer, MenuColors, x1 + 16, y1 + 32, x2 - 16, y2 - 16);
 
         // bar(x[1]+19,y[1]+23+i*30,x[2]-20,y[1]+35+i*30);
-        var yPos = getItemBarPosition(selectedItemIndex);
+        let yPos = getItemBarPosition(selectedItemIndex);
         selectedItemShape = barAsShape(MenuColors.DARKESTGREEN, x1 + 19, yPos, x2 - 20, yPos + 12);
         
         menuContainer.addChild(selectedItemShape);
 
-        var menuItemsContainer = createMenuItems();
+        let menuItemsContainer = createMenuItems();
         menuContainer.addChild(menuItemsContainer);
 
         return menuContainer;
     }
 
     function createMenuItems() {
-        var container = new createjs.Container();
-        for (var i = 0; i < menuItems.length; ++i) {
+        let container = new createjs.Container();
+        for (let i = 0; i < menuItems.length; ++i) {
             /*
             if i = C then SetFillStyle(SolidFill,DarkestGreen) else SetFillStyle(SolidFill,Black);
             bar(x[1]+19,y[1]+23+i*30,x[2]-20,y[1]+35+i*30);

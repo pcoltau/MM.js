@@ -1,17 +1,17 @@
 "use strict";
 
 function createGameSetup(onDone, onExit, assets) {
-	var SettingsStates = {setup: 0, getPlayerNames: 1};
-	var currentState = SettingsStates.setup;
-	var gameSettings = null;
-	var currentPlayerIndex = 0;
-	var playerNames = [];
+	let SettingsStates = {setup: 0, getPlayerNames: 1};
+	let currentState = SettingsStates.setup;
+	let gameSettings = null;
+	let currentPlayerIndex = 0;
+	let playerNames = [];
 
-	var mainContainer = new createjs.Container();
+	let mainContainer = new createjs.Container();
 
-	var backgroundContainer = createBackground();
-    var settingsDialog = createGameSetupSettingsDialog(assets, onSettingsDone, onExit);
-    var playerNamesDialog = createPlayerNamesDialog(assets, onPlayerNameDone);
+	let backgroundContainer = createBackground();
+    let settingsDialog = createGameSetupSettingsDialog(assets, onSettingsDone, onExit);
+    let playerNamesDialog = createPlayerNamesDialog(assets, onPlayerNameDone);
 
 	mainContainer.addChild(backgroundContainer);
 	mainContainer.addChild(settingsDialog.container);
@@ -28,7 +28,7 @@ function createGameSetup(onDone, onExit, assets) {
 	    Show_PCX('Gfx\frame.pcx',GetMaxX div 2 -318,GetMaxY div 2 - 235,636,235);
 		Show_PCX('Gfx\frame.pcx',GetMaxX div 2 -318,GetMaxY div 2,636,235);
 	*/
-        var backgroundContainer = new createjs.Container();
+        let backgroundContainer = new createjs.Container();
 
         showPCX(assets, backgroundContainer, "frame.pcx", SCREEN_WIDTH_CENTER - 318, SCREEN_HEIGHT_CENTER - 235, 636, 235);
         showPCX(assets, backgroundContainer, "frame.pcx", SCREEN_WIDTH_CENTER - 318, SCREEN_HEIGHT_CENTER, 636, 235);

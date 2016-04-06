@@ -1,27 +1,27 @@
 "use strict";
 
 function createGame(wepList, onExit, assets) {
-	var noWind = false; // TODO: Get from config (on/off)
-	var shouldShufflePlayers = true; // FRoundRandom in MM
+	let noWind = false; // TODO: Get from config (on/off)
+	let shouldShufflePlayers = true; // FRoundRandom in MM
 
-	var States = {
+	let States = {
 		SHOW_ROUND_NUMBER: 0,
 		PLAYER_READY: 1, // arrow blinking, waiting for input
 		ADJUSTING_CANNON: 2,
 		SELECTING_WEAPON: 3
 	} 
-	var currentState = States.SHOW_ROUND_NUMBER;
+	let currentState = States.SHOW_ROUND_NUMBER;
 
-	var wind = 0; // will be set in updateWind()
-	var currentPlayerIndex = 0;
-	var pList = []; // playerList - it's called PList in MM
-	var currentRound = 1;
+	let wind = 0; // will be set in updateWind()
+	let currentPlayerIndex = 0;
+	let pList = []; // playerList - it's called PList in MM
+	let currentRound = 1;
 
-	var blinkingArrowSpeed = 0.2; // approximate value - the value in MM (0.1) seems too fast, and is semi CPU dependent
-	var blinkingArrowCounter = 0;
-	var blinkingArrowVisible = false;
+	let blinkingArrowSpeed = 0.2; // approximate value - the value in MM (0.1) seems too fast, and is semi CPU dependent
+	let blinkingArrowCounter = 0;
+	let blinkingArrowVisible = false;
 
-	var gameGraphics = createGameGraphics(assets, wepList);
+	let gameGraphics = createGameGraphics(assets, wepList);
 
 	return {
 		container: gameGraphics.container,
@@ -33,9 +33,9 @@ function createGame(wepList, onExit, assets) {
 
 	function onShow() {
 		currentPlayerIndex = 0;
-		var currentPlayer = pList[currentPlayerIndex];
+		let currentPlayer = pList[currentPlayerIndex];
 		gameGraphics.updateOverviewAfterCurrentPlayerChange(currentPlayer);
-		var landTop = generateLand();
+		let landTop = generateLand();
 		gameGraphics.drawLand(landTop);
 		wind = noWind ? 0 : Math.floor(Math.random() * 41) - 20;
 		gameGraphics.updateWind(wind);
@@ -49,19 +49,19 @@ function createGame(wepList, onExit, assets) {
 	}
 
 	function generateLand() {
-		var landSmooth = 12; // TODO: Take from config
-		var landComplex = 35; // TODO: Take from config
-		var halfLandSmooth = Math.floor(landSmooth / 2);
-		var landTop = [];
+		let landSmooth = 12; // TODO: Take from config
+		let landComplex = 35; // TODO: Take from config
+		let halfLandSmooth = Math.floor(landSmooth / 2);
+		let landTop = [];
 		
-		var breaks = [];
-		var startX = 0;
-		var startY = Math.floor(Math.random() * SCREEN_HEIGHT_CENTER) + Math.floor(GET_MAX_Y / 3) + 10;
-		var endX = 0;
-		var endY = 0;
+		let breaks = [];
+		let startX = 0;
+		let startY = Math.floor(Math.random() * SCREEN_HEIGHT_CENTER) + Math.floor(GET_MAX_Y / 3) + 10;
+		let endX = 0;
+		let endY = 0;
 		do {
 			breaks.push({x: startX, y: startY});
-			var smoothness = Math.floor(Math.random() * halfLandSmooth) + halfLandSmooth;
+			let smoothness = Math.floor(Math.random() * halfLandSmooth) + halfLandSmooth;
 			endX = Math.floor(Math.random() * Math.floor(GET_MAX_X / landComplex)) + startX + 10;
 			endY = Math.floor(Math.random() * Math.floor(GET_MAX_Y / smoothness)) - Math.floor(GET_MAX_Y / (smoothness * 2)) + startY;
 			endX = Math.min(endX, GET_MAX_X - 2);
@@ -70,9 +70,9 @@ function createGame(wepList, onExit, assets) {
 			startY = endY;
 		} while (endX < GET_MAX_X - 2);
 		breaks.push({x: endX, y: endY})
-		for (var i = 0; i < breaks.length - 1; ++i) {
+		for (let i = 0; i < breaks.length - 1; ++i) {
 			landTop[breaks[i].x] = breaks[i].y;
-			for (var j = breaks[i].x; j <= breaks[i + 1].x; ++j) {
+			for (let j = breaks[i].x; j <= breaks[i + 1].x; ++j) {
 				landTop[j] = breaks[i].y + Math.round((breaks[i + 1].y - breaks[i].y) * (j - breaks[i].x) / (breaks[i + 1].x - breaks[i].x));
 			}		
 		}
@@ -80,7 +80,7 @@ function createGame(wepList, onExit, assets) {
 	}
 
     function onKeyDown(stage, key) {
-		var currentPlayer = pList[currentPlayerIndex];
+		let currentPlayer = pList[currentPlayerIndex];
 		switch (currentState) {
 			case States.SHOW_ROUND_NUMBER:
 				gameGraphics.hideRoundSign();
@@ -91,15 +91,16 @@ function createGame(wepList, onExit, assets) {
 				setCurrentTankArrowVisibility(true);
 				currentState = States.ADJUSTING_CANNON;
 				// no break - we want to handle the key
-			case States.ADJUSTING_CANNON:
+			case States.ADJUSTING_CANNON: {
 				handleAdjustingCannon(currentPlayer, key)
 				break;
+			}
 		}
 	}
 
 	function handleAdjustingCannon(currentPlayer, key) {
 		switch (key) {
-			case Keys.LEFT_ARROW:
+			case Keys.LEFT_ARROW: 
 			case Keys.NUMPAD_4:
 				currentPlayer.angle += (gameEngine.isKeyDown[Keys.SHIFT] || key === Keys.NUMPAD_4) ? Math.PI/180 : Math.PI/45;
 				if (currentPlayer.angle > Math.PI) {
@@ -202,14 +203,14 @@ function createGame(wepList, onExit, assets) {
 
 	function setPlayerNames(playerNames) {
 		pList = [];
-		for (var i = 0; i < playerNames.length; ++i) {
-			var player = createNewPlayer(playerNames[i], i);
+		for (let i = 0; i < playerNames.length; ++i) {
+			let player = createNewPlayer(playerNames[i], i);
 			pList.push(player);
 		}
 	}
 
 	function createNewPlayer(playerName, playerIndex) {
-		var player = {
+		let player = {
 			name: playerName,
 			power: 500,
 			maxPower: 1000,
@@ -241,16 +242,16 @@ function createGame(wepList, onExit, assets) {
 	}
 
 	function setRandomPlayerPositions(players, landTop) {
-		var averagePlayerSpace = Math.floor(GET_MAX_X / (players.length * 2));
-		var n = 0;
-		var ok = false
+		let averagePlayerSpace = Math.floor(GET_MAX_X / (players.length * 2));
+		let n = 0;
+		let ok = false
 		do {
-			for (var i = 0; i < players.length; ++i) {
+			for (let i = 0; i < players.length; ++i) {
 				n = 0;
 				do {
 					ok = true;
 					players[i].posX = Math.floor(Math.random() * (GET_MAX_X - 20)) + 10;
-					for (var x = 0; x < i; ++x) {
+					for (let x = 0; x < i; ++x) {
 						if (players[i].posX < players[x].posX + averagePlayerSpace && players[i].posX > players[x].posX - averagePlayerSpace) {
 							ok = false;
 						}
@@ -260,8 +261,8 @@ function createGame(wepList, onExit, assets) {
 			}
 		} while (!ok || n === 100);
 
-		for (var i = 0; i < players.length; ++i) {
-			var posY = landTop[players[i].posX];
+		for (let i = 0; i < players.length; ++i) {
+			let posY = landTop[players[i].posX];
 			posY = (posY === GET_MAX_Y - 18) ? posY - 2 : posY - 1;
 			players[i].posY = posY;
 
@@ -270,20 +271,20 @@ function createGame(wepList, onExit, assets) {
 	}
 
 	function shufflePlayers(players) {
-		for (var i = 0; i < players.length; ++i)	{
-			var m = Math.floor(Math.random() * players.length);
-			var n;
+		for (let i = 0; i < players.length; ++i)	{
+			let m = Math.floor(Math.random() * players.length);
+			let n;
 			do {
 				n = Math.floor(Math.random() * players.length);
 			} while (n === m);
-			var playerMem = players[m];
+			let playerMem = players[m];
 			players[m] = players[n];
 			players[n] = playerMem;
 		}
 	}
 
 	function showAllTanks() {
-		for (var i = 0; i < pList.length; ++i) {
+		for (let i = 0; i < pList.length; ++i) {
 			gameGraphics.setCannonAngle(pList[i]);
 			if (pList[i].shield) {
 				gameGraphics.setTankShieldVisibility(pList[i].color, true);

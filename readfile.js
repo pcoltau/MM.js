@@ -1,11 +1,11 @@
 "use strict";
 
 function readEncodedFile(file) {
-	var resultList = [];
-	var item = {};
-	var lines = decodeFile(file).split("\r\n");
-	for (var i = 0; i < lines.length; i++) {
-		var parts = lines[i].split("=");
+	let resultList = [];
+	let item = {};
+	let lines = decodeFile(file).split("\r\n");
+	for (let i = 0; i < lines.length; i++) {
+		let parts = lines[i].split("=");
 		if (parts.length == 2) {
 			item[parts[0]] = parts[1];
 		}
@@ -18,10 +18,10 @@ function readEncodedFile(file) {
 }
 
 function readEncodedTypeFile(file) {
-	var resultList = [];
-	var lines = decodeFile(file).split("\r\n");
-	for (var i = 0; i < lines.length; i += 3) {
-		var item = {};
+	let resultList = [];
+	let lines = decodeFile(file).split("\r\n");
+	for (let i = 0; i < lines.length; i += 3) {
+		let item = {};
 		item.header = lines[i];
 		item.desc = lines[i+1];
 		resultList.push(item);
@@ -30,12 +30,12 @@ function readEncodedTypeFile(file) {
 }
 
 function decodeFile(file) {
-	var result = "";
-	var factor = 10;
-	var byteView = new Uint8Array(file);
+	let result = "";
+	let factor = 10;
+	let byteView = new Uint8Array(file);
 
-    for(var i = 0; i < byteView.length; i++) {
-	    var b = byteView[i] - factor;
+    for(let i = 0; i < byteView.length; i++) {
+	    let b = byteView[i] - factor;
 	    if (b < 0) b += 255;
 
 	    result += String.fromCharCode(b);
@@ -47,10 +47,10 @@ function decodeFile(file) {
 }
 
 function readConfigFile(file) {
-	var resultList = {};
-	var lines = file.split("\r\n");
-	for (var i = 0; i < lines.length; i++) {
-		var parts = lines[i].split("=");
+	let resultList = {};
+	let lines = file.split("\r\n");
+	for (let i = 0; i < lines.length; i++) {
+		let parts = lines[i].split("=");
 		if (parts.length == 2) {
 			resultList[parts[0]] = parts[1];
 		}

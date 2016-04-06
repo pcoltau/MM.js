@@ -1,8 +1,8 @@
 "use strict";
 
 function drawFrame(container, colorScheme, x1, y1, x2, y2, color) {
-    var shape = new createjs.Shape();
-    var c = color ? color : colorScheme.BLACK;
+    let shape = new createjs.Shape();
+    let c = color ? color : colorScheme.BLACK;
     // SetFillStyle(SolidFill,Black);
     // Bar(X1+1,Y1+1,X2-1,Y2-1);
     // SetColor(White);
@@ -20,8 +20,8 @@ function drawFrame(container, colorScheme, x1, y1, x2, y2, color) {
 }
 
 function drawBox(assets, container, colorScheme, x1, y1, x2, y2, addShadow) {
-    var mainContainer = new createjs.Container();
-    var backContainer = new createjs.Container();
+    let mainContainer = new createjs.Container();
+    let backContainer = new createjs.Container();
 
 	if (y2 - y1 > 240) {
 		showPCX(assets, backContainer, "backtop.pcx", x1, y1, x2 - x1, 239);
@@ -35,7 +35,7 @@ function drawBox(assets, container, colorScheme, x1, y1, x2, y2, addShadow) {
 		backContainer.shadow = new createjs.Shadow(colorScheme.DARKGRAY, 2, 2, 0);
 	}
 	mainContainer.addChild(backContainer);
-	var shape = new createjs.Shape();
+	let shape = new createjs.Shape();
 	line(shape.graphics, colorScheme.WHITE, x1, y1, x1, y2);
 	line(shape.graphics, colorScheme.WHITE, x1, y1, x2, y1);
 	line(shape.graphics, colorScheme.GRAY, x2, y1, x2, y2);
