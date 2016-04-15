@@ -113,23 +113,16 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 	function explode(shot) {
 		let x = Math.round(shot.px);
 		let y = Math.round(shot.py);
-/*
-      if x+i < GetMaxX-1 then hole[x+i] := true;
-      if x-i > 1 then hole[x-i] := true;
-      SetColor(ExpCol[round((i/WeaponList[CurWT].Dam)*20)]);
-      Ellipse(x,y,0,360,i,i);
-*/		
+
 		if (x + shot.exp < GET_MAX_X - 1) {
 			hole[x + shot.exp] = true;
 		}
-
 		if (x - shot.exp > 1) {
 			hole[x - shot.exp] = true;
 		}
 
 		// TODO: if SoundOn then sound(random(100));
-		// SetColor(ExpCol[round((i/WeaponList[CurWT].Dam)*20)]);
-		gameGraphics.drawExplosionCircle(x, y, shot.exp, ExplosionColors[Math.round((shot.exp / weapon.dam) * 20)]);
+		gameGraphics.drawExplosionCircle(x, y, shot.exp, ExplosionColors[Math.round((shot.exp / weapon.dam) * ExplosionColors.length)]);
 
 		if (shot.exp < weapon.dam) {
 			shot.exp++;
