@@ -13,6 +13,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 
 	let rgbTransparent = Palette.getRGBFromColor(GameColors.TRANSPARENT);
 	let rgbDarkGray = Palette.getRGBFromColor(GameColors.DARKGRAY);
+	let rgbYellow = Palette.getRGBFromColor(GameColors.YELLOW);
 
 	let currentPlayer = players[currentPlayerIndex];
 
@@ -63,19 +64,8 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 	};
 
 	function onTick(stage, deltaInSeconds) {
-		let allDead = true;
-		let shot = null;
-		for (let i = 0; i < shotCount; ++i) {
-			shot = shots[currentShot, currentLeap];
-			if (!shot.dead) {
-				allDead = false;
-				break;
-			}
-			currentShot++;
-			if (currentShot == shotCount) {
-				currentShot = 0;
-			}
-		}
+		let shot = getShotThatIsNotDead();
+		let allDead = shot === null;
 		if (!allDead) {
 			switch (currentState) {
 				case States.FLYING:
@@ -129,6 +119,22 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 				}
 			}
 		}
+	}
+
+	function getShotThatIsNotDead() {
+		let shot = null;
+		for (let i = 0; i < shotCount; ++i) {
+			let shotAtIndex = shots[currentShot, currentLeap];
+			if (!shotAtIndex.dead) {
+				shot = shotAtIndex;
+				break;
+			}
+			currentShot++;
+			if (currentShot == shotCount) {
+				currentShot = 0;
+			}
+		}
+		return shot;
 	}
 
 	function impact(shot) {
@@ -186,10 +192,9 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 		roundedY = Math.round(shot.py);
 		let hitGround = gameGraphics.isGround(roundedX, roundedY);
 		if (hitGround) {
-			shot.dead = true;
-			//shotHitGround(shot);
+			shotHitGround(shot);
 		}
-		/*
+		gameGraphics.drawShot(roundedX, roundedY, rgbYellow);
 		if (weapon.class === "guiding" && guiBar > 0) {
 			guiBar -= 0.025;
 			gameGraphics.updateGuidance(guiBar);
@@ -212,7 +217,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 		}
 		if (Math.abs(shot.vy) < 0.08 && shot.py + shot.vy > GET_MAX_Y - 19) {
 			shot.dead = true;
-		}*/
+		}
 	}
 
 	function handleGuidance() {
@@ -259,10 +264,10 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 	}
 
 	function bendShot(shot, posX, posY) {
-		if (shot.py > posY - 100 && py < posY &&
-			shot.px > posX - (posY - shot.py) / 2 && 
-			shot.px < posX + (posY - shot.py) / 2) {
-			shot.vy -= (Math.abs(shot.vy) + Math.abs(shot.vy)) / 500 + 0.001;
+		if ((shot.py > posY - 100) && (shot.py < posY) &&
+			(shot.px > posX - (posY - shot.py) / 2) && 
+			(shot.px < posX + (posY - shot.py) / 2)) {
+			shot.vy -= (Math.abs(shot.vy) + Math.abs(shot.vx)) / 500 + 0.001;
 		}
 	}
 }

@@ -13,7 +13,7 @@ function createGame(wepList, onExit, assets, context) {
 	} 
 	let currentState = States.SHOW_ROUND_NUMBER;
 
-	let wind = 0; // will be set in updateWind()
+	let wind = 0;
 	let currentPlayerIndex = 0;
 	let pList = []; // playerList - it's called PList in MM
 	let currentRound = 1;
@@ -143,10 +143,25 @@ function createGame(wepList, onExit, assets, context) {
 
 	function switchToNextPlayer() {
 		setCurrentTankArrowVisibility(false);
+		// TODO: Check for maxPower > 0
 		currentPlayerIndex++;
 		if (currentPlayerIndex === pList.length) {
 			currentPlayerIndex = 0;
 		}
+		let currentPlayer = pList[currentPlayerIndex];
+		gameGraphics.updateOverviewAfterCurrentPlayerChange(currentPlayer);
+
+		if (!noWind) {
+			wind += Math.floor(Math.random() * 11) - 5;
+			if (wind < -20) {
+				wind -= (wind + 20) * 2;
+			}
+			if (wind > 20) {
+				wind -= (wind - 20) * 2;
+			}
+			gameGraphics.updateWind(wind);
+		}
+
 		currentState = States.PLAYER_READY;
 	}
 
@@ -198,7 +213,7 @@ function createGame(wepList, onExit, assets, context) {
 			maxPower: 1000,
 			armour: 0,
 			parachutes: 0,
-			shield: false,
+			shield: true,
 			angle: Math.PI / 4,
 			posX: 0,
 			posY: 0,
