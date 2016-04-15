@@ -1,8 +1,10 @@
 "use strict";
 
-function createGameGraphics(assets, weapons) {
+function createGameGraphics(assets, weapons, context) {
 	let dirtColor = GameColors.BROWN;
 	let dirtColor2 = GameColors.DARKESTBROWN;
+	let dirtRGB = Palette.getRGBFromColor(dirtColor);
+	let dirtRGB2 = Palette.getRGBFromColor(dirtColor2);
 
 	let windShape = null;
 	let armourText = null;
@@ -15,19 +17,22 @@ function createGameGraphics(assets, weapons) {
 	let weaponAmmoText = null;
 	let guidanceContainer = null;
 	let guidanceShape = null;
-	let landContainer = null;
+	let gameShape = null;
+	let tracersShape = null;
 	let roundNumberText = null;
 	let roundSign = null;
 	let tanks = {}; // all 8 tanks, {color:{container, cannonShape, shieldShape, arrowShape} 
+
+	// The gameImageData is used to draw the land, tracers and explosions.
+	let gameImageData = context.createImageData(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	let mainContainer = new createjs.Container();
 
 	let sky = createSky();
 	mainContainer.addChild(sky);
 
-	// the container for the land that will be generated later	(in onShow or whenever a new round is started)
-	landContainer = new createjs.Container();
-	mainContainer.addChild(landContainer);
+	gameShape = new createjs.Shape();
+	mainContainer.addChild(gameShape);
 
 	let topMenu = createTopMenu();
 	mainContainer.addChild(topMenu);
@@ -48,7 +53,11 @@ function createGameGraphics(assets, weapons) {
 		container: mainContainer,
 		updateOverviewAfterCurrentPlayerChange: updateOverviewAfterCurrentPlayerChange,
 		updateWind: updateWind,
+		generateLand: generateLand,
 		drawLand: drawLand,
+		drawShot: drawShot,
+		updateGameImage: updateGameImage,
+		isGround: isGround,
 		updateTankPosition: updateTankPosition,
 		updateCannonAngleAndText: updateCannonAngleAndText,
 		setCannonAngle: setCannonAngle,
@@ -62,44 +71,110 @@ function createGameGraphics(assets, weapons) {
 		//showGuidance:	
 	};
 
-	function drawLand(landTop) {
-  		let landShape = new createjs.Shape();
-  		// magic to compensate for the snapToPixel magic we do on the stage in gameEngine.js
-  		landShape.regX = 0.5; 
-  		landShape.regY = 0.5;
-		let dirtRGB = Palette.getRGBFromColor(dirtColor);
-		let dirtRGB2 = Palette.getRGBFromColor(dirtColor2);
-		landShape.graphics.append({exec:function(ctx, shape) {
-        	let imageData = ctx.createImageData(GET_MAX_X, GET_MAX_Y);
-        	let data = imageData.data;
-			for (let x = 2; x <= GET_MAX_X - 2; ++x) {
-				for (let y = landTop[x] + 1; y <= GET_MAX_Y - 18; ++y) {
-					let r = (GET_MAX_Y - y + landTop[x]) / 70;
-					if (r < 1) {
-						r = (1 / r);
-					}
-					let rr = Math.round(r);
-					if (rr <= 1) {
-						rr = 2;
-					}
-					let rgb = (Math.floor(Math.random() * rr) === 0) ? dirtRGB2 : dirtRGB;
-					let index = (x + y * GET_MAX_X) * 4;
-					data[index + 0] = rgb.r;
-					data[index + 1] = rgb.g;
-					data[index + 2] = rgb.b;
-					data[index + 3] = 0xFF; 
-				}
-			}
-			ctx.putImageData(imageData, 0, 0);
-    	}});
-		landShape.cache(0, 0, GET_MAX_X, GET_MAX_Y);
-		landShape.graphics.store();
-		landContainer.addChild(landShape);
-  		let landTopShape = new createjs.Shape();
-		for (let x = 3; x <= GET_MAX_X - 2; ++x) {
-			line(landTopShape.graphics, dirtColor2, x - 1, landTop[x - 1], x, landTop[x]);
+	function generateLand() {
+		let landSmooth = 12; // TODO: Take from config
+		let landComplex = 35; // TODO: Take from config
+		let halfLandSmooth = Math.floor(landSmooth / 2);
+		let landTop = [];
+		
+		let breaks = [];
+		let startX = 0;
+		let startY = Math.floor(Math.random() * SCREEN_HEIGHT_CENTER) + Math.floor(GET_MAX_Y / 3) + 10;
+		let endX = 0;
+		let endY = 0;
+		do {
+			breaks.push({x: startX, y: startY});
+			let smoothness = Math.floor(Math.random() * halfLandSmooth) + halfLandSmooth;
+			endX = Math.floor(Math.random() * Math.floor(GET_MAX_X / landComplex)) + startX + 10;
+			endY = Math.floor(Math.random() * Math.floor(GET_MAX_Y / smoothness)) - Math.floor(GET_MAX_Y / (smoothness * 2)) + startY;
+			endX = Math.min(endX, GET_MAX_X - 2);
+			endY = Math.max(Math.min(endY, GET_MAX_Y - 18), 75);
+			startX = endX;
+			startY = endY;
+		} while (endX < GET_MAX_X - 2);
+		breaks.push({x: endX, y: endY})
+		for (let i = 0; i < breaks.length - 1; ++i) {
+			landTop[breaks[i].x] = breaks[i].y;
+			for (let j = breaks[i].x; j <= breaks[i + 1].x; ++j) {
+				landTop[j] = breaks[i].y + Math.round((breaks[i + 1].y - breaks[i].y) * (j - breaks[i].x) / (breaks[i + 1].x - breaks[i].x));
+			}		
 		}
-		landContainer.addChild(landTopShape);
+		return landTop;
+	}
+
+	function drawLand(landTop) {
+  		// magic to compensate for the snapToPixel magic we do on the stage in gameEngine.js
+  		gameShape.regX = 0.5; 
+  		gameShape.regY = 0.5;
+
+    	let data = gameImageData.data;
+		for (let x = 2; x <= GET_MAX_X - 2; ++x) {
+			for (let y = landTop[x] + 1; y <= GET_MAX_Y - 18; ++y) {
+				let r = (GET_MAX_Y - y + landTop[x]) / 70;
+				if (r < 1) {
+					r = (1 / r);
+				}
+				let rr = Math.round(r);
+				if (rr <= 1) {
+					rr = 2;
+				}
+				let rgb = (Math.floor(Math.random() * rr) === 0) ? dirtRGB2 : dirtRGB;
+				let index = (x + y * gameImageData.width) * 4;
+				data[index + 0] = rgb.r;
+				data[index + 1] = rgb.g;
+				data[index + 2] = rgb.b;
+				data[index + 3] = 0xFF; 
+			}
+		}
+
+		// add the imageData draw function
+		addDrawGameImageDataFunction();
+		// Draw landTop
+		for (let x = 3; x <= GET_MAX_X - 2; ++x) {
+			// reversing the magic from above in order to have the correct lines by adding 0.5.
+			line(gameShape.graphics, dirtColor2, x - 0.5, landTop[x - 1] + 0.5, x + 0.5, landTop[x] + 0.5);
+		}
+		// update the gameImageData with the landTop
+		gameShape.graphics.append({exec:function(ctx, shape) {
+			gameImageData = ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    	}});
+    	// trigger a draw and a caching of the resulting image
+		gameShape.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		// clear all graphics functions
+		gameShape.graphics.clear();
+		// re-add the imageData draw function, so it is ready for the next drawing/updateCache.
+		addDrawGameImageDataFunction();
+	}
+
+	function addDrawGameImageDataFunction() {
+		gameShape.graphics.append({exec:function(ctx, shape) {
+			ctx.putImageData(gameImageData, 0, 0);
+    	}});
+	}
+
+	function drawShot(x, y, rgbColor) {
+    	let data = gameImageData.data;
+		let index = (x + y * gameImageData.width) * 4;
+		data[index + 0] = rgbColor.r;
+		data[index + 1] = rgbColor.g;
+		data[index + 2] = rgbColor.b;
+		data[index + 3] = 0xFF; 
+	}
+
+	function updateGameImage() {
+		gameShape.updateCache();
+	}
+
+	function isGround(x, y) {
+//		return gameShape.hitTest(x, y);
+    	let data = gameImageData.data;
+		let index = (x + y * gameImageData.width) * 4;
+		let dataIndex0 = data[index];
+		let dataIndex1 = data[index + 1];
+		let dataIndex2 = data[index + 2];
+		let dataIndex3 = data[index + 3];
+		return ((dataIndex0 === dirtRGB.r && dataIndex1 === dirtRGB.g && dataIndex2 === dirtRGB.b && dataIndex3 === 255) ||
+			    (dataIndex0 === dirtRGB2.r && dataIndex1 === dirtRGB2.g && dataIndex2 === dirtRGB2.b && dataIndex3 === 255));
 	}
 
 	function updateOverviewAfterCurrentPlayerChange(newPlayer) {
@@ -180,13 +255,6 @@ function createGameGraphics(assets, weapons) {
 	}
 
 	function getPlayerNameShadow(playerColor) {
-		/*
-	    if (C <> Gray) and (C <> DarkMagenta) and (C <> DarkGreen) and
-	       (C <> DarkBrown) and (C <> Blue) and (C <> Red) and (C <> Magenta) then
-			SetColor(Gray)
-		else
-			SetColor(DarkGray);
-*/
 		if (playerColor !== GameColors.GRAY &&
 			playerColor !== GameColors.DARKMAGENTA && 
 			playerColor !== GameColors.DARKGREEN && 

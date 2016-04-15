@@ -22,7 +22,7 @@ let game = {
     fadingLayer: null
 };
 
-gameEngine.onInit = function onInit(stage, assets) {
+gameEngine.onInit = function onInit(stage, assets, context) {
     let wepList = readEncodedFile(assets.getResult("wep", true));
     let itemList = readEncodedFile(assets.getResult("item", true));
     let typeList = readEncodedTypeFile(assets.getResult("type", true));
@@ -53,7 +53,7 @@ gameEngine.onInit = function onInit(stage, assets) {
         game.menuObj = createMenu(onSelectMainMenuItem, assets);
         game.aboutObj = createAbout(onExitAbout, assets);
         game.gameSetupObj = createGameSetup(onGameSetupDone, onExitGameSetup, assets);
-        game.gameObj = createGame(wepList, onExitGame, assets);
+        game.gameObj = createGame(wepList, onExitGame, assets, context);
 
         function onSelectMainMenuItem(menuItemIndex) {
             switch (menuItemIndex) {

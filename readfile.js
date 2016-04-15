@@ -7,7 +7,12 @@ function readEncodedFile(file) {
 	for (let i = 0; i < lines.length; i++) {
 		let parts = lines[i].split("=");
 		if (parts.length == 2) {
-			item[parts[0]] = parts[1];
+			let value = parts[1];
+			let intValue = parseInt(value);
+			if (!isNaN(intValue)) {
+				value = intValue;
+			}
+			item[parts[0]] = value;
 		}
 		else if (Object.keys(item).length > 0) {
 			resultList.push(item);

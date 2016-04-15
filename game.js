@@ -1,6 +1,6 @@
 "use strict";
 
-function createGame(wepList, onExit, assets) {
+function createGame(wepList, onExit, assets, context) {
 	let noWind = false; // TODO: Get from config (on/off)
 	let shouldShufflePlayers = true; // FRoundRandom in MM
 
@@ -8,7 +8,8 @@ function createGame(wepList, onExit, assets) {
 		SHOW_ROUND_NUMBER: 0,
 		PLAYER_READY: 1, // arrow blinking, waiting for input
 		ADJUSTING_CANNON: 2,
-		SELECTING_WEAPON: 3
+		SELECTING_WEAPON: 3,
+		CANNON_FIRED: 4
 	} 
 	let currentState = States.SHOW_ROUND_NUMBER;
 
@@ -21,7 +22,9 @@ function createGame(wepList, onExit, assets) {
 	let blinkingArrowCounter = 0;
 	let blinkingArrowVisible = false;
 
-	let gameGraphics = createGameGraphics(assets, wepList);
+	let firedCannon = null; // the returned object from the fireCannon() function.
+
+	let gameGraphics = createGameGraphics(assets, wepList, context);
 
 	return {
 		container: gameGraphics.container,
@@ -35,7 +38,7 @@ function createGame(wepList, onExit, assets) {
 		currentPlayerIndex = 0;
 		let currentPlayer = pList[currentPlayerIndex];
 		gameGraphics.updateOverviewAfterCurrentPlayerChange(currentPlayer);
-		let landTop = generateLand();
+		let landTop = gameGraphics.generateLand();
 		gameGraphics.drawLand(landTop);
 		wind = noWind ? 0 : Math.floor(Math.random() * 41) - 20;
 		gameGraphics.updateWind(wind);
@@ -46,37 +49,6 @@ function createGame(wepList, onExit, assets) {
 		}
 		showAllTanks();
 		gameGraphics.showRoundSign(currentRound)
-	}
-
-	function generateLand() {
-		let landSmooth = 12; // TODO: Take from config
-		let landComplex = 35; // TODO: Take from config
-		let halfLandSmooth = Math.floor(landSmooth / 2);
-		let landTop = [];
-		
-		let breaks = [];
-		let startX = 0;
-		let startY = Math.floor(Math.random() * SCREEN_HEIGHT_CENTER) + Math.floor(GET_MAX_Y / 3) + 10;
-		let endX = 0;
-		let endY = 0;
-		do {
-			breaks.push({x: startX, y: startY});
-			let smoothness = Math.floor(Math.random() * halfLandSmooth) + halfLandSmooth;
-			endX = Math.floor(Math.random() * Math.floor(GET_MAX_X / landComplex)) + startX + 10;
-			endY = Math.floor(Math.random() * Math.floor(GET_MAX_Y / smoothness)) - Math.floor(GET_MAX_Y / (smoothness * 2)) + startY;
-			endX = Math.min(endX, GET_MAX_X - 2);
-			endY = Math.max(Math.min(endY, GET_MAX_Y - 18), 75);
-			startX = endX;
-			startY = endY;
-		} while (endX < GET_MAX_X - 2);
-		breaks.push({x: endX, y: endY})
-		for (let i = 0; i < breaks.length - 1; ++i) {
-			landTop[breaks[i].x] = breaks[i].y;
-			for (let j = breaks[i].x; j <= breaks[i + 1].x; ++j) {
-				landTop[j] = breaks[i].y + Math.round((breaks[i + 1].y - breaks[i].y) * (j - breaks[i].x) / (breaks[i + 1].x - breaks[i].x));
-			}		
-		}
-		return landTop;
 	}
 
     function onKeyDown(stage, key) {
@@ -160,6 +132,12 @@ function createGame(wepList, onExit, assets) {
 				}
 				gameGraphics.updateWeaponNameAndAmmoText(currentPlayer);
 				break;
+			case Keys.SPACE:
+				setCurrentTankArrowVisibility(false);
+				currentState = States.CANNON_FIRED;
+				let currentWeapon = wepList[currentPlayer.weaponList[currentPlayer.currentWep].weaponIndex];
+				firedCannon = fireCannon(currentWeapon, pList, currentPlayerIndex, wind, gameGraphics, fireCannonDone);
+				break;
 		}		
 	}
 
@@ -177,6 +155,8 @@ function createGame(wepList, onExit, assets) {
 			case States.PLAYER_READY:
 			    handleBlinkingArrow(deltaInSeconds);
 				break;
+			case States.CANNON_FIRED:
+				firedCannon.onTick(stage, deltaInSeconds);
 		}
 	}
 
@@ -210,6 +190,8 @@ function createGame(wepList, onExit, assets) {
 	}
 
 	function createNewPlayer(playerName, playerIndex) {
+		let color = playerColorTable[playerIndex];
+		let secColor = playerColorTable[playerIndex + 8];
 		let player = {
 			name: playerName,
 			power: 500,
@@ -220,8 +202,9 @@ function createGame(wepList, onExit, assets) {
 			angle: Math.PI / 4,
 			posX: 0,
 			posY: 0,
-			color: playerColorTable[playerIndex],
-			secColor: playerColorTable[playerIndex + 8],
+			color: color,
+			secColor: secColor,
+			rgbSecColor: Palette.getRGBFromColor(secColor),
 			weaponList: [
 				{ammo: -1, weaponIndex: 0},
 				{ammo: 5, weaponIndex: 1},
@@ -291,6 +274,11 @@ function createGame(wepList, onExit, assets) {
 			}
 			gameGraphics.setTankVisibility(pList[i].color, true);
 		}		
+	}
+
+	function fireCannonDone() {
+		firedCannon = null;
+		switchToNextPlayer();
 	}
 
 }
