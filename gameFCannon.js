@@ -4,11 +4,12 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 	let States = { FLYING: 0, ROLLING: 1, EXPLODING: 2}; // This is not a per-shot state, as the whole game goes into rolling/exploding when a shot hits ground.
 	let currentState = States.FLYING; 
 
-	let fastShot = false; // TODO: Get from config
+	let fastShot = true; // TODO: Get from config
 	let tracers = true; // TODO: get from config
 	let traceColorAsTank = true; // TODO: get from config
 
 	let milliSecondsBetweenShotMovement = fastShot ? 1 : 4;
+	let milliSecondsBetweenExplosionExpansion = 5;
 	let timeCounter = 0;
 
 	let rgbTransparent = Palette.getRGBFromColor(GameColors.TRANSPARENT);
@@ -44,6 +45,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 			py: -Math.round(Math.sin(currentPlayer.angle) * 6) + currentPlayer.posY - 3,
 			vx: Math.cos(currentPlayer.angle) * (lv - i / 25),
 			vy: -Math.sin(currentPlayer.angle) * (lv - i / 25),
+			exp: 0,
 			dead: false,
 			miss: true
 		};
@@ -64,45 +66,98 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 	};
 
 	function onTick(stage, deltaInSeconds) {
-		let shot = getShotThatIsNotDead();
-		let allDead = shot === null;
-		if (!allDead) {
-			switch (currentState) {
-				case States.FLYING:
-					timeCounter += deltaInSeconds * 1000;
-					let shotMovementIterations = Math.floor(timeCounter / milliSecondsBetweenShotMovement);
-					timeCounter = timeCounter % milliSecondsBetweenShotMovement;
-					let shotImpact = false;
-					for (let j = 0; j < shotMovementIterations && !shotImpact; ++j) {
-						// cycle through all shots
-						for (let i = 0; i < shotCount && !shotImpact; ++i) {
-							if (!shot.dead) {
-								moveShot(shot);
-								if (shot.dead) {
-									exNum++;
-									shotImpact = true
-									impact(shot);
-									timeCounter = 0;
-								}
+		timeCounter += deltaInSeconds * 1000;
+		switch (currentState) {
+			case States.FLYING:
+				let shotMovementIterations = Math.floor(timeCounter / milliSecondsBetweenShotMovement);
+				timeCounter = timeCounter % milliSecondsBetweenShotMovement;
+				let shotImpact = false;
+				for (let j = 0; j < shotMovementIterations && !shotImpact; ++j) {
+					// cycle through all shots
+					for (let i = 0; i < shotCount && !shotImpact; ++i) {
+						let shot = shots[currentShot, currentLeap];
+						if (!shot.dead) {
+							moveShot(shot);
+							if (shot.dead) {
+								exNum++;
+								shotImpact = true
+								impact(shot);
+								timeCounter = 0;
 							}
-							if (!shotImpact) {
-								currentShot++;
-								if (currentShot == shotCount) {
-									currentShot = 0;
-								}
-								shot = shots[currentShot, currentLeap];
+						}
+						if (!shotImpact) {
+							currentShot++;
+							if (currentShot == shotCount) {
+								currentShot = 0;
 							}
 						}
 					}
-					gameGraphics.updateGameImage();
-					break;
-				case States.ROLLING:
-					break;
-				case States.EXPLODING:
-					break;
-			}
+				}
+				break;
+			case States.ROLLING:
+				break;
+			case States.EXPLODING:
+				let shotExplosionIterations = Math.floor(timeCounter / milliSecondsBetweenExplosionExpansion);
+				timeCounter = timeCounter % milliSecondsBetweenExplosionExpansion;
+				let shot = shots[currentShot, currentLeap];
+				for (let j = 0; j < shotExplosionIterations; ++j) {
+					if (explode(shot)) {
+						break;
+					}
+				}
+				break;
+		}
+		gameGraphics.updateGameImage();
+	}
+
+	function explode(shot) {
+		let x = Math.round(shot.px);
+		let y = Math.round(shot.py);
+/*
+      if x+i < GetMaxX-1 then hole[x+i] := true;
+      if x-i > 1 then hole[x-i] := true;
+      SetColor(ExpCol[round((i/WeaponList[CurWT].Dam)*20)]);
+      Ellipse(x,y,0,360,i,i);
+*/		
+		if (x + shot.exp < GET_MAX_X - 1) {
+			hole[x + shot.exp] = true;
+		}
+
+		if (x - shot.exp > 1) {
+			hole[x - shot.exp] = true;
+		}
+
+		// TODO: if SoundOn then sound(random(100));
+		// SetColor(ExpCol[round((i/WeaponList[CurWT].Dam)*20)]);
+		gameGraphics.drawExplosionCircle(x, y, shot.exp, ExplosionColors[Math.round((shot.exp / weapon.dam) * 20)]);
+
+		if (shot.exp < weapon.dam) {
+			shot.exp++;
+			return false;
 		}
 		else {
+			// TODO: Clear explosion.
+			nextShotOrFinishShooting();
+			return true
+		}
+	}
+
+	function nextShotOrFinishShooting() {
+		let allDead = true;
+		for (let i = 0; i < shotCount; ++i) {
+			let shotAtIndex = shots[currentShot, currentLeap];
+			if (!shotAtIndex.dead) {
+				allDead = false;
+				//shot = shotAtIndex;
+				break;
+			}
+			currentShot++;
+			if (currentShot == shotCount) {
+				currentShot = 0;
+			}
+		}
+		if (allDead) {
+			// next leap if any
 			currentShot = 0;
 			currentLeap++;
 			if (currentLeap === leapCount || weapon.class === "nitro") {
@@ -119,22 +174,6 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 				}
 			}
 		}
-	}
-
-	function getShotThatIsNotDead() {
-		let shot = null;
-		for (let i = 0; i < shotCount; ++i) {
-			let shotAtIndex = shots[currentShot, currentLeap];
-			if (!shotAtIndex.dead) {
-				shot = shotAtIndex;
-				break;
-			}
-			currentShot++;
-			if (currentShot == shotCount) {
-				currentShot = 0;
-			}
-		}
-		return shot;
 	}
 
 	function impact(shot) {

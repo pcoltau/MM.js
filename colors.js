@@ -54,6 +54,29 @@ let GameColors = {
 	TRANSPARENT: "rgba(0,0,0,0)"
 };
 
+let ExplosionColors = [
+	Palette.getGameColor(210),
+	Palette.getGameColor(245),
+	Palette.getGameColor(174),
+	Palette.getGameColor(244),
+	Palette.getGameColor(138),
+	Palette.getGameColor(243),
+	Palette.getGameColor(102),
+	Palette.getGameColor(242),
+	Palette.getGameColor(66),
+	Palette.getGameColor(241),
+	Palette.getGameColor(30),
+	Palette.getGameColor(240),
+	Palette.getGameColor(24),
+	Palette.getGameColor(239),
+	Palette.getGameColor(18),
+	Palette.getGameColor(238),
+	Palette.getGameColor(12),
+	Palette.getGameColor(237),
+	Palette.getGameColor(6),
+	Palette.getGameColor(236)
+];
+
 let MenuColors = {
 	BLACK: Palette.getMenuColor(254),
 	WHITE: Palette.getMenuColor(244),

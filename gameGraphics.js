@@ -17,10 +17,8 @@ function createGameGraphics(assets, weapons, context) {
 	let weaponAmmoText = null;
 	let guidanceContainer = null;
 	let guidanceShape = null;
-	let gameShape = null;
 	let tracersShape = null;
 	let roundNumberText = null;
-	let roundSign = null;
 	let tanks = {}; // all 8 tanks, {color:{container, cannonShape, shieldShape, arrowShape} 
 
 	// The gameImageData is used to draw the land, tracers and explosions.
@@ -31,8 +29,14 @@ function createGameGraphics(assets, weapons, context) {
 	let sky = createSky();
 	mainContainer.addChild(sky);
 
-	gameShape = new createjs.Shape();
+	let gameShape = new createjs.Shape();
 	mainContainer.addChild(gameShape);
+
+	let tanksContainer = createTanks();
+	mainContainer.addChild(tanksContainer);
+
+	let explosionsShape = new createjs.Shape();
+	mainContainer.addChild(explosionsShape);
 
 	let topMenu = createTopMenu();
 	mainContainer.addChild(topMenu);
@@ -43,10 +47,7 @@ function createGameGraphics(assets, weapons, context) {
 	let screenEdges = createScreenEdges();
 	mainContainer.addChild(screenEdges);
 
-	let tanksContainer = createTanks();
-	mainContainer.addChild(tanksContainer);
-
-	roundSign = createRoundSign();
+	let roundSign = createRoundSign();
 	mainContainer.addChild(roundSign)
 
 	return {
@@ -56,6 +57,7 @@ function createGameGraphics(assets, weapons, context) {
 		generateLand: generateLand,
 		drawLand: drawLand,
 		drawShot: drawShot,
+		drawExplosionCircle: drawExplosionCircle,
 		updateGameImage: updateGameImage,
 		isGround: isGround,
 		updateTankPosition: updateTankPosition,
@@ -159,6 +161,10 @@ function createGameGraphics(assets, weapons, context) {
 		data[index + 1] = rgbColor.g;
 		data[index + 2] = rgbColor.b;
 		data[index + 3] = 0xFF; 
+	}
+
+	function drawExplosionCircle(x, y, r, color) {
+		circle(explosionsShape.graphics, color, x, y, r);
 	}
 
 	function updateGameImage() {

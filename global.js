@@ -54,6 +54,10 @@ function putPixel(graphics, color, x, y) {
   graphics.beginStroke(color).drawRect(x, y, 0.001, 0.001).endStroke();
 }
 
+function circle(graphics, color, x, y, r) {
+  graphics.beginStroke(color).drawCircle(x, y, r).endStroke();
+}
+
 function outTextXY(container, color, text, x, y, textAlign, shadowColor) {
   // This is the closest approximation to the DOS font and size used in the original Mortar Mayhem (combined with the font style in style.css)
   let textObj = outTextXYAsText(color, text, x, y, textAlign, shadowColor);
