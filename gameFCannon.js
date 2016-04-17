@@ -129,19 +129,21 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 			return false;
 		}
 		else {
-			// TODO: Clear explosion.
-			nextShotOrFinishShooting();
+			gameGraphics.clearExplosionCircle(x, y, weapon.dam);
+
+			if (!nextShotOrFinishIsShooting()) {
+				gameGraphics.drawShot(x, y, rgbYellow);
+			}
 			return true
 		}
 	}
 
-	function nextShotOrFinishShooting() {
+	function nextShotOrFinishIsShooting() {
 		let allDead = true;
 		for (let i = 0; i < shotCount; ++i) {
 			let shotAtIndex = shots[currentShot, currentLeap];
 			if (!shotAtIndex.dead) {
 				allDead = false;
-				//shot = shotAtIndex;
 				break;
 			}
 			currentShot++;
@@ -150,7 +152,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 			}
 		}
 		if (allDead) {
-			// next leap if any
+			// next leap, if any
 			currentShot = 0;
 			currentLeap++;
 			if (currentLeap === leapCount || weapon.class === "nitro") {
@@ -159,6 +161,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 				// TODO: DrawLandTop
 				// TODO: CheckNoAmmo
 				fireCannonDone();
+				return true;
 			}
 			else {
 				exNum = 0;
@@ -167,6 +170,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 				}
 			}
 		}
+		return false;
 	}
 
 	function impact(shot) {

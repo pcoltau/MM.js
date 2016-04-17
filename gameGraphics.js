@@ -21,13 +21,12 @@ function createGameGraphics(assets, weapons, context) {
 	let roundNumberText = null;
 	let tanks = {}; // all 8 tanks, {color:{container, cannonShape, shieldShape, arrowShape} 
 
+	let skyRGB = Palette.getRGBFromColor(GameColors.SKY);
 	// The gameImageData is used to draw the land, tracers and explosions.
 	let gameImageData = context.createImageData(SCREEN_WIDTH, SCREEN_HEIGHT);
+	fillGameImageDataWithSky();
 
 	let mainContainer = new createjs.Container();
-
-	let sky = createSky();
-	mainContainer.addChild(sky);
 
 	let gameShape = new createjs.Shape();
 	mainContainer.addChild(gameShape);
@@ -58,6 +57,7 @@ function createGameGraphics(assets, weapons, context) {
 		drawLand: drawLand,
 		drawShot: drawShot,
 		drawExplosionCircle: drawExplosionCircle,
+		clearExplosionCircle: clearExplosionCircle,
 		updateGameImage: updateGameImage,
 		isGround: isGround,
 		updateTankPosition: updateTankPosition,
@@ -72,6 +72,16 @@ function createGameGraphics(assets, weapons, context) {
 		hideRoundSign: hideRoundSign
 		//showGuidance:	
 	};
+
+	function fillGameImageDataWithSky() {
+		let data = gameImageData.data;
+		for (let i = 0; i < data.length; i += 4) {
+			data[i + 0] = skyRGB.r;
+			data[i + 1] = skyRGB.g;
+			data[i + 2] = skyRGB.b;
+			data[i + 3] = 0xFF;
+		}
+	}
 
 	function generateLand() {
 		let landSmooth = 12; // TODO: Take from config
@@ -137,9 +147,7 @@ function createGameGraphics(assets, weapons, context) {
 			line(gameShape.graphics, dirtColor2, x - 0.5, landTop[x - 1] + 0.5, x + 0.5, landTop[x] + 0.5);
 		}
 		// update the gameImageData with the landTop
-		gameShape.graphics.append({exec:function(ctx, shape) {
-			gameImageData = ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    	}});
+		addUpdateGameImageDataFunction()
     	// trigger a draw and a caching of the resulting image
 		gameShape.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		// clear all graphics functions
@@ -151,6 +159,12 @@ function createGameGraphics(assets, weapons, context) {
 	function addDrawGameImageDataFunction() {
 		gameShape.graphics.append({exec:function(ctx, shape) {
 			ctx.putImageData(gameImageData, 0, 0);
+    	}});
+	}
+
+	function addUpdateGameImageDataFunction() {
+		gameShape.graphics.append({exec:function(ctx, shape) {
+			gameImageData = ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     	}});
 	}
 
@@ -167,12 +181,24 @@ function createGameGraphics(assets, weapons, context) {
 		circle(explosionsShape.graphics, color, x, y, r);
 	}
 
+	function clearExplosionCircle(x, y, r) {
+		explosionsShape.graphics.clear();
+		circle(gameShape.graphics, GameColors.SKY, x, y, r, GameColors.SKY);
+		// update the gameImageData with the cleared explosion
+		addUpdateGameImageDataFunction()
+		// trigger a redraw
+		gameShape.updateCache();
+		// clear all graphics functions
+		gameShape.graphics.clear();
+		// re-add the imageData draw function, so it is ready for the next drawing/updateCache.
+		addDrawGameImageDataFunction();
+	}
+
 	function updateGameImage() {
 		gameShape.updateCache();
 	}
 
 	function isGround(x, y) {
-//		return gameShape.hitTest(x, y);
     	let data = gameImageData.data;
 		let index = (x + y * gameImageData.width) * 4;
 		let dataIndex0 = data[index];
@@ -191,12 +217,6 @@ function createGameGraphics(assets, weapons, context) {
 		updateArmourText(newPlayer);
 		updateParachutesText(newPlayer);
 		updateShieldText(newPlayer);
-	}
-
-	function createSky() {
-		let sky = new createjs.Shape();
-		sky.graphics.beginFill(GameColors.SKY).drawRect(0, 0, GET_MAX_X, GET_MAX_Y).endFill();
-		return sky;
 	}
 
 	function createTopMenu() {

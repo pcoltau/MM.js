@@ -54,8 +54,20 @@ function putPixel(graphics, color, x, y) {
   graphics.beginStroke(color).drawRect(x, y, 0.001, 0.001).endStroke();
 }
 
-function circle(graphics, color, x, y, r) {
-  graphics.beginStroke(color).drawCircle(x, y, r).endStroke();
+function circle(graphics, color, x, y, r, fillColor) {
+  graphics.beginStroke(color);
+  if (fillColor) {
+    graphics.beginFill(fillColor);
+  }
+  graphics.drawCircle(x, y, r);
+  if (fillColor) {
+    graphics.endFill();
+  }
+  graphics.endStroke();
+}
+
+function circleFilled(graphics, color, x, y, r) {
+  graphics.beginStroke(color).beginFill(color).drawCircle(x, y, r).endFill().endStroke();
 }
 
 function outTextXY(container, color, text, x, y, textAlign, shadowColor) {
