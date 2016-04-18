@@ -4,7 +4,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 	let States = { FLYING: 0, ROLLING: 1, EXPLODING: 2}; // This is not a per-shot state, as the whole game goes into rolling/exploding when a shot hits ground.
 	let currentState = States.FLYING; 
 
-	let fastShot = true; // TODO: Get from config
+	let fastShot = false; // TODO: Get from config
 	let tracers = true; // TODO: get from config
 	let traceColorAsTank = true; // TODO: get from config
 
@@ -20,7 +20,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 
 	let guiBar = (weapon.class === "guiding") ? 50 : 0;
 	let divided = (weapon.class === "multishot");
-	let shotCount = weapon.shots;
+	let shotCount = (weapon.class === "multishot") ? weapon.shots : 1;
 	let leapCount = (weapon.class === "leap") ? weapon.leaps : 1;
 	let fuel = (weapon.class === "guiding") ? 50 : 0;
 	let glevel = (weapon.class === "guiding") ? weapon.shots : 0;
@@ -40,24 +40,24 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 	let ax = (wind / 100000);
 
 	for (let i = 0; i < shotCount; ++i) {
-		let shot = {
-			px: Math.round(Math.cos(currentPlayer.angle) * 6) + currentPlayer.posX,
-			py: -Math.round(Math.sin(currentPlayer.angle) * 6) + currentPlayer.posY - 3,
-			vx: Math.cos(currentPlayer.angle) * (lv - i / 25),
-			vy: -Math.sin(currentPlayer.angle) * (lv - i / 25),
-			exp: 0,
-			dead: false,
-			miss: true
-		};
-		shots[i, 0] = shot; // [shotNum, leapNum]
+		shots[i] = [];
+		let shot = createNewShot();
+		shot.px = Math.round(Math.cos(currentPlayer.angle) * 6) + currentPlayer.posX;
+		shot.py = -Math.round(Math.sin(currentPlayer.angle) * 6) + currentPlayer.posY - 3;
+		shot.vx = Math.cos(currentPlayer.angle) * (lv - i / 25);
+		shot.vy = -Math.sin(currentPlayer.angle) * (lv - i / 25);
+		shot.lv = lv;
+
+		shots[i][0] = shot; // [shotNum, leapNum]
+		shots[i][1] = shot; // [shotNum, leapNum]
 	}
 
 	if (weapon.class === "nitro") {
 		if (weapon.dam * lv > 25) {
 			shotCount = 1;
 			exNum = 1;
-			shots[0, 0].dead = true;
-			impact(shots[0, 0]);
+			shots[0][0].dead = true;
+			impact(shots[0][0]);
 		}
 	}
 
@@ -65,27 +65,45 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 		onTick: onTick
 	};
 
+	function createNewShot() {
+		return {
+			px: 0,
+			py: 0,
+			vx: 0.0,
+			vy: 0.0,
+			lv: 0.0,
+			exp: 0,
+			divided: false,
+			dead: false,
+			miss: true // TODO: Used?
+		};
+	}
+
 	function onTick(stage, deltaInSeconds) {
 		timeCounter += deltaInSeconds * 1000;
 		switch (currentState) {
 			case States.FLYING:
 				let shotMovementIterations = Math.floor(timeCounter / milliSecondsBetweenShotMovement);
 				timeCounter = timeCounter % milliSecondsBetweenShotMovement;
-				let shotImpact = false;
-				for (let j = 0; j < shotMovementIterations && !shotImpact; ++j) {
+				let exitIterations = false;
+				for (let j = 0; j < shotMovementIterations && !exitIterations; ++j) {
 					// cycle through all shots
-					for (let i = 0; i < shotCount && !shotImpact; ++i) {
-						let shot = shots[currentShot, currentLeap];
+					for (let i = 0; i < shotCount && !exitIterations; ++i) {
+						let shot = shots[currentShot][currentLeap];
 						if (!shot.dead) {
+							let wasDivided = false;
 							moveShot(shot);
 							if (shot.dead) {
 								exNum++;
-								shotImpact = true
+								exitIterations = true
 								impact(shot);
 								timeCounter = 0;
 							}
+							else if (shot.isDivided && !wasDivided) {
+								exitIterations = true;
+							}
 						}
-						if (!shotImpact) {
+						if (!exitIterations) {
 							currentShot++;
 							if (currentShot == shotCount) {
 								currentShot = 0;
@@ -99,9 +117,10 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 			case States.EXPLODING:
 				let shotExplosionIterations = Math.floor(timeCounter / milliSecondsBetweenExplosionExpansion);
 				timeCounter = timeCounter % milliSecondsBetweenExplosionExpansion;
-				let shot = shots[currentShot, currentLeap];
+				let shot = shots[currentShot][currentLeap];
 				for (let j = 0; j < shotExplosionIterations; ++j) {
 					if (explode(shot)) {
+						timeCounter = 0;
 						break;
 					}
 				}
@@ -131,17 +150,17 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 		else {
 			gameGraphics.clearExplosionCircle(x, y, weapon.dam);
 
-			if (!nextShotOrFinishIsShooting()) {
-				gameGraphics.drawShot(x, y, rgbYellow);
+			if (!nextShotOrFinishIsShooting(shot)) {
+				currentState = States.FLYING;
 			}
 			return true
 		}
 	}
 
-	function nextShotOrFinishIsShooting() {
+	function nextShotOrFinishIsShooting(shot) {
 		let allDead = true;
 		for (let i = 0; i < shotCount; ++i) {
-			let shotAtIndex = shots[currentShot, currentLeap];
+			let shotAtIndex = shots[currentShot][currentLeap];
 			if (!shotAtIndex.dead) {
 				allDead = false;
 				break;
@@ -153,7 +172,6 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 		}
 		if (allDead) {
 			// next leap, if any
-			currentShot = 0;
 			currentLeap++;
 			if (currentLeap === leapCount || weapon.class === "nitro") {
 				// TODO: MoveDirt
@@ -164,9 +182,20 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 				return true;
 			}
 			else {
+				gameGraphics.drawShot(Math.round(shot.px), Math.round(shot.py), rgbYellow);
+
+				currentShot = 0;
 				exNum = 0;
 				for (let i = 0; i < shotCount; ++i) {
-					shots[i, currentLeap].dead = false;
+					let lv = shots[i][currentLeap - 1].lv * 0.85;
+					let newShot = createNewShot();
+					newShot.px = Math.round(shots[i][currentLeap - 1].px);
+					newShot.py = Math.round(shots[i][currentLeap - 1].py);
+					newShot.lv = lv;
+					newShot.vx = Math.cos(Math.random() * Math.PI) * lv;
+					newShot.vy = -Math.sin(Math.random() * Math.PI) * lv;
+
+					shots[i][currentLeap] = newShot;
 				}
 			}
 		}
@@ -237,8 +266,9 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 		}
 		if (shot.vy > 0) {
 			maxYReached = true;
-			if (!divided && shotCount > 1) {
-				divideMirv();
+			if (!divided && weapon.shots > 1) { // not shotCount!
+				shot.divided = true;
+				divideMirv(shot);
 			}
 		}
 		for (let i = 0; i < players.length; ++i) {
@@ -291,10 +321,12 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 		}
 	}
 
-	function divideMirv() {
+	function divideMirv(shot) {
+		shotCount = weapon.shots;
 		for (let i = 1; i < shotCount; ++i) {
-			shots[i, currentLeap] = jQuery.extend({}, shots[0, currentLeap]); // shallow clone
-			shots[i, currentLeap].vx *= (i / shotCount);
+			shots[i] = [];
+			shots[i][currentLeap] = jQuery.extend({}, shot); // shallow clone
+			shots[i][currentLeap].vx *= (i / shotCount);
 		}
 		divided = true;
 	}
