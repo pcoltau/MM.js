@@ -69,8 +69,10 @@ function createGameGraphics(assets, weapons, context) {
 		setTankShieldVisibility: setTankShieldVisibility,
 		setTankArrowVisibility: setTankArrowVisibility,
 		showRoundSign: showRoundSign,
-		hideRoundSign: hideRoundSign
-		//showGuidance:	
+		hideRoundSign: hideRoundSign,
+		showGuidance: showGuidance,
+		hideGuidance: hideGuidance,
+		updateGuidance: updateGuidance
 	};
 
 	function fillGameImageDataWithSky() {
@@ -372,6 +374,14 @@ function createGameGraphics(assets, weapons, context) {
 
 		container.visible = false;
 		return container;
+	}
+
+	function showGuidance() {
+		guidanceContainer.visible = true;
+	}
+
+	function hideGuidance() {
+		guidanceContainer.visible = false;
 	}
 
 	function updateGuidance(guidanceFuel) {

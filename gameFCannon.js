@@ -19,7 +19,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 	let currentPlayer = players[currentPlayerIndex];
 
 	let guiBar = (weapon.class === "guiding") ? 50 : 0;
-	let divided = (weapon.class === "multishot");
+	let divided = (weapon.class === "multishot" || weapon.class === "guiding");
 	let shotCount = (weapon.class === "multishot") ? weapon.shots : 1;
 	let leapCount = (weapon.class === "leap") ? weapon.leaps : 1;
 	let fuel = (weapon.class === "guiding") ? 50 : 0;
@@ -32,6 +32,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 	let hole = Array(SCREEN_WIDTH).fill(false); // used to indicate which x coordinates to update when "moving dirt"
 
 	if (weapon.class === "guiding") {
+		gameGraphics.showGuidance()
 		gameGraphics.updateGuidance(guiBar);
 	}
 
@@ -178,6 +179,9 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 				// TODO: DecDamFromShot
 				// TODO: DrawLandTop
 				// TODO: CheckNoAmmo
+				if (weapon.class === "guiding") {
+					gameGraphics.hideGuidance()
+				}
 				fireCannonDone();
 				return true;
 			}
@@ -221,7 +225,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 		let roundedX = Math.round(shot.px);
 		let roundedY = Math.round(shot.py);
 		gameGraphics.drawShot(roundedX, roundedY, tracers ? (traceColorAsTank ? currentPlayer.rgbSecColor : rgbDarkGray) : rgbTransparent);
-		handleGuidance();
+		handleGuidance(shot);
 		shot.vy += ay;
 		shot.vx += ax;
 		if (shot.px + shot.vx > GET_MAX_X - 2 || shot.px + shot.vx < 2) {
@@ -261,7 +265,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 		}
 		gameGraphics.drawShot(roundedX, roundedY, rgbYellow);
 		if (weapon.class === "guiding" && guiBar > 0) {
-			guiBar -= 0.025;
+			guiBar = Math.max(0, guiBar - 0.0025); // TODO: Compare to original value in MM
 			gameGraphics.updateGuidance(guiBar);
 		}
 		if (shot.vy > 0) {
@@ -286,22 +290,22 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 		}
 	}
 
-	function handleGuidance() {
-		if (weapon.class === "guidance" && guiBar > 0) {
+	function handleGuidance(shot) {
+		if (weapon.class === "guiding" && guiBar > 0) {
 			let updateShot = false;
 			let angle = 0;
 			if (gameEngine.isKeyDown[Keys.LEFT_ARROW]) {
-				angle = 0.01 * glevel;
+				angle = 0.001 * glevel; // TODO: Compare to original value in MM
 				updateShot = true;
 			}
 			if (gameEngine.isKeyDown[Keys.RIGHT_ARROW]) {
-				angle = -0.01 * glevel;
+				angle = -0.001 * glevel; // TODO: Compare to original value in MM
 				updateShot = true;
 			}
 			if (updateShot) {
 				shot.vx = Math.cos(angle) * shot.vx + Math.sin(angle) * shot.vy;
 				shot.vy = -Math.sin(angle) * shot.vx + Math.cos(angle) * shot.vy;
-				guiBar -= 0.5;
+				guiBar = Math.max(0, guiBar - 0.05); // TODO: Compare to original value in MM
 				gameGraphics.updateGuidance(guiBar);
 			}
 		}
