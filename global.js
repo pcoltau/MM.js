@@ -82,10 +82,9 @@ function outTextXYAsText(color, text, x, y, textAlign, shadowColor) {
   if (textAlign) {
     textObj.textAlign = textAlign;
   }
-  textObj.textBaseline = "hanging";
   textObj.scaleY = 0.84;
-  textObj.x = x;
-  textObj.y = y + 0.5;
+  textObj.x = x - 0.5;
+  textObj.y = y - 1.5;
   if (shadowColor) {
     textObj.shadow = new createjs.Shadow(shadowColor, 2, 2, 0);
   }
