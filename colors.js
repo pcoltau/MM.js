@@ -50,8 +50,7 @@ let GameColors = {
 	DARKESTGREEN: Palette.getGameColor(72),
 	ORANGE: Palette.getGameColor(138),
 	DARKYELLOW: Palette.getGameColor(174),
-	SKY: Palette.getGameColor(1),
-	TRANSPARENT: "rgba(0,0,0,0)"
+	SKY: Palette.getGameColor(1)
 };
 
 let ExplosionColors = [

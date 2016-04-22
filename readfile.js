@@ -11,7 +11,13 @@ function readEncodedFile(file) {
 			let intValue = parseInt(value);
 			if (!isNaN(intValue)) {
 				value = intValue;
-			}
+			} 
+			else if (value === "true") {
+				value = true;
+			} 
+			else if (value === "false") {
+				value = false;
+			} 
 			item[parts[0]] = value;
 		}
 		else if (Object.keys(item).length > 0) {

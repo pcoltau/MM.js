@@ -23,6 +23,7 @@ function createGame(wepList, onExit, assets, context) {
 	let blinkingArrowVisible = false;
 
 	let firedCannon = null; // the returned object from the fireCannon() function.
+	let landTop = null;
 
 	let gameGraphics = createGameGraphics(assets, wepList, context);
 
@@ -38,7 +39,7 @@ function createGame(wepList, onExit, assets, context) {
 		currentPlayerIndex = 0;
 		let currentPlayer = pList[currentPlayerIndex];
 		gameGraphics.updateOverviewAfterCurrentPlayerChange(currentPlayer);
-		let landTop = gameGraphics.generateLand();
+		landTop = gameGraphics.generateLand();
 		gameGraphics.drawLand(landTop);
 		wind = noWind ? 0 : Math.floor(Math.random() * 41) - 20;
 		gameGraphics.updateWind(wind);
@@ -136,7 +137,7 @@ function createGame(wepList, onExit, assets, context) {
 				setCurrentTankArrowVisibility(false);
 				currentState = States.CANNON_FIRED;
 				let currentWeapon = wepList[currentPlayer.weaponList[currentPlayer.currentWep].weaponIndex];
-				firedCannon = fireCannon(currentWeapon, pList, currentPlayerIndex, wind, gameGraphics, fireCannonDone);
+				firedCannon = fireCannon(currentWeapon, pList, currentPlayerIndex, wind, landTop, gameGraphics, fireCannonDone);
 				break;
 		}		
 	}

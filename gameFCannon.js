@@ -1,6 +1,6 @@
 "use strict";
 
-function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fireCannonDone) {
+function fireCannon(weapon, players, currentPlayerIndex, wind, landTop, gameGraphics, fireCannonDone) {
 	let States = { FLYING: 0, ROLLING: 1, EXPLODING: 2}; // This is not a per-shot state, as the whole game goes into rolling/exploding when a shot hits ground.
 	let currentState = States.FLYING; 
 
@@ -8,11 +8,13 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 	let tracers = true; // TODO: get from config
 	let traceColorAsTank = true; // TODO: get from config
 
+	// Timing constants
 	let milliSecondsBetweenShotMovement = fastShot ? 1 : 4;
-	let milliSecondsBetweenExplosionExpansion = 5;
+	let milliSecondsBetweenExplosionExpansion = 8;
+	let milliSecondsBetweenRolling = 10;
 	let timeCounter = 0;
 
-	let rgbTransparent = Palette.getRGBFromColor(GameColors.TRANSPARENT);
+	let rgbSky = Palette.getRGBFromColor(GameColors.SKY);
 	let rgbDarkGray = Palette.getRGBFromColor(GameColors.DARKGRAY);
 	let rgbYellow = Palette.getRGBFromColor(GameColors.YELLOW);
 
@@ -74,6 +76,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 			vy: 0.0,
 			lv: 0.0,
 			exp: 0,
+			rollingDir: 0,
 			divided: false,
 			dead: false,
 			miss: true // TODO: Used?
@@ -83,7 +86,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 	function onTick(stage, deltaInSeconds) {
 		timeCounter += deltaInSeconds * 1000;
 		switch (currentState) {
-			case States.FLYING:
+			case States.FLYING: {
 				let shotMovementIterations = Math.floor(timeCounter / milliSecondsBetweenShotMovement);
 				timeCounter = timeCounter % milliSecondsBetweenShotMovement;
 				let exitIterations = false;
@@ -100,7 +103,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 								impact(shot);
 								timeCounter = 0;
 							}
-							else if (shot.isDivided && !wasDivided) {
+							else if (shot.divided && !wasDivided) {
 								exitIterations = true;
 							}
 						}
@@ -113,19 +116,33 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 					}
 				}
 				break;
-			case States.ROLLING:
+			}
+			case States.ROLLING: {
+				let shotRollingIterations = Math.floor(timeCounter / milliSecondsBetweenRolling);
+				timeCounter = timeCounter % milliSecondsBetweenRolling;
+				let shot = shots[currentShot][currentLeap];
+				for (let j = 0; j < shotRollingIterations; ++j) {
+					if (moveRoller(shot)) {
+						shot.dead = true;
+						currentState = States.EXPLODING;
+					}
+				}
 				break;
-			case States.EXPLODING:
+			}
+			case States.EXPLODING: {
 				let shotExplosionIterations = Math.floor(timeCounter / milliSecondsBetweenExplosionExpansion);
 				timeCounter = timeCounter % milliSecondsBetweenExplosionExpansion;
 				let shot = shots[currentShot][currentLeap];
 				for (let j = 0; j < shotExplosionIterations; ++j) {
 					if (explode(shot)) {
 						timeCounter = 0;
+						nextShotOrFinishIsShooting(shot)
+						currentState = States.FLYING;
 						break;
 					}
 				}
 				break;
+			}
 		}
 		gameGraphics.updateGameImage();
 	}
@@ -150,10 +167,6 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 		}
 		else {
 			gameGraphics.clearExplosionCircle(x, y, weapon.dam);
-
-			if (!nextShotOrFinishIsShooting(shot)) {
-				currentState = States.FLYING;
-			}
 			return true
 		}
 	}
@@ -183,7 +196,6 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 					gameGraphics.hideGuidance()
 				}
 				fireCannonDone();
-				return true;
 			}
 			else {
 				gameGraphics.drawShot(Math.round(shot.px), Math.round(shot.py), rgbYellow);
@@ -203,11 +215,15 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 				}
 			}
 		}
-		return false;
 	}
 
 	function impact(shot) {
 		if (weapon.class === "roller") {
+			// remove the shot and start rolling
+			let roundedX = Math.round(shot.px);
+			let roundedY = Math.round(shot.py);
+			gameGraphics.drawShot(roundedX, roundedY, rgbSky);
+			shot.py = landTop[roundedX] - 1;
 			currentState = States.ROLLING;
 		}
 		else {
@@ -218,13 +234,63 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 	function moveRoller(shot) {
 		let roundedX = Math.round(shot.px);
 		let roundedY = Math.round(shot.py);
-		gameGraphics.drawShot(roundedX, roundedY, rgbTransparent);
+
+		function checkRightOrLeft(left) {
+			let i = 0;
+			while (landTop[roundedX + i] - 1 === roundedY && Math.abs(i) < 20) {
+				i = i + (left ? -1 : 1);
+			}
+			if (Math.abs(i) === 20) {
+				return 0;
+			}
+			else if (landTop[roundedX + i] - 1 < roundedY) {
+				return -1;
+			}
+			else {
+				return 1;
+			}
+		}
+
+		gameGraphics.drawShot(roundedX, roundedY, rgbSky);
+		let yr = checkRightOrLeft(false);
+		let yl = checkRightOrLeft(true);
+		let dir = 0;
+		if (yr > yl) {
+			dir = 1;
+		}
+		if (yr < yl) {
+			dir = -1;
+		}
+		let flatGround = (yr === yl);
+		let directionChanged = (shot.rollingDir !== 0 && dir !== shot.rollingDir);
+		let outOfScreen = (shot.px + dir > GET_MAX_X - 2 || shot.px + dir < 2);
+		if (!flatGround && !directionChanged && !outOfScreen) {
+			for (let i = 0; i < players.length; ++i) {
+				let player = players[i];
+				if (player.maxPower > 0) {
+					if (roundedX < player.posX + 4 && roundedX > player.posX - 4 &&
+						roundedY < player.posY + 3 && roundedY > player.posY - 2) {
+						return true;
+					}
+				}
+			}
+			shot.px += dir;
+			roundedX = Math.round(shot.px);
+			shot.rollingDir = dir;
+			shot.py = landTop[roundedX] - 1;
+			roundedY = Math.round(shot.py);
+			gameGraphics.drawShot(roundedX, roundedY, rgbYellow);
+			return false;
+		}
+		else {
+			return true;
+		}
 	}
 
 	function moveShot(shot) {
 		let roundedX = Math.round(shot.px);
 		let roundedY = Math.round(shot.py);
-		gameGraphics.drawShot(roundedX, roundedY, tracers ? (traceColorAsTank ? currentPlayer.rgbSecColor : rgbDarkGray) : rgbTransparent);
+		gameGraphics.drawShot(roundedX, roundedY, tracers ? (traceColorAsTank ? currentPlayer.rgbSecColor : rgbDarkGray) : rgbSky);
 		handleGuidance(shot);
 		shot.vy += ay;
 		shot.vx += ax;
@@ -277,12 +343,14 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 		}
 		for (let i = 0; i < players.length; ++i) {
 			let player = players[i];
-			if (currentPlayerIndex !== i && player.shield && player.maxPower > 0 && !maxYReached) {
-				bendShot(shot, player.posX, player.posY);
-			}
-			if (roundedX < player.posX + 5 && roundedX > player.posX - 5 &&
-				roundedY < player.posY + 2 && roundedY > player.posY - 3) {
-				shot.dead = true;
+			if (player.maxPower > 0) {
+				if (player.shield && !(currentPlayerIndex == i && !maxYReached)) {
+					bendShot(shot, player.posX, player.posY);
+				}
+				if (roundedX < player.posX + 5 && roundedX > player.posX - 5 &&
+					roundedY < player.posY + 2 && roundedY > player.posY - 3) {
+					shot.dead = true;
+				}
 			}
 		}
 		if (Math.abs(shot.vy) < 0.08 && shot.py + shot.vy > GET_MAX_Y - 19) {
@@ -313,7 +381,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, gameGraphics, fir
 
 	function shotHitGround(shot) {
 		hole[Math.round(shot.px)] = true;
-		if (!weapon.expOnImp) {
+		if (!weapon.exponimp) {
 			shot.vx *= 0.7;
 			shot.vy *= 0.7;
 			if (Math.abs(shot.vx) < 0.08 && Math.abs(shot.vy) < 0.08) {
