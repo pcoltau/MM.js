@@ -13,8 +13,11 @@ let Palette = {
 	getRGBFromColor: function(color) {
 		let m = color.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
     	if (m) {
-        	return {r: m[1] & 0xFF, g: m[2] & 0xFF, b: m[3] & 0xFF};
+        	return {r: m[1] & 0xFF, g: m[2] & 0xFF, b: m[3] & 0xFF, a: 0xFF};
     	}
+	},
+	compareColors: function(color1, color2) {
+		return (color1.r === color2.r && color1.g === color2.g && color1.b === color2.b && color1.a === color2.a);
 	}
 }
 

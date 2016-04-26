@@ -328,8 +328,9 @@ function createGame(wepList, onExit, assets, context) {
 		}		
 	}
 
-	function fireCannonDone() {
+	function fireCannonDone(hole) {
 		firedCannon = null;
+		gameGraphics.moveDirt(landTop, hole);
 		switchToNextPlayer();
 	}
 

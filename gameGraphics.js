@@ -3,8 +3,9 @@
 function createGameGraphics(assets, weapons, context) {
 	let dirtColor = GameColors.BROWN;
 	let dirtColor2 = GameColors.DARKESTBROWN;
-	let dirtRGB = Palette.getRGBFromColor(dirtColor);
-	let dirtRGB2 = Palette.getRGBFromColor(dirtColor2);
+	let rgbDirt = Palette.getRGBFromColor(dirtColor);
+	let rgbDirt2 = Palette.getRGBFromColor(dirtColor2);
+	let rgbSky = Palette.getRGBFromColor(GameColors.SKY);
 
 	let windShape = null;
 	let armourText = null;
@@ -22,13 +23,11 @@ function createGameGraphics(assets, weapons, context) {
 	let tanks = {}; // all 8 tanks, {color:{container, cannonShape, shieldShape, arrowShape} 
 
 	let skyRGB = Palette.getRGBFromColor(GameColors.SKY);
-	// The gameImageData is used to draw the land, tracers and explosions.
-	let gameImageData = context.createImageData(SCREEN_WIDTH, SCREEN_HEIGHT);
-	fillGameImageDataWithSky();
 
 	let mainContainer = new createjs.Container();
 
-	let gameShape = new createjs.Shape();
+	let gameImageData = null;
+	let gameShape = createGameShape();
 	mainContainer.addChild(gameShape);
 
 	let tanksContainer = createTanks();
@@ -60,6 +59,7 @@ function createGameGraphics(assets, weapons, context) {
 		clearExplosionCircle: clearExplosionCircle,
 		updateGameImage: updateGameImage,
 		isGround: isGround,
+		moveDirt: moveDirt,
 		updateTankPosition: updateTankPosition,
 		updateCannonAngleAndText: updateCannonAngleAndText,
 		setCannonAngle: setCannonAngle,
@@ -75,7 +75,14 @@ function createGameGraphics(assets, weapons, context) {
 		updateGuidance: updateGuidance
 	};
 
-	function fillGameImageDataWithSky() {
+	function createGameShape() {
+		let gameShape = new createjs.Shape();
+		// magic to compensate for the snapToPixel magic we do on the stage in gameEngine.js
+		gameShape.regX = 0.5; 
+		gameShape.regY = 0.5;
+		// The gameImageData is used to draw the land and tracers.
+		gameImageData = context.createImageData(SCREEN_WIDTH, SCREEN_HEIGHT);
+		// Fill the data with sky.
 		let data = gameImageData.data;
 		for (let i = 0; i < data.length; i += 4) {
 			data[i + 0] = skyRGB.r;
@@ -83,6 +90,11 @@ function createGameGraphics(assets, weapons, context) {
 			data[i + 2] = skyRGB.b;
 			data[i + 3] = 0xFF;
 		}
+		gameShape.graphics.append({exec:function(ctx, shape) {
+			ctx.putImageData(gameImageData, 0, 0);
+		}});
+		gameShape.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		return gameShape;
 	}
 
 	function generateLand() {
@@ -117,10 +129,6 @@ function createGameGraphics(assets, weapons, context) {
 	}
 
 	function drawLand(landTop) {
-  		// magic to compensate for the snapToPixel magic we do on the stage in gameEngine.js
-  		gameShape.regX = 0.5; 
-  		gameShape.regY = 0.5;
-
     	let data = gameImageData.data;
 		for (let x = 2; x <= GET_MAX_X - 2; ++x) {
 			for (let y = landTop[x] + 1; y <= GET_MAX_Y - 18; ++y) {
@@ -132,7 +140,7 @@ function createGameGraphics(assets, weapons, context) {
 				if (rr <= 1) {
 					rr = 2;
 				}
-				let rgb = (Math.floor(Math.random() * rr) === 0) ? dirtRGB2 : dirtRGB;
+				let rgb = (Math.floor(Math.random() * rr) === 0) ? rgbDirt2 : rgbDirt;
 				let index = (x + y * gameImageData.width) * 4;
 				data[index + 0] = rgb.r;
 				data[index + 1] = rgb.g;
@@ -140,43 +148,83 @@ function createGameGraphics(assets, weapons, context) {
 				data[index + 3] = 0xFF; 
 			}
 		}
-
-		// add the imageData draw function
-		addDrawGameImageDataFunction();
 		// Draw landTop
+		drawLandTop(landTop);
+		updateGameImage();
+	}
+
+	function drawLandTop(landTop) {
 		for (let x = 3; x <= GET_MAX_X - 2; ++x) {
-			// reversing the magic from above in order to have the correct lines by adding 0.5.
-			line(gameShape.graphics, dirtColor2, x - 0.5, landTop[x - 1] + 0.5, x + 0.5, landTop[x] + 0.5);
+			drawLine(x, landTop[x - 1], x, landTop[x], rgbDirt2);
 		}
-		// update the gameImageData with the landTop
-		addUpdateGameImageDataFunction()
-    	// trigger a draw and a caching of the resulting image
-		gameShape.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-		// clear all graphics functions
-		gameShape.graphics.clear();
-		// re-add the imageData draw function, so it is ready for the next drawing/updateCache.
-		addDrawGameImageDataFunction();
 	}
 
-	function addDrawGameImageDataFunction() {
-		gameShape.graphics.append({exec:function(ctx, shape) {
-			ctx.putImageData(gameImageData, 0, 0);
-    	}});
+	function drawLine(x1, y1, x2, y2, rgbColor) {
+		let xx1 = Math.min(x1, x2);
+		let xx2 = Math.max(x1, x2);
+		let yy1 = Math.min(y1, y2);
+		let yy2 = Math.max(y1, y2);
+		let xlen = xx2 - xx1;
+		let ylen = yy2 - yy1;
+		if (xlen > ylen) {
+			let yinc = ylen/xlen;
+			for (let x = xx1; x != xx2; ++x) {
+				let y = Math.round((x - xx1) * yinc + yy1)
+				setLandColor(x, y, rgbColor)
+			}
+		}
+		else {
+			let xinc = xlen/ylen;
+			for (let y = yy1; y != yy2; ++y) {
+				let x = Math.round((y - yy1) * xinc + xx1)
+				setLandColor(x, y, rgbColor)
+			}
+		}
+		setLandColor(xx2, yy2, rgbColor)
 	}
 
-	function addUpdateGameImageDataFunction() {
-		gameShape.graphics.append({exec:function(ctx, shape) {
-			gameImageData = ctx.getImageData(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    	}});
+	function drawCircle(x, y, r, rgbColor) {
+		for (let xi = -r; xi < r; ++xi) {
+			let height = Math.round(Math.sqrt(r * r - xi * xi)) - 1;
+			for (let yi = -height; yi <= height; ++yi) {
+				setLandColor(xi + x, yi + y, rgbColor);
+			}
+		}
+	}
+
+	function moveDirt(landTop, hole) {
+		for (let x = 2; x <= GET_MAX_X - 2; ++x) {
+			if (hole[x]) {
+				let memLine = [];
+				let yTop = GET_MAX_Y - 18;
+				let scanTop = 18;
+				let pixCount = 0;
+				let yMem = yTop;
+				while (yMem >= scanTop) {
+					let c = getLandColor(x, yMem);
+					if (Palette.compareColors(c, rgbDirt) || Palette.compareColors(c, rgbDirt2)) {
+						pixCount++;
+						setLandColor(x, yMem, rgbSky);
+						memLine[pixCount] = c;
+					}
+					yMem--;
+				}
+				if (pixCount > 0) {
+					for (let i = yTop - 1; i >= yTop - pixCount; --i) {
+						setLandColor(x, i + 1, memLine[yTop - i]);
+					}
+				}
+				if (yTop !== landTop[x]) {
+					landTop[x] = yTop - pixCount + 1;
+				}
+			}
+		}
+		drawLandTop(landTop);
+		updateGameImage()
 	}
 
 	function drawShot(x, y, rgbColor) {
-    	let data = gameImageData.data;
-		let index = (x + y * gameImageData.width) * 4;
-		data[index + 0] = rgbColor.r;
-		data[index + 1] = rgbColor.g;
-		data[index + 2] = rgbColor.b;
-		data[index + 3] = 0xFF; 
+		setLandColor(x, y, rgbColor);
 	}
 
 	function drawExplosionCircle(x, y, r, color) {
@@ -185,15 +233,7 @@ function createGameGraphics(assets, weapons, context) {
 
 	function clearExplosionCircle(x, y, r) {
 		explosionsShape.graphics.clear();
-		circle(gameShape.graphics, GameColors.SKY, x, y, r, GameColors.SKY);
-		// update the gameImageData with the cleared explosion
-		addUpdateGameImageDataFunction()
-		// trigger a redraw
-		gameShape.updateCache();
-		// clear all graphics functions
-		gameShape.graphics.clear();
-		// re-add the imageData draw function, so it is ready for the next drawing/updateCache.
-		addDrawGameImageDataFunction();
+		drawCircle(x, y, r, rgbSky);
 	}
 
 	function updateGameImage() {
@@ -201,14 +241,27 @@ function createGameGraphics(assets, weapons, context) {
 	}
 
 	function isGround(x, y) {
-    	let data = gameImageData.data;
-		let index = (x + y * gameImageData.width) * 4;
-		let dataIndex0 = data[index];
-		let dataIndex1 = data[index + 1];
-		let dataIndex2 = data[index + 2];
-		let dataIndex3 = data[index + 3];
-		return ((dataIndex0 === dirtRGB.r && dataIndex1 === dirtRGB.g && dataIndex2 === dirtRGB.b && dataIndex3 === 255) ||
-			    (dataIndex0 === dirtRGB2.r && dataIndex1 === dirtRGB2.g && dataIndex2 === dirtRGB2.b && dataIndex3 === 255));
+		let color = getLandColor(x, y);
+		return (Palette.compareColors(color, rgbDirt) || Palette.compareColors(color, rgbDirt2));
+	}
+
+	function getLandColor(x, y) {
+		if (x >= 0 && y >= 0 && x < gameImageData.width && y < gameImageData.height) {
+	    	let data = gameImageData.data;
+			let index = (x + y * gameImageData.width) * 4;
+			return { r: data[index], g: data[index + 1], b: data[index + 2], a: data[index + 3]};
+		}
+	}
+
+	function setLandColor(x, y, rgbColor) {
+		if (x >= 0 && y >= 0 && x < gameImageData.width && y < gameImageData.height) {
+	    	let data = gameImageData.data;
+			let index = (x + y * gameImageData.width) * 4;
+			data[index + 0] = rgbColor.r;
+			data[index + 1] = rgbColor.g;
+			data[index + 2] = rgbColor.b;
+			data[index + 3] = rgbColor.a; 
+		}
 	}
 
 	function updateOverviewAfterCurrentPlayerChange(newPlayer) {

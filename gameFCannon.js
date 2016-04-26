@@ -11,7 +11,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, landTop, gameGrap
 	// Timing constants
 	let milliSecondsBetweenShotMovement = fastShot ? 1 : 4;
 	let milliSecondsBetweenExplosionExpansion = 8;
-	let milliSecondsBetweenRolling = 10;
+	let milliSecondsBetweenRolling = 12;
 	let timeCounter = 0;
 
 	let rgbSky = Palette.getRGBFromColor(GameColors.SKY);
@@ -95,7 +95,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, landTop, gameGrap
 					for (let i = 0; i < shotCount && !exitIterations; ++i) {
 						let shot = shots[currentShot][currentLeap];
 						if (!shot.dead) {
-							let wasDivided = false;
+							let wasDivided = shot.divided;
 							moveShot(shot);
 							if (shot.dead) {
 								exNum++;
@@ -136,6 +136,9 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, landTop, gameGrap
 				for (let j = 0; j < shotExplosionIterations; ++j) {
 					if (explode(shot)) {
 						timeCounter = 0;
+						if (currentLeap < leapCount - 1) {
+							gameGraphics.drawShot(Math.round(shot.px), Math.round(shot.py), rgbYellow);
+						}
 						nextShotOrFinishIsShooting(shot)
 						currentState = States.FLYING;
 						break;
@@ -195,11 +198,9 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, landTop, gameGrap
 				if (weapon.class === "guiding") {
 					gameGraphics.hideGuidance()
 				}
-				fireCannonDone();
+				fireCannonDone(hole);
 			}
 			else {
-				gameGraphics.drawShot(Math.round(shot.px), Math.round(shot.py), rgbYellow);
-
 				currentShot = 0;
 				exNum = 0;
 				for (let i = 0; i < shotCount; ++i) {
