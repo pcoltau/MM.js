@@ -9,7 +9,8 @@ function createGame(wepList, onExit, assets, context) {
 		PLAYER_READY: 1, // arrow blinking, waiting for input
 		ADJUSTING_CANNON: 2,
 		SELECTING_WEAPON: 3,
-		CANNON_FIRED: 4
+		CANNON_FIRED: 4,
+		ENDING_SHOT: 5
 	} 
 	let currentState = States.SHOW_ROUND_NUMBER;
 
@@ -17,12 +18,14 @@ function createGame(wepList, onExit, assets, context) {
 	let currentPlayerIndex = 0;
 	let pList = []; // playerList - it's called PList in MM
 	let currentRound = 1;
+	let livePlayers = 0;
 
 	let blinkingArrowSpeed = 0.2; // approximate value - the value in MM (0.1) seems too fast, and is semi CPU dependent
 	let blinkingArrowCounter = 0;
 	let blinkingArrowVisible = false;
 
 	let firedCannon = null; // the returned object from the fireCannon() function.
+	let endingShot = null; // the returned object from the endShot() function.
 	let landTop = null;
 
 	let gameGraphics = createGameGraphics(assets, wepList, context);
@@ -36,8 +39,10 @@ function createGame(wepList, onExit, assets, context) {
 	}
 
 	function onShow() {
+		livePlayers = pList.length;
 		currentPlayerIndex = 0;
 		let currentPlayer = pList[currentPlayerIndex];
+		gameGraphics.clearGameImage();
 		gameGraphics.updateOverviewAfterCurrentPlayerChange(currentPlayer);
 		landTop = gameGraphics.generateLand();
 		gameGraphics.drawLand(landTop);
@@ -145,10 +150,12 @@ function createGame(wepList, onExit, assets, context) {
 	function switchToNextPlayer() {
 		setCurrentTankArrowVisibility(false);
 		// TODO: Check for maxPower > 0
-		currentPlayerIndex++;
-		if (currentPlayerIndex === pList.length) {
-			currentPlayerIndex = 0;
-		}
+		do {
+			currentPlayerIndex++;
+			if (currentPlayerIndex === pList.length) {
+				currentPlayerIndex = 0;
+			}
+		} while (pList[currentPlayerIndex].maxPower <= 0)
 		let currentPlayer = pList[currentPlayerIndex];
 		gameGraphics.updateOverviewAfterCurrentPlayerChange(currentPlayer);
 
@@ -173,6 +180,10 @@ function createGame(wepList, onExit, assets, context) {
 				break;
 			case States.CANNON_FIRED:
 				firedCannon.onTick(stage, deltaInSeconds);
+				break;
+			case States.ENDING_SHOT:
+				endingShot.onTick(stage, deltaInSeconds);
+				break;
 		}
 	}
 
@@ -212,9 +223,10 @@ function createGame(wepList, onExit, assets, context) {
 			name: playerName,
 			power: 500,
 			maxPower: 1000,
-			armour: 0,
+			armour: 100, // Test - should be 0
+			amourment: ArmourTypes.Light, // Test - should be NoArmourment
 			parachutes: 0,
-			shield: true,
+			shield: true, // Test - should be false
 			angle: Math.PI / 4,
 			posX: 0,
 			posY: 0,
@@ -224,7 +236,7 @@ function createGame(wepList, onExit, assets, context) {
 			weaponList: [
 				{ammo: -1, weaponIndex: 0},
 				{ammo: 5, weaponIndex: 1},
-				{ammo: 5, weaponIndex: 3},
+				{ammo: 5, weaponIndex: 3}, // 3-38 are for test!
 				{ammo: 5, weaponIndex: 4},
 				{ammo: 5, weaponIndex: 5},
 				{ammo: 5, weaponIndex: 6},
@@ -262,7 +274,17 @@ function createGame(wepList, onExit, assets, context) {
 				{ammo: 5, weaponIndex: 38},
 				{ammo: 1, weaponIndex: 2}],
 			currentWep: 0,
-			stats: {
+			roundStats: { // .Stats[1] in MM
+				shots: 0,
+				headshots: 0,
+				misses: 0,
+				damage: 0,
+				kills: 0,
+				profit: 0,
+				points: 0,
+				place: 1
+			},
+			overallStats: { // .Stats[2] in MM
 				shots: 0,
 				headshots: 0,
 				misses: 0,
@@ -328,10 +350,24 @@ function createGame(wepList, onExit, assets, context) {
 		}		
 	}
 
-	function fireCannonDone(hole) {
+	function fireCannonDone(hole, shots, weapon) {
 		firedCannon = null;
 		gameGraphics.moveDirt(landTop, hole);
-		switchToNextPlayer();
+		currentState = States.ENDING_SHOT;
+		endingShot = endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, shots, wind, endingShotDone);
 	}
 
+	function endingShotDone(playersLeft) {
+		livePlayers = playersLeft;
+		endingShot= null;
+		if (livePlayers < 2) {
+			// TODO: End round
+			currentState = States.SHOW_ROUND_NUMBER;
+			currentRound++;
+			onShow();
+		}
+		else {
+			switchToNextPlayer();
+		}
+	}
 }

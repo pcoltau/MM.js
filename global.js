@@ -10,6 +10,14 @@ let SCREEN_HEIGHT_CENTER = Math.floor(GET_MAX_Y / 2);
 let playerColorTable = [GameColors.BLUE, GameColors.LIGHTRED, GameColors.GREEN, GameColors.YELLOW, GameColors.MAGENTA, GameColors.CYAN, GameColors.WHITE, GameColors.LIGHTGRAY, 
                         GameColors.DARKBLUE, GameColors.DARKRED, GameColors.DARKGREEN, GameColors.DARKBROWN, GameColors.DARKMAGENTA, GameColors.DARKCYAN, GameColors.LIGHTGRAY, GameColors.GRAY];
 
+let ArmourTypes = {
+  NoArmour: 0,
+  Light: 1,
+  Medium: 2,
+  Heavy: 3,
+  Titanium: 4
+};
+
 function line(graphics, color, x1, y1, x2, y2) {
   graphics.beginStroke(color).moveTo(x1, y1).lineTo(x2, y2).endStroke();
 }

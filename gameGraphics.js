@@ -60,6 +60,7 @@ function createGameGraphics(assets, weapons, context) {
 		updateGameImage: updateGameImage,
 		isGround: isGround,
 		moveDirt: moveDirt,
+		clearGameImage: clearGameImage,
 		updateTankPosition: updateTankPosition,
 		updateCannonAngleAndText: updateCannonAngleAndText,
 		setCannonAngle: setCannonAngle,
@@ -72,7 +73,9 @@ function createGameGraphics(assets, weapons, context) {
 		hideRoundSign: hideRoundSign,
 		showGuidance: showGuidance,
 		hideGuidance: hideGuidance,
-		updateGuidance: updateGuidance
+		updateGuidance: updateGuidance,
+		showParachute: showParachute,
+		hideParachute: hideParachute
 	};
 
 	function createGameShape() {
@@ -82,6 +85,14 @@ function createGameGraphics(assets, weapons, context) {
 		gameShape.regY = 0.5;
 		// The gameImageData is used to draw the land and tracers.
 		gameImageData = context.createImageData(SCREEN_WIDTH, SCREEN_HEIGHT);
+		gameShape.graphics.append({exec:function(ctx, shape) {
+			ctx.putImageData(gameImageData, 0, 0);
+		}});
+		gameShape.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		return gameShape;
+	}
+
+	function clearGameImage() {
 		// Fill the data with sky.
 		let data = gameImageData.data;
 		for (let i = 0; i < data.length; i += 4) {
@@ -90,11 +101,6 @@ function createGameGraphics(assets, weapons, context) {
 			data[i + 2] = skyRGB.b;
 			data[i + 3] = 0xFF;
 		}
-		gameShape.graphics.append({exec:function(ctx, shape) {
-			ctx.putImageData(gameImageData, 0, 0);
-		}});
-		gameShape.cache(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-		return gameShape;
 	}
 
 	function generateLand() {
@@ -587,4 +593,11 @@ function createGameGraphics(assets, weapons, context) {
 		arrowShape.visible = visible;
 	}
 
+	function showParachute(tankColor) {
+		// TODO: Impl.
+	}
+
+	function hideParachute(tankColor) {
+		// TODO: Impl.
+	}
 }

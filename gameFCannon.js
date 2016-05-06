@@ -4,6 +4,11 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, landTop, gameGrap
 	let States = { FLYING: 0, ROLLING: 1, EXPLODING: 2}; // This is not a per-shot state, as the whole game goes into rolling/exploding when a shot hits ground.
 	let currentState = States.FLYING; 
 
+	// Weapons without leaps does not have the leaps value - this fixes that. 
+	if (!weapon.leaps) {
+		weapon.leaps = 1;
+	}
+
 	let fastShot = false; // TODO: Get from config
 	let tracers = true; // TODO: get from config
 	let traceColorAsTank = true; // TODO: get from config
@@ -11,7 +16,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, landTop, gameGrap
 	// Timing constants
 	let milliSecondsBetweenShotMovement = fastShot ? 1 : 4;
 	let milliSecondsBetweenExplosionExpansion = 8;
-	let milliSecondsBetweenRolling = 12;
+	let milliSecondsBetweenRolling = 15;
 	let timeCounter = 0;
 
 	let rgbSky = Palette.getRGBFromColor(GameColors.SKY);
@@ -52,7 +57,6 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, landTop, gameGrap
 		shot.lv = lv;
 
 		shots[i][0] = shot; // [shotNum, leapNum]
-		shots[i][1] = shot; // [shotNum, leapNum]
 	}
 
 	if (weapon.class === "nitro") {
@@ -191,14 +195,10 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, landTop, gameGrap
 			// next leap, if any
 			currentLeap++;
 			if (currentLeap === leapCount || weapon.class === "nitro") {
-				// TODO: MoveDirt
-				// TODO: DecDamFromShot
-				// TODO: DrawLandTop
-				// TODO: CheckNoAmmo
 				if (weapon.class === "guiding") {
 					gameGraphics.hideGuidance()
 				}
-				fireCannonDone(hole);
+				fireCannonDone(hole, shots, weapon);
 			}
 			else {
 				currentShot = 0;
