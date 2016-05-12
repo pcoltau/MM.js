@@ -79,6 +79,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			else {
 				currentState = States.SHOWING_COMMENT;
 			}
+			gameGraphics.setTankParachuteVisibility(currentPlayer.color, false);
 			// TODO: Update landTop
 			shouldEnd = true;
 		}
@@ -108,7 +109,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 		}
 		else {
 			if (lossObj.deployParachute) {
-				gameGraphics.showParachute(pList[currentOtherPlayerIndex].color);
+				gameGraphics.setTankParachuteVisibility(pList[currentOtherPlayerIndex].color, true);
 				tankVx = wind/200;
 				tankVy = 0.2;
 				tankAy = 0;

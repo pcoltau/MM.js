@@ -20,7 +20,7 @@ function createGameGraphics(assets, weapons, context) {
 	let guidanceShape = null;
 	let tracersShape = null;
 	let roundNumberText = null;
-	let tanks = {}; // all 8 tanks, {color:{container, cannonShape, shieldShape, arrowShape} 
+	let tanks = {}; // all 8 tanks, {color:{container, cannonShape, shieldShape, arrowShape, parachuteShape} 
 
 	let skyRGB = Palette.getRGBFromColor(GameColors.SKY);
 
@@ -69,13 +69,12 @@ function createGameGraphics(assets, weapons, context) {
 		setTankVisibility: setTankVisibility,
 		setTankShieldVisibility: setTankShieldVisibility,
 		setTankArrowVisibility: setTankArrowVisibility,
+		setTankParachuteVisibility: setTankParachuteVisibility,
 		showRoundSign: showRoundSign,
 		hideRoundSign: hideRoundSign,
 		showGuidance: showGuidance,
 		hideGuidance: hideGuidance,
-		updateGuidance: updateGuidance,
-		showParachute: showParachute,
-		hideParachute: hideParachute
+		updateGuidance: updateGuidance
 	};
 
 	function createGameShape() {
@@ -519,6 +518,10 @@ function createGameGraphics(assets, weapons, context) {
 			arrowShape.visible = false;
 			tankContainer.addChild(arrowShape);
 
+			let parachuteShape = createParachuteShape();
+			parachuteShape.visible = false;
+			tankContainer.addChild(parachuteShape);
+
 			tankContainer.visible = false;
 			tanksContainer.addChild(tankContainer);
 
@@ -526,7 +529,8 @@ function createGameGraphics(assets, weapons, context) {
 				container: tankContainer,
 				cannonShape: cannonShape,
 				shieldShape: shieldShape,
-				arrowShape: arrowShape
+				arrowShape: arrowShape,
+				parachuteShape: parachuteShape
 			}
 
 			tanks[color] = tankObj;
@@ -550,6 +554,33 @@ function createGameGraphics(assets, weapons, context) {
 
 		roundContainer.visible = false;
 		return roundContainer;
+	}
+
+	function createParachuteShape() {
+		let shape = new createjs.Shape();
+/*
+PX := PList[P].PosX;
+      PY := PList[P].PosY;
+      SetColor(C);
+      Line(PX-2,PY-14,PX+2,PY-14);
+      Line(PX-3,PY-12,PX-3,PY-13);
+      Line(PX+3,PY-12,PX+3,PY-13);
+      PutPixel(PX-2,PY-13,C);
+      PutPixel(PX+2,PY-13,C);
+      PutPixel(PX,PY-15,C);
+      if C = White then SetColor(Gray);
+      Line(PX-3,PY-11,PX-2,PY-3);
+      Line(PX+3,PY-11,PX+2,PY-3);
+*/		
+		line(shape.graphics, GameColors.WHITE, -2, -14, 2, -14);
+		line(shape.graphics, GameColors.WHITE, -3, -12, -3, -13);
+		line(shape.graphics, GameColors.WHITE, 3, -12, 3, -13);
+		putPixel(shape.graphics, GameColors.WHITE, -2, -13);
+		putPixel(shape.graphics, GameColors.WHITE, 2, -13);
+		putPixel(shape.graphics, GameColors.WHITE, 0, -15);
+		line(shape.graphics, GameColors.GRAY, -3, -11, -2, -3);
+		line(shape.graphics, GameColors.GRAY, 3, -11, 2, -3);
+		return shape;
 	}
 
 	function showRoundSign(roundNumber) {
@@ -593,11 +624,8 @@ function createGameGraphics(assets, weapons, context) {
 		arrowShape.visible = visible;
 	}
 
-	function showParachute(tankColor) {
-		// TODO: Impl.
-	}
-
-	function hideParachute(tankColor) {
-		// TODO: Impl.
+	function setTankParachuteVisibility(tankColor, visible) {
+		let parachuteShape = tanks[tankColor].parachuteShape;
+		parachuteShape.visible = visible;
 	}
 }

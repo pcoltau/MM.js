@@ -225,7 +225,7 @@ function createGame(wepList, onExit, assets, context) {
 			maxPower: 1000,
 			armour: 100, // Test - should be 0
 			amourment: ArmourTypes.Light, // Test - should be NoArmourment
-			parachutes: 0,
+			parachutes: 8,
 			shield: true, // Test - should be false
 			angle: Math.PI / 4,
 			posX: 0,
