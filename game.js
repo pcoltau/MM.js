@@ -223,10 +223,10 @@ function createGame(wepList, onExit, assets, context) {
 			name: playerName,
 			power: 500,
 			maxPower: 1000,
-			armour: 100, // Test - should be 0
-			amourment: ArmourTypes.Light, // Test - should be NoArmourment
+			armour: 0,
+			amourment: ArmourTypes.NoArmourment,
 			parachutes: 8,
-			shield: true, // Test - should be false
+			shield: false,
 			angle: Math.PI / 4,
 			posX: 0,
 			posY: 0,
@@ -354,7 +354,7 @@ function createGame(wepList, onExit, assets, context) {
 		firedCannon = null;
 		gameGraphics.moveDirt(landTop, hole);
 		currentState = States.ENDING_SHOT;
-		endingShot = endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, shots, wind, endingShotDone);
+		endingShot = endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, shots, wind, wepList, endingShotDone);
 	}
 
 	function endingShotDone(playersLeft) {

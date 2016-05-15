@@ -7,9 +7,6 @@ let GET_MAX_Y = SCREEN_HEIGHT - 1;
 let SCREEN_WIDTH_CENTER = Math.floor(GET_MAX_X / 2);
 let SCREEN_HEIGHT_CENTER = Math.floor(GET_MAX_Y / 2);
 
-let playerColorTable = [GameColors.BLUE, GameColors.LIGHTRED, GameColors.GREEN, GameColors.YELLOW, GameColors.MAGENTA, GameColors.CYAN, GameColors.WHITE, GameColors.LIGHTGRAY, 
-                        GameColors.DARKBLUE, GameColors.DARKRED, GameColors.DARKGREEN, GameColors.DARKBROWN, GameColors.DARKMAGENTA, GameColors.DARKCYAN, GameColors.LIGHTGRAY, GameColors.GRAY];
-
 let ArmourTypes = {
   NoArmour: 0,
   Light: 1,

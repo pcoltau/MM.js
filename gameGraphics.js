@@ -36,6 +36,9 @@ function createGameGraphics(assets, weapons, context) {
 	let explosionsShape = new createjs.Shape();
 	mainContainer.addChild(explosionsShape);
 
+	let explodingTankContainer = new createjs.Container();
+	mainContainer.addChild(explodingTankContainer);
+
 	let topMenu = createTopMenu();
 	mainContainer.addChild(topMenu);
 
@@ -74,7 +77,9 @@ function createGameGraphics(assets, weapons, context) {
 		hideRoundSign: hideRoundSign,
 		showGuidance: showGuidance,
 		hideGuidance: hideGuidance,
-		updateGuidance: updateGuidance
+		updateGuidance: updateGuidance,
+		addExplosionDotToExplodingTankContainer: addExplosionDotToExplodingTankContainer,
+		clearExplodingTankContainer: clearExplodingTankContainer
 	};
 
 	function createGameShape() {
@@ -627,5 +632,13 @@ PX := PList[P].PosX;
 	function setTankParachuteVisibility(tankColor, visible) {
 		let parachuteShape = tanks[tankColor].parachuteShape;
 		parachuteShape.visible = visible;
+	}
+
+	function addExplosionDotToExplodingTankContainer(shape) {
+		explodingTankContainer.addChild(shape);
+	}
+
+	function clearExplodingTankContainer() {
+		explodingTankContainer.removeAllChildren();
 	}
 }

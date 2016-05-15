@@ -1,17 +1,21 @@
 "use strict";
 
-function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, shots, wind, endingShotDone) {
+function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, shots, wind, wepList, endingShotDone) {
 	let States = {FALLING: 0, EXPLODING: 1, SHOWING_COMMENT: 2};
 	let currentState = States.FALLING; 
 
 	let milliSecondsBetweenFallMovement = 8;
+	let milliSecondsBetweenExplosionMovement = 10;
 	let timeCounter = 0;
 
 	let tankVx = 0;
 	let tankVy = 0;
 	let tankAy = 0;
 
-	let weapon = pList[currentPlayerIndex].weaponList[pList[currentPlayerIndex].currentWep];
+	let explosionDotObj = null;
+
+	let playerWeapon = pList[currentPlayerIndex].weaponList[pList[currentPlayerIndex].currentWep];
+	let weaponInfo = wepList[playerWeapon.weaponIndex];
 
 	let currentOtherPlayerIndex = 0;
 	let rank = 0;  
@@ -38,9 +42,22 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 				break;
 			case States.EXPLODING:
 				let currentPlayer = pList[currentOtherPlayerIndex];
-				gameGraphics.setTankVisibility(currentPlayer.color, false);
-				// TODO: Explode
-				currentState = States.SHOWING_COMMENT;
+				if (explosionDotObj === null) {
+					gameGraphics.setTankVisibility(currentPlayer.color, false);
+					explosionDotObj = createExplosionDots(currentPlayer)
+				}
+				let explosionMovementIterations = Math.floor(timeCounter / milliSecondsBetweenExplosionMovement);
+				timeCounter = timeCounter % milliSecondsBetweenExplosionMovement;
+				for (let i = 0; i < explosionMovementIterations; ++i) {
+					moveExplodingDots();
+					if (explosionDotObj.stoppedCount === explosionDotObj.dots.length) {
+						gameGraphics.clearExplodingTankContainer();
+						explosionDotObj = null;
+						currentState = States.SHOWING_COMMENT;		
+						timeCounter = 0;
+						break;
+					}
+				}	
 				break;
 			case States.SHOWING_COMMENT:
 				// TODO: Wait and then remove comment
@@ -51,13 +68,14 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 	}
 
 	function checkNoAmmo() {
-		if (weapon.ammo > 0) {
-			weapon.ammo--;
+		if (playerWeapon.ammo > 0) {
+			playerWeapon.ammo--;
 		}
-		if (weapon.ammo === 0) { 
+		if (playerWeapon.ammo === 0) { 
 			pList[currentPlayerIndex].weaponList.splice(pList[currentPlayerIndex].currentWep, 1);
 			pList[currentPlayerIndex].currentWep--;
-			weapon = null;
+			playerWeapon = null;
+			weaponInfo = null;
 		}
 	}
 
@@ -132,15 +150,15 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			let statDam2 = 0;
 			let lossexpall = 0;
 			let headshots = 0;
-			for (let j = 0; j < weapon.leaps; ++j) {
+			for (let j = 0; j < weaponInfo.leaps; ++j) {
 				for (let i = 0; i < shots.length; ++i) {
 					let shot = shots[i][j];
-					let lossexp = calcTankDam(player, shot, weapon);
+					let lossexp = calcTankDam(player, shot);
 					if (lossexp === -1) {
 						if (currentOtherPlayerIndex != currentPlayerIndex) {
 							headshots++;
 						}
-						lossexpall += calcHeadshot(weapon);
+						lossexpall += calcHeadshot();
 					}
 					else {
 						lossexpall += lossexp;
@@ -181,7 +199,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 
 	function afterFallUpdateOfStats() {
 		let currentPlayer = pList[currentPlayerIndex];
-		for (let j = 0; j < weapon.leaps; ++j) {
+		for (let j = 0; j < weaponInfo.leaps; ++j) {
 			for (let i = 0; i < shots.length; ++i) {
 				let shot = shots[i][j];
 				if (shot.miss) {
@@ -197,30 +215,30 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 		}		
 	}
 
-	function calcTankDam(player, shot, weapon) {
+	function calcTankDam(player, shot) {
 		let dx = shot.px - player.posX;
 		let dy = shot.py - player.posY;
 		let d = dx * dx + dy * dy;
-		let dam = weapon.dam * weapon.dam;
+		let dam = weaponInfo.dam * weaponInfo.dam;
 		let l = 0;
 		if (d < 8) {
 			l = -1;
 		}
 		else if (d < dam) {
-			let x = weapon.dam;
+			let x = weaponInfo.dam;
 			l = Math.round((x/(x + 30) * 2000) * ((dam - d)/(dam)));
 		}
 		return l;
 	}
 
-	function calcHeadshot(weapon) {
-		return 1000 + weapon.dam * 10;
+	function calcHeadshot() {
+		return 1000 + weaponInfo.dam * 10;
 	}	
 
 	function decreasePower(playerIndex, lossexpall, lossfallall, headshots) {
 		let player = pList[playerIndex];
 		let loss = lossexpall;
-		if (weapon.class === "piercing") {
+		if (weaponInfo.class === "piercing") {
 		 	player.maxPower -= loss;
 			loss = 0;
 		}
@@ -253,5 +271,72 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 	 		}
 	 		livePlayers--;
 	 	}
+	}
+
+	function createExplosionDots(player) {
+		let dotObj = {
+			dots: [],
+			stoppedCount: 0
+		}
+		for (let i = 0; i < 100; ++i) {
+			let dot = {
+				shape: new createjs.Shape(),
+				bounce: 0,
+				stopped: false,
+				x: player.posX + Math.floor(Math.random() * 7) - 3,
+				y: player.posY + Math.floor(Math.random() * 3) - 1,
+				vx: Math.cos((Math.floor(Math.random() * Math.round(0.5 * Math.PI * 100)) + Math.round(0.25 * Math.PI * 100)) / 100),
+				vy: -Math.sin((Math.floor(Math.random() * 150) + 2) / 100)
+			}	
+			putPixel(dot.shape.graphics, player.color, 0, 0);
+			updateDotPosition(dot);
+			gameGraphics.addExplosionDotToExplodingTankContainer(dot.shape);
+			dotObj.dots.push(dot)		
+		}
+		return dotObj;
+	}
+
+	function moveExplodingDots() {
+		for (let i = 0; i < explosionDotObj.dots.length; ++i) {
+			let dot = explosionDotObj.dots[i];
+			if (!dot.stopped) {
+				dot.vx += wind / 10000;
+				dot.vy += 0.01;
+				let bounce = false;
+				if (dot.x + dot.vx > GET_MAX_X - 2 || dot.x + dot.vx < 2) {
+					dot.vx *= -0.5;
+					bounce = true;
+				}
+				if (dot.y + dot.vy > GET_MAX_Y - 19 || dot.y + dot.vy < 18) {
+					dot.vy *= -0.5
+					bounce = true;
+				}
+				if (landTop[Math.round(dot.x + dot.vx)] - 1 < Math.round(dot.y + dot.vy) && dot.bounce < 2) {
+					dot.vy *= -0.5
+					bounce = true;
+				}
+				if (bounce) {
+					if (dot.bounce < 1) {
+						// TODO: MakeSound(200, 1)
+					}
+					dot.bounce++;
+				}
+				if (dot.bounce > 1) {
+					dot.stopped = true;
+					dot.shape.visible = false;
+					explosionDotObj.stoppedCount++;
+				}
+				else {
+					dot.x += dot.vx;
+					dot.y += dot.vy;
+					updateDotPosition(dot);
+				}
+			}
+		}
+	}
+
+	function updateDotPosition(dot) {
+		dot.shape.x = Math.round(dot.x);
+		dot.shape.y = Math.round(dot.y);
 	}
 }
