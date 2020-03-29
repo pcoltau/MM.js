@@ -10,7 +10,7 @@ About 80% done of porting. Main game is working, but shop and stats are still mi
 Clone this repository:
 
     git clone git@github.com:pcoltau/MM.js.git
-    cd webgl-test
+    cd MM.js
     
 Start a simple web server in the current directory:
 
