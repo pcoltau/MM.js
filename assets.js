@@ -37,4 +37,61 @@ gameEngine.assets = [{
 }, {
     id: "bar.pcx",
     src: "gfx/bar.png"
+}, {
+    id: "weplist.pcx",
+    src: "gfx/weplist.png"
+}, {
+    id: "wep01.pcx",
+    src: "gfx/wep01.png"
+}, {
+    id: "wep02.pcx",
+    src: "gfx/wep02.png"
+}, {
+    id: "wep03.pcx",
+    src: "gfx/wep03.png"
+}, {
+    id: "wep04.pcx",
+    src: "gfx/wep04.png"
+}, {
+    id: "wep05.pcx",
+    src: "gfx/wep05.png"
+}, {
+    id: "wep06.pcx",
+    src: "gfx/wep06.png"
+}, {
+    id: "wep07.pcx",
+    src: "gfx/wep07.png"
+}, {
+    id: "wep08.pcx",
+    src: "gfx/wep08.png"
+}, {
+    id: "wep09.pcx",
+    src: "gfx/wep09.png"
+}, {
+    id: "wep10.pcx",
+    src: "gfx/wep10.png"
+}, {
+    id: "wep11.pcx",
+    src: "gfx/wep11.png"
+}, {
+    id: "wep12.pcx",
+    src: "gfx/wep12.png"
+}, {
+    id: "wep13.pcx",
+    src: "gfx/wep13.png"
+}, {
+    id: "wep14.pcx",
+    src: "gfx/wep14.png"
+}, {
+    id: "wep15.pcx",
+    src: "gfx/wep15.png"
+}, {
+    id: "wep16.pcx",
+    src: "gfx/wep16.png"
+}, {
+    id: "wep17.pcx",
+    src: "gfx/wep17.png"
+}, {
+    id: "wep18.pcx",
+    src: "gfx/wep18.png"
 }];

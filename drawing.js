@@ -28,7 +28,6 @@ function drawBox(assets, container, colorScheme, x1, y1, x2, y2, addShadow) {
 		showPCX(assets, backContainer, "backbot.pcx", x1, y1 + 240, x2 - x1, y2 - y1 - 240);
 	}
 	else {
-//      Show_PCX('Gfx\backtop.pcx',x1,y1,x2-x1,y2-y1);
 		showPCX(assets, backContainer, "backtop.pcx", x1, y1, x2 - x1, y2- y1);
 	}
 	if (addShadow) {
@@ -36,10 +35,15 @@ function drawBox(assets, container, colorScheme, x1, y1, x2, y2, addShadow) {
 	}
 	mainContainer.addChild(backContainer);
 	let shape = new createjs.Shape();
+    drawBevel(shape, colorScheme, x1, y1, x2, y2);
+	mainContainer.addChild(shape);
+	container.addChild(mainContainer);
+}
+
+function drawBevel(shape, colorScheme, x1, y1, x2, y2)
+{
 	line(shape.graphics, colorScheme.WHITE, x1, y1, x1, y2);
 	line(shape.graphics, colorScheme.WHITE, x1, y1, x2, y1);
 	line(shape.graphics, colorScheme.GRAY, x2, y1, x2, y2);
 	line(shape.graphics, colorScheme.GRAY, x1, y2, x2, y2);
-	mainContainer.addChild(shape);
-	container.addChild(mainContainer);
 }

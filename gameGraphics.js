@@ -51,6 +51,12 @@ function createGameGraphics(assets, weapons, context) {
 	let roundSign = createRoundSign();
 	mainContainer.addChild(roundSign)
 
+	let weaponsListContentContainer;
+	let weaponsDescriptionContentContainer;
+	let weaponsContainer = new createjs.Container();
+	hideWeaponsContainer();
+	mainContainer.addChild(weaponsContainer);
+
 	return {
 		container: mainContainer,
 		updateOverviewAfterCurrentPlayerChange: updateOverviewAfterCurrentPlayerChange,
@@ -79,7 +85,10 @@ function createGameGraphics(assets, weapons, context) {
 		hideGuidance: hideGuidance,
 		updateGuidance: updateGuidance,
 		addExplosionDotToExplodingTankContainer: addExplosionDotToExplodingTankContainer,
-		clearExplodingTankContainer: clearExplodingTankContainer
+		clearExplodingTankContainer: clearExplodingTankContainer,
+		showWeaponsContainer: showWeaponsContainer,
+		updateWeaponsContainer: updateWeaponsContainer,
+		hideWeaponsContainer: hideWeaponsContainer
 	};
 
 	function createGameShape() {
@@ -392,10 +401,7 @@ function createGameGraphics(assets, weapons, context) {
 		let container = new createjs.Container();
         showPCX(assets, container, "bar.pcx", 0, y, GET_MAX_X, 16);
         let shape = new createjs.Shape();
-	    line(shape.graphics, GameColors.WHITE, 0, y, GET_MAX_X, y);
-	    line(shape.graphics, GameColors.WHITE, 0, y, 0, y + 16);
-	    line(shape.graphics, GameColors.GRAY, 0, y + 16, GET_MAX_X, y + 16);
-	    line(shape.graphics, GameColors.GRAY, GET_MAX_X, y + 16, GET_MAX_X, y);
+		drawBevel(shape, GameColors, 0, y, GET_MAX_X, y + 16);
 	    container.addChild(shape);
 	    return container;
 	}
@@ -640,5 +646,117 @@ PX := PList[P].PosX;
 
 	function clearExplodingTankContainer() {
 		explodingTankContainer.removeAllChildren();
+	}
+
+	function showWeaponsContainer(player, wepList) {
+		weaponsContainer.removeAllChildren();
+
+		// Weapons list
+		let weaponsListContainer = new createjs.Container();
+
+		let itemCount = Math.min(player.weaponList.length, 5);
+		
+		let x1 = GET_MAX_X - 360;
+		let y1 = 20;
+		let x2 = GET_MAX_X - 4;
+		let y2 = y1 + 27 + itemCount * 10;
+
+		weaponsListContainer.x = x1;
+		weaponsListContainer.y = y1;
+		showPCX(assets, weaponsListContainer, "weplist.pcx", 0, 0, x2 - x1, y2 - y1);
+        
+		let listBevelShape = new createjs.Shape();
+		drawBevel(listBevelShape, GameColors, 0, 0, x2 - x1, y2 - y1);
+	    weaponsListContainer.addChild(listBevelShape);
+
+		outTextXY(weaponsListContainer, GameColors.DARKGRAY, "Weapon list:", 3, 4);
+		drawFrame(weaponsListContainer, GameColors, 8, 18, x2 - x1 - 8, 19 + (itemCount * 10));
+
+		weaponsListContentContainer = new createjs.Container();
+		
+		weaponsListContainer.addChild(weaponsListContentContainer);
+		weaponsContainer.addChild(weaponsListContainer);
+
+		// Description
+		let weaponsDescriptionContainer = new createjs.Container();
+		let x3 = x1;
+		let y3 = y2 + 4;
+		let x4 = x2;
+		let y4 = y3 + 77;
+
+		weaponsDescriptionContainer.x = x3;
+		weaponsDescriptionContainer.y = y3;
+		showPCX(assets, weaponsDescriptionContainer, "weplist.pcx", 0, 0, x4 - x3, y4 - y3);
+		
+		let descriptionBevelShape = new createjs.Shape();
+		drawBevel(descriptionBevelShape, GameColors, 0, 0, x4 - x3, y4 - y3);
+	    weaponsDescriptionContainer.addChild(descriptionBevelShape);
+
+		outTextXY(weaponsDescriptionContainer, GameColors.DARKGRAY, "Description:", 3, 4);
+		drawFrame(weaponsDescriptionContainer, GameColors, 8, 18, x2 - x1 - 66, y2 - y1 - 8);
+		drawFrame(weaponsDescriptionContainer, GameColors, x2 - x1 - 60, 18, x2 - x1 - 8, y2 - y1 - 8);
+
+		weaponsDescriptionContentContainer = new createjs.Container();
+		
+		weaponsDescriptionContainer.addChild(weaponsDescriptionContentContainer);
+		weaponsContainer.addChild(weaponsDescriptionContainer);
+
+		weaponsContainer.visible = true;
+	}
+
+	function updateWeaponsContainer(player, wepList, topIndex, bottomIndex, selectedIndex) {
+		weaponsListContentContainer.removeAllChildren();
+		for (var i = topIndex; i <= bottomIndex; i++)
+		{
+			let n = i - topIndex + 1;
+			if (i == selectedIndex)
+			{
+				// bar(x[1]+9,y[1]+9+(10*N),x[2]-9,y[1]+18+(10*N));
+				let selectionBar = new createjs.Shape();
+				bar(selectionBar.graphics, GameColors.DARKESTGREEN, 9, 9 + (10 * n), 347, 18 + (10 * n));
+				weaponsListContentContainer.addChild(selectionBar);
+			}
+			let weapon = wepList[player.weaponList[i].weaponIndex];
+			let name = weapon.lname ?? weapon.name;
+			let y = 10 + (10 * n);
+			outTextXY(weaponsListContentContainer, GameColors.WHITE, name, 10, y);
+			let ammo = player.weaponList[i].ammo;
+			let amount = ammo == -1 ? 99 : ammo;
+			outTextXY(weaponsListContentContainer, GameColors.WHITE, amount, 321 + (amount < 10 ? 8 : 0), y);
+		}
+		if (topIndex > 0)
+		{
+			outTextXY(weaponsListContentContainer, GameColors.WHITE, "▲", 338, 20);
+		}
+		if (bottomIndex < player.weaponList.length - 1)
+		{
+			outTextXY(weaponsListContentContainer, GameColors.WHITE, "▼", 338, 60);
+		}
+		let weapon = wepList[player.weaponList[selectedIndex].weaponIndex];
+		updateWeaponsDescription(weapon);
+	}
+
+	function updateWeaponsDescription(weapon) {
+		weaponsDescriptionContentContainer.removeAllChildren();
+		let description = weapon.info1;
+		let words = description.split(' ');
+		var lines = [""];
+		for (var i = 0; i < words.length; i++)
+		{
+			if (lines[lines.length - 1].length + words[i].length > 35)
+			{
+				lines.push("");
+			}
+			lines[lines.length - 1] += words[i] + ' ';
+		}
+		for (var i = 0; i < lines.length; i++)
+		{
+			outTextXY(weaponsDescriptionContentContainer, GameColors.WHITE, lines[i], 10, 20 + (10 * i));
+		}
+		showPCX(assets, weaponsDescriptionContentContainer, weapon.img, 297, 19, 50, 50);
+	}
+
+	function hideWeaponsContainer() {
+		weaponsContainer.visible = false;
 	}
 }

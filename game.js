@@ -27,6 +27,9 @@ function createGame(wepList, onExit, assets, context) {
 	let firedCannon = null; // the returned object from the fireCannon() function.
 	let endingShot = null; // the returned object from the endShot() function.
 	let landTop = null;
+	let selectedWeaponIndex = 0; // used in SELECTING_WEAPON state - index into player.weaponList
+	let selectedWeaponTopIndex = 0; // used in SELECTING_WEAPON state - index into player.weaponList
+	let selectedWeaponBottomIndex = 0; // used in SELECTING_WEAPON state - index into player.weaponList
 
 	let gameGraphics = createGameGraphics(assets, wepList, context);
 
@@ -41,18 +44,18 @@ function createGame(wepList, onExit, assets, context) {
 	function onShow() {
 		livePlayers = pList.length;
 		currentPlayerIndex = 0;
-		let currentPlayer = pList[currentPlayerIndex];
 		gameGraphics.clearGameImage();
-		gameGraphics.updateOverviewAfterCurrentPlayerChange(currentPlayer);
 		landTop = gameGraphics.generateLand();
 		gameGraphics.drawLand(landTop);
 		wind = noWind ? 0 : Math.floor(Math.random() * 41) - 20;
 		gameGraphics.updateWind(wind);
 
-		setRandomPlayerPositions(pList, landTop);
 		if (shouldShufflePlayers) {
 			shufflePlayers(pList);
 		}
+		let currentPlayer = pList[currentPlayerIndex];
+		gameGraphics.updateOverviewAfterCurrentPlayerChange(currentPlayer);
+		setRandomPlayerPositions(pList, landTop);
 		showAllTanks();
 		gameGraphics.showRoundSign(currentRound)
 	}
@@ -70,7 +73,11 @@ function createGame(wepList, onExit, assets, context) {
 				currentState = States.ADJUSTING_CANNON;
 				// no break - we want to handle the key
 			case States.ADJUSTING_CANNON: {
-				handleAdjustingCannon(currentPlayer, key)
+				handleAdjustingCannon(currentPlayer, key);
+				break;
+			}
+			case States.SELECTING_WEAPON: {
+				handleSelectingWeapon(currentPlayer, key);
 				break;
 			}
 		}
@@ -119,7 +126,8 @@ function createGame(wepList, onExit, assets, context) {
 				gameGraphics.updatePowerText(currentPlayer);
 				break;
 			case Keys.TAB:
-				// TODO: Switch state and show weapon list
+				currentState = States.SELECTING_WEAPON;
+				showWeaponsList(currentPlayer, wepList);
 				break;
 			case Keys.KEY_P:
 				switchToNextPlayer();
@@ -147,9 +155,46 @@ function createGame(wepList, onExit, assets, context) {
 		}		
 	}
 
+	function handleSelectingWeapon(currentPlayer, key)
+	{
+		// TAB, Space and enter selects the weapon. ESC cancels
+		let itemCount = Math.min(currentPlayer.weaponList.length, 5);
+		switch (key) {
+			case Keys.UP_ARROW:
+			case Keys.NUMPAD_8:
+				moveWeaponSelection(currentPlayer, -1);
+				break;
+			case Keys.DOWN_ARROW:
+			case Keys.NUMPAD_2:
+				moveWeaponSelection(currentPlayer, 1);
+				break;
+			case Keys.HOME:
+				moveWeaponSelection(currentPlayer, -Number.MAX_VALUE);
+				break;
+			case Keys.END:
+				moveWeaponSelection(currentPlayer, Number.MAX_VALUE);
+				break;
+			case Keys.PAGE_UP:
+				moveWeaponSelection(currentPlayer, -itemCount);
+				break;
+			case Keys.PAGE_DOWN:
+				moveWeaponSelection(currentPlayer, itemCount);
+				break;
+			case Keys.TAB:
+			case Keys.SPACE:
+			case Keys.ENTER:
+				currentPlayer.currentWep = selectedWeaponIndex;
+				gameGraphics.updateWeaponNameAndAmmoText(currentPlayer);
+				// no break, fallthrough
+			case Keys.ESCAPE:
+				gameGraphics.hideWeaponsContainer();
+				currentState = States.ADJUSTING_CANNON;
+				break;
+		}		
+	}
+
 	function switchToNextPlayer() {
 		setCurrentTankArrowVisibility(false);
-		// TODO: Check for maxPower > 0
 		do {
 			currentPlayerIndex++;
 			if (currentPlayerIndex === pList.length) {
@@ -359,9 +404,10 @@ function createGame(wepList, onExit, assets, context) {
 
 	function endingShotDone(playersLeft) {
 		livePlayers = playersLeft;
-		endingShot= null;
+		endingShot = null;
 		if (livePlayers < 2) {
-			// TODO: End round
+			// TODO: End round 
+			// TODO: Reset players
 			currentState = States.SHOW_ROUND_NUMBER;
 			currentRound++;
 			onShow();
@@ -369,5 +415,47 @@ function createGame(wepList, onExit, assets, context) {
 		else {
 			switchToNextPlayer();
 		}
+	}
+
+	function showWeaponsList(player, wepList) {
+		selectedWeaponIndex = player.currentWep;
+		gameGraphics.showWeaponsContainer(player, wepList);
+
+		let itemCount = Math.min(player.weaponList.length, 5);
+
+		// determine top and bottom index of weapons list
+		let maxWeaponIndex = player.weaponList.length - 1;
+		let diff = Math.min(2, Math.round(itemCount / 2.0));
+		selectedWeaponTopIndex = selectedWeaponIndex - diff;
+		selectedWeaponBottomIndex = selectedWeaponIndex + diff;
+		if (selectedWeaponTopIndex < 0)
+		{
+			selectedWeaponTopIndex = 0;
+			selectedWeaponBottomIndex = itemCount - 1;
+		}
+		if (selectedWeaponBottomIndex > maxWeaponIndex)
+		{
+			selectedWeaponTopIndex = maxWeaponIndex - itemCount + 1;
+			selectedWeaponBottomIndex = maxWeaponIndex;
+		}
+		gameGraphics.updateWeaponsContainer(player, wepList, selectedWeaponTopIndex, selectedWeaponBottomIndex, selectedWeaponIndex);
+	}
+
+	function moveWeaponSelection(player, delta) {
+		let itemCount = Math.min(player.weaponList.length, 5);
+		let maxWeaponIndex = player.weaponList.length - 1;
+
+		selectedWeaponIndex = Math.max(0, Math.min(maxWeaponIndex, selectedWeaponIndex + delta));
+		if (selectedWeaponIndex < selectedWeaponTopIndex)
+		{
+			selectedWeaponTopIndex = selectedWeaponIndex;
+			selectedWeaponBottomIndex = selectedWeaponIndex + itemCount - 1;
+		}
+		if (selectedWeaponIndex > selectedWeaponBottomIndex)
+		{
+			selectedWeaponBottomIndex = selectedWeaponIndex;
+			selectedWeaponTopIndex = selectedWeaponIndex - itemCount + 1;
+		}
+		gameGraphics.updateWeaponsContainer(player, wepList, selectedWeaponTopIndex, selectedWeaponBottomIndex, selectedWeaponIndex);
 	}
 }
