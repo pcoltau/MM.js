@@ -8,6 +8,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 	let milliSecondsBetweenExplosionMovement = 10;
 	let timeCounter = 0;
 
+	let tankIsFalling = false;
 	let tankVx = 0;
 	let tankVy = 0;
 	let tankAy = 0;
@@ -21,7 +22,12 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 	let rank = 0;  
 	let killed = []; // players killed by this shot
 
-	calculateDamageAndCyclePlayers();
+	// TODO: calc and decrease all damage before changing to any state. Perhaps split damage calc and cycle players. Don't calculate damage in exploding state. 
+
+
+	//calculateDamageAndCyclePlayers();
+	let lossObjs = calculateAllDamage();
+	cyclePlayersOrEnd();
 
 	return {
 		onTick: onTick
@@ -31,6 +37,20 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 		timeCounter += deltaInSeconds * 1000;
 		switch (currentState) {
 			case States.FALLING:
+				if (!tankIsFalling) {
+					if (lossObjs[currentOtherPlayerIndex].deployParachute) {
+						gameGraphics.setTankParachuteVisibility(pList[currentOtherPlayerIndex].color, true);
+						tankVx = wind/200;
+						tankVy = 0.2;
+						tankAy = 0;
+					}
+					else {
+						tankVx = 0;
+						tankVy = 0;
+						tankAy = 0.01;
+					}
+					tankIsFalling = true;
+				}
 				let shotMovementIterations = Math.floor(timeCounter / milliSecondsBetweenFallMovement);
 				timeCounter = timeCounter % milliSecondsBetweenFallMovement;
 				for (let i = 0; i < shotMovementIterations; ++i) {
@@ -60,11 +80,41 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 				}	
 				break;
 			case States.SHOWING_COMMENT:
-				// TODO: Wait and then remove comment
-				calculateDamageAndCyclePlayers(); // Continue to the (potential) next player
+				if (lossObjs[currentOtherPlayerIndex].wasHit)
+				{
+					// TODO: Wait and then remove comment
+				}
+
+				// Continue to the (potential) next player
+				cyclePlayersOrEnd();
 				break;
 		}
 		gameGraphics.updateGameImage();
+	}
+
+	function cyclePlayersOrEnd()
+	{
+		let shouldEndShot = false;
+		let continueAnimations = false;
+		do {
+			currentOtherPlayerIndex++;
+			shouldEndShot = currentOtherPlayerIndex == pList.length;
+			if (!shouldEndShot) {
+				continueAnimations = lossObjs[currentOtherPlayerIndex].shouldFall || killed[currentOtherPlayerIndex];
+			}
+		} while (!shouldEndShot && !continueAnimations);
+		if (shouldEndShot) {
+			afterFallUpdateOfStats();
+			checkNoAmmo();
+			endingShotDone(livePlayers);		
+		}
+		else {
+			if (lossObjs[currentOtherPlayerIndex].shouldFall) {
+				currentState = States.FALLING;
+			} else {
+				currentState = States.EXPLODING;
+			}
+		}
 	}
 
 	function checkNoAmmo() {
@@ -98,12 +148,23 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 				currentState = States.SHOWING_COMMENT;
 			}
 			gameGraphics.setTankParachuteVisibility(currentPlayer.color, false);
-			// TODO: Update landTop
+			tankIsFalling = false;
 			shouldEnd = true;
 		}
 		gameGraphics.updateTankPosition(currentPlayer.color, currentPlayer.posX, currentPlayer.posY);
 		return shouldEnd;
 	}
+
+	function calculateAllDamage()
+	{
+		var lossObjs = [];
+		for (var i = 0; i < pList.length; i++)
+		{
+			let lossObj = beforeFallLossCalc(i);
+			lossObjs.push(lossObj);
+		}
+		return lossObjs;
+}
 
 	function calculateDamageAndCyclePlayers() {
 		currentState = States.FALLING;
@@ -140,11 +201,12 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 		}
 	}
 
-	function beforeFallLossCalc() {
-		killed[currentOtherPlayerIndex] = false;
-		let shouldFall = false;
-		let deployParachute = false;
-		let player = pList[currentOtherPlayerIndex];
+	function beforeFallLossCalc(otherPlayerIndex) {
+		killed[otherPlayerIndex] = false;
+		var shouldFall = false;
+		var deployParachute = false;
+		var wasHit = false;
+		let player = pList[otherPlayerIndex];
 		if (player.maxPower > 0) {
 			let statDam1 = 0;
 			let statDam2 = 0;
@@ -155,7 +217,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 					let shot = shots[i][j];
 					let lossexp = calcTankDam(player, shot);
 					if (lossexp === -1) {
-						if (currentOtherPlayerIndex != currentPlayerIndex) {
+						if (otherPlayerIndex != currentPlayerIndex) {
 							headshots++;
 						}
 						lossexpall += calcHeadshot();
@@ -163,7 +225,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 					else {
 						lossexpall += lossexp;
 					}
-					if (currentOtherPlayerIndex != currentPlayerIndex && lossexp != 0) {
+					if (otherPlayerIndex != currentPlayerIndex && lossexp != 0) {
 						shot.miss = false;
 					}
 				}
@@ -180,24 +242,28 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 					deployParachute = true;
 				}
 			}
-			decreasePower(currentOtherPlayerIndex, lossexpall, lossfallall, headshots);
+			decreasePower(otherPlayerIndex, lossexpall, lossfallall, headshots);
+			if (lossexpall + lossfallall > 0 || headshots > 0) {
+				wasHit = true;
+			}
 		 	pList[currentPlayerIndex].roundStats.headshots += headshots;
 			if (player.maxPower < 1) {
 				if (rank < livePlayers + 1) {
 					rank = livePlayers + 1;
 				}
-				killed[currentOtherPlayerIndex] = true;
+				killed[otherPlayerIndex] = true;
 			}
 			statDam1 += lossexpall;
 			statDam2 += lossfallall;
-			if (currentOtherPlayerIndex != currentPlayerIndex) {
+			if (otherPlayerIndex != currentPlayerIndex) {
 				pList[currentPlayerIndex].roundStats.damage += (statDam1 + statDam2);
 			}
 		}
-		return { shouldFall: shouldFall, deployParachute: deployParachute};
+		return { shouldFall: shouldFall, deployParachute: deployParachute, wasHit: wasHit};
 	}
 
 	function afterFallUpdateOfStats() {
+		// TODO: Consider moving this to calculateAllDamage()
 		let currentPlayer = pList[currentPlayerIndex];
 		for (let j = 0; j < weaponInfo.leaps; ++j) {
 			for (let i = 0; i < shots.length; ++i) {
@@ -235,7 +301,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 		return 1000 + weaponInfo.dam * 10;
 	}	
 
-	function decreasePower(playerIndex, lossexpall, lossfallall, headshots) {
+	function decreasePower(playerIndex, lossexpall, lossfallall) {
 		let player = pList[playerIndex];
 		let loss = lossexpall;
 		if (weaponInfo.class === "piercing") {
@@ -253,12 +319,10 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 		}
 		if (player.armour === 0) {
 			player.shield = false;
+			// TODO: We should wait with updating the visiblity until after the fall animation has played
 			gameGraphics.setTankShieldVisibility(player.color, false);
 		}
 	 	player.maxPower -= loss;
-	 	if (lossexpall + lossfallall > 0 || headshots > 0) {
-	 		// TODO: Draw comment
-	 	}
 	 	if (player.maxPower < player.power) {
 	 		player.power = player.maxPower;
 	 	}

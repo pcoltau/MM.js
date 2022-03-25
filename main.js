@@ -16,7 +16,7 @@ let game = {
     aboutObj: null,
     gameSetupObj: null,
     gameObj: null,
-    currentState: "menuObj", // A reference to the *Obj letiables above (it is a reference so we can recreate the *Obj in a different resolution if needed)
+    currentState: "gameObj", // A reference to the *Obj letiables above (it is a reference so we can recreate the *Obj in a different resolution if needed)
     nextState: null,
     currentTransition: Transitions.preFadeIn,
     fadingLayer: null
