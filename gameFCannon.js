@@ -398,7 +398,7 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, landTop, gameGrap
 		shotCount = weapon.shots;
 		for (let i = 1; i < shotCount; ++i) {
 			shots[i] = [];
-			shots[i][currentLeap] = jQuery.extend({}, shot); // shallow clone
+			shots[i][currentLeap] = Object.assign({}, shot);
 			shots[i][currentLeap].vx *= (i / shotCount);
 		}
 		divided = true;
