@@ -266,13 +266,13 @@ function createGame(wepList, onExit, assets, context) {
 		let secColor = playerColorTable[playerIndex + 8];
 		let player = {
 			name: playerName,
-			power: 500,
-			maxPower: 1000,
+			power: 0,
+			maxPower: 0,
 			armour: 0,
 			armourment: ArmourTypes.NoArmour,
-			parachutes: 8,
+			parachutes: 0,
 			shield: false,
-			angle: Math.PI / 4,
+			angle: 0,
 			posX: 0,
 			posY: 0,
 			color: color,
@@ -340,6 +340,7 @@ function createGame(wepList, onExit, assets, context) {
 				place: 1
 			}
 		};
+		initializePlayerForRound(player);
 		return player;
 	}
 
@@ -407,7 +408,7 @@ function createGame(wepList, onExit, assets, context) {
 		endingShot = null;
 		if (livePlayers < 2) {
 			// TODO: End round 
-			// TODO: Reset players
+			resetPlayersForNewRound();
 			currentState = States.SHOW_ROUND_NUMBER;
 			currentRound++;
 			onShow();
@@ -415,6 +416,33 @@ function createGame(wepList, onExit, assets, context) {
 		else {
 			switchToNextPlayer();
 		}
+	}
+
+	function resetPlayersForNewRound() {
+		for (let i = 0; i < pList.length; ++i) {
+			let player = pList[i];
+			initializePlayerForRound(player);
+		}
+	}
+
+	function initializePlayerForRound(player) {
+		player.power = 500;
+		player.maxPower = 1000;
+		player.armour = 0;
+		player.armourment = ArmourTypes.NoArmour;
+		player.parachutes = 8;
+		player.shield = false;
+		player.angle = Math.PI / 4;
+		player.roundStats = {
+			shots: 0,
+			headshots: 0,
+			misses: 0,
+			damage: 0,
+			kills: 0,
+			profit: 0,
+			points: 0,
+			place: 1
+		};
 	}
 
 	function showWeaponsList(player, wepList) {
