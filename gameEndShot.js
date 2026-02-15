@@ -16,6 +16,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 
 	let playerWeapon = pList[currentPlayerIndex].weaponList[pList[currentPlayerIndex].currentWep];
 	let weaponInfo = wepList[playerWeapon.weaponIndex];
+	let leapCount = weaponInfo.leaps ? weaponInfo.leaps : 1;
 
 	let currentOtherPlayerIndex = 0;
 	let rank = 0;  
@@ -83,7 +84,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 		let shouldEnd = false;
 		let currentPlayer = pList[currentOtherPlayerIndex];
 		tankVy += tankAy;
-		if (currentPlayer.posX + tankVx > 6 && currentState.posX + tankVx < GET_MAX_X - 6) {
+		if (currentPlayer.posX + tankVx > 6 && currentPlayer.posX + tankVx < GET_MAX_X - 6) {
 			currentPlayer.posX += tankVx;
 		} 
 		currentPlayer.posY += tankVy;
@@ -98,11 +99,33 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 				currentState = States.SHOWING_COMMENT;
 			}
 			gameGraphics.setTankParachuteVisibility(currentPlayer.color, false);
-			// TODO: Update landTop
+			updateLandTopAround(currentPlayer.posX);
 			shouldEnd = true;
 		}
 		gameGraphics.updateTankPosition(currentPlayer.color, currentPlayer.posX, currentPlayer.posY);
 		return shouldEnd;
+	}
+
+	function updateLandTopAround(centerX) {
+		let roundedX = Math.round(centerX);
+		for (let x = roundedX - 7; x <= roundedX + 7; ++x) {
+			updateLandTopAt(x);
+		}
+	}
+
+	function updateLandTopAt(x) {
+		if (x < 0 || x >= landTop.length) {
+			return;
+		}
+		let yTop = GET_MAX_Y - 18;
+		let pixels = 0;
+		let startY = landTop[x];
+		for (let y = yTop; y >= startY; --y) {
+			if (gameGraphics.isGround(x, y)) {
+				pixels++;
+			}
+		}
+		landTop[x] = yTop - pixels + 1;
 	}
 
 	function calculateDamageAndCyclePlayers() {
@@ -150,7 +173,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			let statDam2 = 0;
 			let lossexpall = 0;
 			let headshots = 0;
-			for (let j = 0; j < weaponInfo.leaps; ++j) {
+			for (let j = 0; j < leapCount; ++j) {
 				for (let i = 0; i < shots.length; ++i) {
 					let shot = shots[i][j];
 					let lossexp = calcTankDam(player, shot);
@@ -199,7 +222,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 
 	function afterFallUpdateOfStats() {
 		let currentPlayer = pList[currentPlayerIndex];
-		for (let j = 0; j < weaponInfo.leaps; ++j) {
+		for (let j = 0; j < leapCount; ++j) {
 			for (let i = 0; i < shots.length; ++i) {
 				let shot = shots[i][j];
 				if (shot.miss) {
@@ -264,10 +287,10 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 	 	}
 	 	if (player.maxPower < 1) {
 	 		if (playerIndex != currentPlayerIndex) {
-	 			player.roundStats.kills++;
+				pList[currentPlayerIndex].roundStats.kills++;
 	 		}
 	 		else {
-	 			player.roundStats.kills--;
+				pList[currentPlayerIndex].roundStats.kills--;
 	 		}
 	 		livePlayers--;
 	 	}
@@ -302,20 +325,26 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			if (!dot.stopped) {
 				dot.vx += wind / 10000;
 				dot.vy += 0.01;
-				let bounce = false;
+				let bounced = false;
 				if (dot.x + dot.vx > GET_MAX_X - 2 || dot.x + dot.vx < 2) {
 					dot.vx *= -0.5;
-					bounce = true;
+					bounced = true;
+					if (dot.bounce < 1) {
+						// TODO: MakeSound(200, 1)
+					}
+					dot.bounce++;
 				}
 				if (dot.y + dot.vy > GET_MAX_Y - 19 || dot.y + dot.vy < 18) {
-					dot.vy *= -0.5
-					bounce = true;
+					dot.vy *= -0.5;
+					bounced = true;
+					if (dot.bounce < 1) {
+						// TODO: MakeSound(200, 1)
+					}
+					dot.bounce++;
 				}
-				if (landTop[Math.round(dot.x + dot.vx)] - 1 < Math.round(dot.y + dot.vy) && dot.bounce < 2) {
-					dot.vy *= -0.5
-					bounce = true;
-				}
-				if (bounce) {
+				while (landTop[Math.round(dot.x + dot.vx)] - 1 < Math.round(dot.y + dot.vy) && dot.bounce < 2) {
+					dot.vy *= -0.5;
+					bounced = true;
 					if (dot.bounce < 1) {
 						// TODO: MakeSound(200, 1)
 					}

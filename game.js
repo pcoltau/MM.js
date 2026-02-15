@@ -269,7 +269,7 @@ function createGame(wepList, onExit, assets, context) {
 			power: 500,
 			maxPower: 1000,
 			armour: 0,
-			amourment: ArmourTypes.NoArmourment,
+			armourment: ArmourTypes.NoArmour,
 			parachutes: 8,
 			shield: false,
 			angle: Math.PI / 4,
