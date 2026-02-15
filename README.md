@@ -17,11 +17,21 @@ Clone this repository:
     git clone git@github.com:pcoltau/MM.js.git
     cd MM.js
     
-Start a simple web server in the current directory:
+Start a simple web server in the current directory.
+
+## Python
 
     python -m SimpleHTTPServer
-    
+
 Open the local website in a browser:
 
     http://localhost:8000/
+
+## Node (npx)
+
+    npx serve .
+
+Open the local website in a browser (usually):
+
+    http://localhost:3000/
     
