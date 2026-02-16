@@ -53,33 +53,36 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 	}
 
 	function tickExploding() {
-		let currentPlayer = pList[currentOtherPlayerIndex];
-		if (explosionDotObj === null) {
-			gameGraphics.setTankVisibility(currentPlayer.color, false);
-			explosionDotObj = createExplosionDots(currentPlayer);
+		beginExplosionIfNeeded();
+		consumeTime(milliSecondsBetweenExplosionMovement, stepExplosion);
+	}
+
+	function beginExplosionIfNeeded() {
+		if (explosionDotObj !== null) {
+			return;
 		}
-		consumeTime(milliSecondsBetweenExplosionMovement, function () {
-			moveExplodingDots();
-			if (explosionDotObj.stoppedCount === explosionDotObj.dots.length) {
-				gameGraphics.clearExplodingTankContainer();
-				explosionDotObj = null;
-				currentOtherPlayerIndex++;
-				currentState = States.SHOWING_COMMENT;
-				return true;
-			}
-			return false;
-		});
+		let currentPlayer = pList[currentOtherPlayerIndex];
+		gameGraphics.setTankVisibility(currentPlayer.color, false);
+		explosionDotObj = createExplosionDots(currentPlayer);
+	}
+
+	function stepExplosion() {
+		moveExplodingDots();
+		if (explosionDotObj.stoppedCount === explosionDotObj.dots.length) {
+			gameGraphics.clearExplodingTankContainer();
+			explosionDotObj = null;
+			advanceToNextPlayer();
+			currentState = States.SHOWING_COMMENT;
+			return true;
+		}
+		return false;
 	}
 
 	function tickShowingComment() {
 		if (!activeComment) {
-			if (commentQueue.length === 0) {
+			if (!showNextCommentIfNeeded()) {
 				calculateDamageAndCyclePlayers();
-				return;
 			}
-			activeComment = commentQueue.shift();
-			timeCounter = 0;
-			gameGraphics.showComment(activeComment);
 			return;
 		}
 		if (timeCounter >= commentDurationMs) {
@@ -90,6 +93,16 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 				calculateDamageAndCyclePlayers();
 			}
 		}
+	}
+
+	function showNextCommentIfNeeded() {
+		if (commentQueue.length === 0) {
+			return false;
+		}
+		activeComment = commentQueue.shift();
+		timeCounter = 0;
+		gameGraphics.showComment(activeComment);
+		return true;
 	}
 
 	function consumeTime(stepMs, shouldStopStep) {
@@ -125,24 +138,28 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 		} 
 		currentPlayer.posY += tankVy;
 		if (currentPlayer.posY >= landTop[Math.round(currentPlayer.posX)] - 2) {
-			currentPlayer.posX = Math.round(currentPlayer.posX);
-			currentPlayer.posY = Math.round(currentPlayer.posY);
-			// TODO: MakeSound(150,5);
-			if (killed[currentOtherPlayerIndex]) {
-				currentState = States.EXPLODING;
-			}
-			else {
-				currentState = States.SHOWING_COMMENT;
-			}
-			gameGraphics.setTankParachuteVisibility(currentPlayer.color, false);
-			updateLandTopAround(currentPlayer.posX);
-			if (!killed[currentOtherPlayerIndex]) {
-				currentOtherPlayerIndex++;
-			}
-			shouldEnd = true;
+			shouldEnd = handleTankLanding(currentPlayer);
 		}
 		gameGraphics.updateTankPosition(currentPlayer.color, currentPlayer.posX, currentPlayer.posY);
 		return shouldEnd;
+	}
+
+	function handleTankLanding(currentPlayer) {
+		currentPlayer.posX = Math.round(currentPlayer.posX);
+		currentPlayer.posY = Math.round(currentPlayer.posY);
+		// TODO: MakeSound(150,5);
+		if (killed[currentOtherPlayerIndex]) {
+			currentState = States.EXPLODING;
+		}
+		else {
+			currentState = States.SHOWING_COMMENT;
+		}
+		gameGraphics.setTankParachuteVisibility(currentPlayer.color, false);
+		updateLandTopAround(currentPlayer.posX);
+		if (!killed[currentOtherPlayerIndex]) {
+			advanceToNextPlayer();
+		}
+		return true;
 	}
 
 	function updateLandTopAround(centerX) {
@@ -184,7 +201,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 					currentState = States.EXPLODING;
 				}
 				else {
-					currentOtherPlayerIndex++;
+					advanceToNextPlayer();
 				}
 			}
 		} while (!shouldStopCycle && currentOtherPlayerIndex < pList.length);
@@ -192,17 +209,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			finishShot();
 		}
 		else {
-			if (playerResult.deployParachute) {
-				gameGraphics.setTankParachuteVisibility(pList[currentOtherPlayerIndex].color, true);
-				tankVx = wind/200;
-				tankVy = 0.2;
-				tankAy = 0;
-			}
-			else {
-				tankVx = 0;
-				tankVy = 0;
-				tankAy = 0.01;
-			}
+			enterFallState(playerResult.deployParachute);
 		}
 	}
 
@@ -212,46 +219,45 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 		endingShotDone(livePlayers);
 	}
 
+	function enterFallState(deployParachute) {
+		if (deployParachute) {
+			gameGraphics.setTankParachuteVisibility(pList[currentOtherPlayerIndex].color, true);
+			setParachuteFallPhysics();
+		}
+		else {
+			setNormalFallPhysics();
+		}
+	}
+
+	function setParachuteFallPhysics() {
+		tankVx = wind / 200;
+		tankVy = 0.2;
+		tankAy = 0;
+	}
+
+	function setNormalFallPhysics() {
+		tankVx = 0;
+		tankVy = 0;
+		tankAy = 0.01;
+	}
+
+	function advanceToNextPlayer() {
+		currentOtherPlayerIndex++;
+	}
+
 	function processPlayerForShot(playerIndex) {
 		killed[playerIndex] = false;
 		let shouldFall = false;
 		let deployParachute = false;
 		let player = pList[playerIndex];
 		if (player.maxPower > 0) {
-			let statDam1 = 0;
-			let statDam2 = 0;
-			let lossexpall = 0;
-			let headshots = 0;
-			for (let j = 0; j < leapCount; ++j) {
-				for (let i = 0; i < shots.length; ++i) {
-					let shot = shots[i][j];
-					let lossexp = calcTankDam(player, shot);
-					if (lossexp === -1) {
-						if (playerIndex != currentPlayerIndex) {
-							headshots++;
-						}
-						lossexpall += calcHeadshot();
-					}
-					else {
-						lossexpall += lossexp;
-					}
-					if (playerIndex != currentPlayerIndex && lossexp != 0) {
-						shot.miss = false;
-					}
-				}
-			}
-			let lossfallall = 0;
-			let landTopY = landTop[Math.round(player.posX)];
-			if (player.posY < landTopY - 2) {
-				shouldFall = true;
-				if (player.parachutes === 0 || player.maxPower + player.armour - lossexpall <= 0) {
-					lossfallall = ((landTopY - 2) - player.posY) * 5;
-				} 
-				else {
-					player.parachutes--;
-					deployParachute = true;
-				}
-			}
+			let explosionResult = calculateExplosionDamage(playerIndex, player);
+			let lossexpall = explosionResult.lossexpall;
+			let headshots = explosionResult.headshots;
+			let fallResult = calculateFallDamage(player, lossexpall);
+			let lossfallall = fallResult.lossfallall;
+			shouldFall = fallResult.shouldFall;
+			deployParachute = fallResult.deployParachute;
 			decreasePower(playerIndex, lossexpall, lossfallall, headshots);
 		 	pList[currentPlayerIndex].roundStats.headshots += headshots;
 			queueCommentIfNeeded(playerIndex, lossexpall, lossfallall, headshots);
@@ -261,13 +267,63 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 				}
 				killed[playerIndex] = true;
 			}
-			statDam1 += lossexpall;
-			statDam2 += lossfallall;
-			if (playerIndex != currentPlayerIndex) {
-				pList[currentPlayerIndex].roundStats.damage += (statDam1 + statDam2);
+			updateRoundDamage(playerIndex, lossexpall, lossfallall);
+		}
+		return {
+			shouldFall: shouldFall,
+			deployParachute: deployParachute
+		};
+	}
+
+	function updateRoundDamage(playerIndex, lossexpall, lossfallall) {
+		if (playerIndex != currentPlayerIndex) {
+			pList[currentPlayerIndex].roundStats.damage += (lossexpall + lossfallall);
+		}
+	}
+
+	function calculateExplosionDamage(playerIndex, player) {
+		let lossexpall = 0;
+		let headshots = 0;
+		for (let j = 0; j < leapCount; ++j) {
+			for (let i = 0; i < shots.length; ++i) {
+				let shot = shots[i][j];
+				let result = evaluateShotDamage(playerIndex, player, shot);
+				lossexpall += result.damage;
+				headshots += result.headshots;
+			}
+		}
+		return { lossexpall: lossexpall, headshots: headshots };
+	}
+
+	function evaluateShotDamage(playerIndex, player, shot) {
+		let lossexp = calcTankDam(player, shot);
+		if (playerIndex != currentPlayerIndex && lossexp != 0) {
+			shot.miss = false;
+		}
+		if (lossexp === -1) {
+			let headshots = (playerIndex != currentPlayerIndex) ? 1 : 0;
+			return { damage: calcHeadshot(), headshots: headshots };
+		}
+		return { damage: lossexp, headshots: 0 };
+	}
+
+	function calculateFallDamage(player, lossexpall) {
+		let lossfallall = 0;
+		let shouldFall = false;
+		let deployParachute = false;
+		let landTopY = landTop[Math.round(player.posX)];
+		if (player.posY < landTopY - 2) {
+			shouldFall = true;
+			if (player.parachutes === 0 || player.maxPower + player.armour - lossexpall <= 0) {
+				lossfallall = ((landTopY - 2) - player.posY) * 5;
+			}
+			else {
+				player.parachutes--;
+				deployParachute = true;
 			}
 		}
 		return {
+			lossfallall: lossfallall,
 			shouldFall: shouldFall,
 			deployParachute: deployParachute
 		};
