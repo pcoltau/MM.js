@@ -79,6 +79,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			gameGraphics.clearExplodingTankContainer();
 			explosionDotObj = null;
 			advanceToNextPlayer();
+			// Explosion animation finished; move to comment playback.
 			return States.SHOWING_COMMENT;
 		}
 		return null;
@@ -87,6 +88,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 	function tickShowingComment() {
 		if (!activeComment) {
 			if (!showNextCommentIfNeeded()) {
+				// No comments queued; continue player cycle.
 				return calculateDamageAndCyclePlayers();
 			}
 			return null;
@@ -96,6 +98,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			activeComment = null;
 			gameGraphics.hideComment();
 			if (commentQueue.length === 0) {
+				// Comment finished and queue empty; continue player cycle.
 				return calculateDamageAndCyclePlayers();
 			}
 		}
@@ -157,6 +160,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 		currentPlayer.posX = Math.round(currentPlayer.posX);
 		currentPlayer.posY = Math.round(currentPlayer.posY);
 		// TODO: MakeSound(150,5);
+		// Landing ends fall; transition based on whether this tank died.
 		let nextState = killed[currentOtherPlayerIndex] ? States.EXPLODING : States.SHOWING_COMMENT;
 		gameGraphics.setTankParachuteVisibility(currentPlayer.color, false);
 		updateLandTopAround(currentPlayer.posX);
@@ -214,6 +218,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			return null;
 		}
 		enterFallState(playerResult.deployParachute);
+		// Falling animation starts next for the current player.
 		return nextState;
 	}
 
