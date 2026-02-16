@@ -173,11 +173,11 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			finishShot();
 			return;
 		}
-		let lossObj = null;
+		let playerResult = null;
 		let shouldStopCycle = true;
 		do {
-			lossObj = beforeFallLossCalc();
-			shouldStopCycle = lossObj.shouldFall;
+			playerResult = processPlayerForShot(currentOtherPlayerIndex);
+			shouldStopCycle = playerResult.shouldFall;
 			if (!shouldStopCycle) {
 				if (killed[currentOtherPlayerIndex]) {
 					shouldStopCycle = true;
@@ -192,7 +192,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			finishShot();
 		}
 		else {
-			if (lossObj.deployParachute) {
+			if (playerResult.deployParachute) {
 				gameGraphics.setTankParachuteVisibility(pList[currentOtherPlayerIndex].color, true);
 				tankVx = wind/200;
 				tankVy = 0.2;
@@ -212,11 +212,11 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 		endingShotDone(livePlayers);
 	}
 
-	function beforeFallLossCalc() {
-		killed[currentOtherPlayerIndex] = false;
+	function processPlayerForShot(playerIndex) {
+		killed[playerIndex] = false;
 		let shouldFall = false;
 		let deployParachute = false;
-		let player = pList[currentOtherPlayerIndex];
+		let player = pList[playerIndex];
 		if (player.maxPower > 0) {
 			let statDam1 = 0;
 			let statDam2 = 0;
@@ -227,7 +227,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 					let shot = shots[i][j];
 					let lossexp = calcTankDam(player, shot);
 					if (lossexp === -1) {
-						if (currentOtherPlayerIndex != currentPlayerIndex) {
+						if (playerIndex != currentPlayerIndex) {
 							headshots++;
 						}
 						lossexpall += calcHeadshot();
@@ -235,7 +235,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 					else {
 						lossexpall += lossexp;
 					}
-					if (currentOtherPlayerIndex != currentPlayerIndex && lossexp != 0) {
+					if (playerIndex != currentPlayerIndex && lossexp != 0) {
 						shot.miss = false;
 					}
 				}
@@ -252,22 +252,25 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 					deployParachute = true;
 				}
 			}
-			decreasePower(currentOtherPlayerIndex, lossexpall, lossfallall, headshots);
+			decreasePower(playerIndex, lossexpall, lossfallall, headshots);
 		 	pList[currentPlayerIndex].roundStats.headshots += headshots;
-			queueCommentIfNeeded(currentOtherPlayerIndex, lossexpall, lossfallall, headshots);
+			queueCommentIfNeeded(playerIndex, lossexpall, lossfallall, headshots);
 			if (player.maxPower < 1) {
 				if (rank < livePlayers + 1) {
 					rank = livePlayers + 1;
 				}
-				killed[currentOtherPlayerIndex] = true;
+				killed[playerIndex] = true;
 			}
 			statDam1 += lossexpall;
 			statDam2 += lossfallall;
-			if (currentOtherPlayerIndex != currentPlayerIndex) {
+			if (playerIndex != currentPlayerIndex) {
 				pList[currentPlayerIndex].roundStats.damage += (statDam1 + statDam2);
 			}
 		}
-		return { shouldFall: shouldFall, deployParachute: deployParachute};
+		return {
+			shouldFall: shouldFall,
+			deployParachute: deployParachute
+		};
 	}
 
 	function queueCommentIfNeeded(playerIndex, lossexpall, lossfallall, headshots) {
