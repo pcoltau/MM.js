@@ -26,7 +26,10 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 	let commentDurationMs = 2000;
 	let commentGenerated = [];
 
-	calculateDamageAndCyclePlayers();
+	let initialState = calculateDamageAndCyclePlayers();
+	if (initialState !== null) {
+		currentState = initialState;
+	}
 
 	return {
 		onTick: onTick
@@ -34,27 +37,31 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 
 	function onTick(stage, deltaInSeconds) {
 		timeCounter += deltaInSeconds * 1000;
+		let nextState = null;
 		switch (currentState) {
 			case States.FALLING:
-				tickFalling();
+				nextState = tickFalling();
 				break;
 			case States.EXPLODING:
-				tickExploding();
+				nextState = tickExploding();
 				break;
 			case States.SHOWING_COMMENT:
-				tickShowingComment();
+				nextState = tickShowingComment();
 				break;
+		}
+		if (nextState !== null) {
+			currentState = nextState;
 		}
 		gameGraphics.updateGameImage();
 	}
 
 	function tickFalling() {
-		consumeTime(milliSecondsBetweenFallMovement, moveTank);
+		return consumeTime(milliSecondsBetweenFallMovement, moveTank);
 	}
 
 	function tickExploding() {
 		beginExplosionIfNeeded();
-		consumeTime(milliSecondsBetweenExplosionMovement, stepExplosion);
+		return consumeTime(milliSecondsBetweenExplosionMovement, stepExplosion);
 	}
 
 	function beginExplosionIfNeeded() {
@@ -72,27 +79,27 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			gameGraphics.clearExplodingTankContainer();
 			explosionDotObj = null;
 			advanceToNextPlayer();
-			currentState = States.SHOWING_COMMENT;
-			return true;
+			return States.SHOWING_COMMENT;
 		}
-		return false;
+		return null;
 	}
 
 	function tickShowingComment() {
 		if (!activeComment) {
 			if (!showNextCommentIfNeeded()) {
-				calculateDamageAndCyclePlayers();
+				return calculateDamageAndCyclePlayers();
 			}
-			return;
+			return null;
 		}
 		if (timeCounter >= commentDurationMs) {
 			timeCounter = 0;
 			activeComment = null;
 			gameGraphics.hideComment();
 			if (commentQueue.length === 0) {
-				calculateDamageAndCyclePlayers();
+				return calculateDamageAndCyclePlayers();
 			}
 		}
+		return null;
 	}
 
 	function showNextCommentIfNeeded() {
@@ -108,13 +115,16 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 	function consumeTime(stepMs, shouldStopStep) {
 		let iterations = Math.floor(timeCounter / stepMs);
 		timeCounter = timeCounter % stepMs;
+		let nextState = null;
 		for (let i = 0; i < iterations; ++i) {
-			// Returning true stops the remaining iterations for this tick.
-			if (shouldStopStep()) {
+			let stepResult = shouldStopStep();
+			if (stepResult !== null) {
 				timeCounter = 0;
+				nextState = stepResult;
 				break;
 			}
 		}
+		return nextState;
 	}
 
 	function checkNoAmmo() {
@@ -130,7 +140,6 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 	}
 
 	function moveTank() {
-		let shouldEnd = false;
 		let currentPlayer = pList[currentOtherPlayerIndex];
 		tankVy += tankAy;
 		if (currentPlayer.posX + tankVx > 6 && currentPlayer.posX + tankVx < GET_MAX_X - 6) {
@@ -138,28 +147,23 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 		} 
 		currentPlayer.posY += tankVy;
 		if (currentPlayer.posY >= landTop[Math.round(currentPlayer.posX)] - 2) {
-			shouldEnd = handleTankLanding(currentPlayer);
+			return handleTankLanding(currentPlayer);
 		}
 		gameGraphics.updateTankPosition(currentPlayer.color, currentPlayer.posX, currentPlayer.posY);
-		return shouldEnd;
+		return null;
 	}
 
 	function handleTankLanding(currentPlayer) {
 		currentPlayer.posX = Math.round(currentPlayer.posX);
 		currentPlayer.posY = Math.round(currentPlayer.posY);
 		// TODO: MakeSound(150,5);
-		if (killed[currentOtherPlayerIndex]) {
-			currentState = States.EXPLODING;
-		}
-		else {
-			currentState = States.SHOWING_COMMENT;
-		}
+		let nextState = killed[currentOtherPlayerIndex] ? States.EXPLODING : States.SHOWING_COMMENT;
 		gameGraphics.setTankParachuteVisibility(currentPlayer.color, false);
 		updateLandTopAround(currentPlayer.posX);
 		if (!killed[currentOtherPlayerIndex]) {
 			advanceToNextPlayer();
 		}
-		return true;
+		return nextState;
 	}
 
 	function updateLandTopAround(centerX) {
@@ -185,20 +189,20 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 	}
 
 	function calculateDamageAndCyclePlayers() {
-		currentState = States.FALLING;
 		if (currentOtherPlayerIndex >= pList.length) {
 			finishShot();
-			return;
+			return null;
 		}
 		let playerResult = null;
 		let shouldStopCycle = true;
+		let nextState = States.FALLING;
 		do {
 			playerResult = processPlayerForShot(currentOtherPlayerIndex);
 			shouldStopCycle = playerResult.shouldFall;
 			if (!shouldStopCycle) {
 				if (killed[currentOtherPlayerIndex]) {
 					shouldStopCycle = true;
-					currentState = States.EXPLODING;
+					nextState = States.EXPLODING;
 				}
 				else {
 					advanceToNextPlayer();
@@ -207,10 +211,10 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 		} while (!shouldStopCycle && currentOtherPlayerIndex < pList.length);
 		if (!shouldStopCycle) {
 			finishShot();
+			return null;
 		}
-		else {
-			enterFallState(playerResult.deployParachute);
-		}
+		enterFallState(playerResult.deployParachute);
+		return nextState;
 	}
 
 	function finishShot() {
