@@ -21,6 +21,10 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 	let currentOtherPlayerIndex = 0;
 	let rank = 0;  
 	let killed = []; // players killed by this shot
+	let commentQueue = [];
+	let activeComment = null;
+	let commentDurationMs = 2000;
+	let commentGenerated = [];
 
 	calculateDamageAndCyclePlayers();
 
@@ -32,40 +36,72 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 		timeCounter += deltaInSeconds * 1000;
 		switch (currentState) {
 			case States.FALLING:
-				let shotMovementIterations = Math.floor(timeCounter / milliSecondsBetweenFallMovement);
-				timeCounter = timeCounter % milliSecondsBetweenFallMovement;
-				for (let i = 0; i < shotMovementIterations; ++i) {
-					if (moveTank()) {
-						timeCounter = 0;
-						break;
-					}
-				}
+				tickFalling();
 				break;
 			case States.EXPLODING:
-				let currentPlayer = pList[currentOtherPlayerIndex];
-				if (explosionDotObj === null) {
-					gameGraphics.setTankVisibility(currentPlayer.color, false);
-					explosionDotObj = createExplosionDots(currentPlayer)
-				}
-				let explosionMovementIterations = Math.floor(timeCounter / milliSecondsBetweenExplosionMovement);
-				timeCounter = timeCounter % milliSecondsBetweenExplosionMovement;
-				for (let i = 0; i < explosionMovementIterations; ++i) {
-					moveExplodingDots();
-					if (explosionDotObj.stoppedCount === explosionDotObj.dots.length) {
-						gameGraphics.clearExplodingTankContainer();
-						explosionDotObj = null;
-						currentState = States.SHOWING_COMMENT;		
-						timeCounter = 0;
-						break;
-					}
-				}	
+				tickExploding();
 				break;
 			case States.SHOWING_COMMENT:
-				// TODO: Wait and then remove comment
-				calculateDamageAndCyclePlayers(); // Continue to the (potential) next player
+				tickShowingComment();
 				break;
 		}
 		gameGraphics.updateGameImage();
+	}
+
+	function tickFalling() {
+		consumeTime(milliSecondsBetweenFallMovement, moveTank);
+	}
+
+	function tickExploding() {
+		let currentPlayer = pList[currentOtherPlayerIndex];
+		if (explosionDotObj === null) {
+			gameGraphics.setTankVisibility(currentPlayer.color, false);
+			explosionDotObj = createExplosionDots(currentPlayer);
+		}
+		consumeTime(milliSecondsBetweenExplosionMovement, function () {
+			moveExplodingDots();
+			if (explosionDotObj.stoppedCount === explosionDotObj.dots.length) {
+				gameGraphics.clearExplodingTankContainer();
+				explosionDotObj = null;
+				currentOtherPlayerIndex++;
+				currentState = States.SHOWING_COMMENT;
+				return true;
+			}
+			return false;
+		});
+	}
+
+	function tickShowingComment() {
+		if (!activeComment) {
+			if (commentQueue.length === 0) {
+				calculateDamageAndCyclePlayers();
+				return;
+			}
+			activeComment = commentQueue.shift();
+			timeCounter = 0;
+			gameGraphics.showComment(activeComment);
+			return;
+		}
+		if (timeCounter >= commentDurationMs) {
+			timeCounter = 0;
+			activeComment = null;
+			gameGraphics.hideComment();
+			if (commentQueue.length === 0) {
+				calculateDamageAndCyclePlayers();
+			}
+		}
+	}
+
+	function consumeTime(stepMs, shouldStopStep) {
+		let iterations = Math.floor(timeCounter / stepMs);
+		timeCounter = timeCounter % stepMs;
+		for (let i = 0; i < iterations; ++i) {
+			// Returning true stops the remaining iterations for this tick.
+			if (shouldStopStep()) {
+				timeCounter = 0;
+				break;
+			}
+		}
 	}
 
 	function checkNoAmmo() {
@@ -100,6 +136,9 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			}
 			gameGraphics.setTankParachuteVisibility(currentPlayer.color, false);
 			updateLandTopAround(currentPlayer.posX);
+			if (!killed[currentOtherPlayerIndex]) {
+				currentOtherPlayerIndex++;
+			}
 			shouldEnd = true;
 		}
 		gameGraphics.updateTankPosition(currentPlayer.color, currentPlayer.posX, currentPlayer.posY);
@@ -130,6 +169,10 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 
 	function calculateDamageAndCyclePlayers() {
 		currentState = States.FALLING;
+		if (currentOtherPlayerIndex >= pList.length) {
+			finishShot();
+			return;
+		}
 		let lossObj = null;
 		let shouldStopCycle = true;
 		do {
@@ -140,13 +183,13 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 					shouldStopCycle = true;
 					currentState = States.EXPLODING;
 				}
-				currentOtherPlayerIndex++;
+				else {
+					currentOtherPlayerIndex++;
+				}
 			}
 		} while (!shouldStopCycle && currentOtherPlayerIndex < pList.length);
 		if (!shouldStopCycle) {
-			afterFallUpdateOfStats();
-			checkNoAmmo();
-			endingShotDone(livePlayers);
+			finishShot();
 		}
 		else {
 			if (lossObj.deployParachute) {
@@ -161,6 +204,12 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 				tankAy = 0.01;
 			}
 		}
+	}
+
+	function finishShot() {
+		afterFallUpdateOfStats();
+		checkNoAmmo();
+		endingShotDone(livePlayers);
 	}
 
 	function beforeFallLossCalc() {
@@ -205,6 +254,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			}
 			decreasePower(currentOtherPlayerIndex, lossexpall, lossfallall, headshots);
 		 	pList[currentPlayerIndex].roundStats.headshots += headshots;
+			queueCommentIfNeeded(currentOtherPlayerIndex, lossexpall, lossfallall, headshots);
 			if (player.maxPower < 1) {
 				if (rank < livePlayers + 1) {
 					rank = livePlayers + 1;
@@ -218,6 +268,116 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			}
 		}
 		return { shouldFall: shouldFall, deployParachute: deployParachute};
+	}
+
+	function queueCommentIfNeeded(playerIndex, lossexpall, lossfallall, headshots) {
+		if (commentGenerated[playerIndex]) {
+			return;
+		}
+		let comment = buildComment(playerIndex, lossexpall, lossfallall, headshots);
+		if (comment) {
+			commentQueue.push(comment);
+			commentGenerated[playerIndex] = true;
+		}
+	}
+
+	function buildComment(playerIndex, lossexpall, lossfallall, headshots) {
+		let str1 = "";
+		let str2 = "";
+		let total = lossexpall + lossfallall;
+		if (lossexpall > 0) {
+			if (total > 100) { str1 = "scratched "; str2 = "."; }
+			if (total > 150) { str1 = "bruised "; str2 = "."; }
+			if (total > 200) { str1 = "injured "; str2 = "."; }
+			if (total > 250) { str1 = "wounded "; str2 = "."; }
+			if (total > 300) { str1 = "cracked "; str2 = "."; }
+			if (total > 400) { str1 = "fractured "; str2 = "."; }
+			if (total > 450) { str1 = "fractured "; str2 = getRandomCommentSuffix(); }
+			if (total > 500) { str1 = "shredded "; str2 = "."; }
+			if (total > 550) { str1 = "shredded "; str2 = getRandomCommentSuffix(); }
+			if (total > 600) { str1 = "smashed "; str2 = "."; }
+			if (total > 700) { str1 = "smashed "; str2 = getRandomCommentSuffix(); }
+			if (total > 800) { str1 = "slaughtered "; str2 = "."; }
+			if (total > 900) { str1 = "slaughtered "; str2 = getRandomCommentSuffix(); }
+			if (total > 1000) { str1 = "butchered "; str2 = "."; }
+			if (total > 1100) { str1 = "butchered "; str2 = getRandomCommentSuffix(); }
+			if (total > 1200) { str1 = "massacred "; str2 = "."; }
+			if (total > 1300) { str1 = "massacred "; str2 = getRandomCommentSuffix(); }
+			if (total > 1400) { str1 = "obliterated "; str2 = "."; }
+			if (total > 1500) { str1 = "obliterated "; str2 = getRandomCommentSuffix(); }
+			if (total > 1600) { str1 = "annihilated "; str2 = "."; }
+			if (total > 1700) { str1 = "annihilated "; str2 = getRandomCommentSuffix(); }
+			if (total > 1800) { str1 = "atomized "; str2 = "."; }
+			if (total > 1900) { str1 = "atomized "; str2 = getRandomCommentSuffix(); }
+			if (total > 2000) { str1 = "vaporized "; str2 = "."; }
+			if (total > 2250) { str1 = "vaporized "; str2 = " into dust."; }
+			if (total > 2500) { str1 = "vaporized "; str2 = " into oblivion."; }
+			if (total > 3000) { str1 = "vaporized "; str2 = " into pure nothing."; }
+			if (total <= 100) { str1 = "dented "; str2 = "."; }
+			if (total <= 75) { str1 = "almost scared "; str2 = "."; }
+			if (total <= 50) { str1 = "barely touched "; str2 = "."; }
+		}
+		else {
+			if (lossfallall <= 100) { str1 = "made the dust collapse under "; str2 = "."; }
+			if (lossfallall <= 50) { str1 = "made "; str2 = " float gently like a feather."; }
+			if (lossfallall > 100) { str1 = "made "; str2 = " land hard."; }
+			if (lossfallall > 200) { str1 = "made "; str2 = " dive like a stone."; }
+			if (lossfallall > 300) { str1 = "made "; str2 = " stumble down the rocks."; }
+			if (lossfallall > 400) { str1 = "made "; str2 = " tumble down irretrievably."; }
+			if (lossfallall > 500) { str1 = "made "; str2 = " lunge towards hell."; }
+			if (lossfallall > 600) { str1 = "made "; str2 = " go supersonic."; }
+			if (lossfallall > 700) { str1 = "made "; str2 = " go warp 2."; }
+			if (lossfallall > 800) { str1 = "made "; str2 = " go warp 5."; }
+			if (lossfallall > 900) { str1 = "made "; str2 = " go warp 9."; }
+			if (lossfallall > 1000) { str1 = "made "; str2 = " plunge towards The Grim Reaper."; }
+		}
+		if (total === 0) {
+			str1 = "";
+			str2 = "";
+		}
+		if (headshots === 1) { str1 = "made a HEADSHOT on "; str2 = "."; }
+		if (headshots === 2) { str1 = "made a double HEADSHOT on "; str2 = "."; }
+		if (headshots === 3) { str1 = "made a triple HEADSHOT on "; str2 = "."; }
+		if (headshots === 4) { str1 = "made a quadruple HEADSHOT on "; str2 = "."; }
+		if (headshots === 5) { str1 = "made a quintuple HEADSHOT on "; str2 = "."; }
+		if (headshots >= 6) { str1 = "made incomprehensible many HEADSHOT on "; str2 = "."; }
+		if (!str1) {
+			return null;
+		}
+
+		let target = pList[playerIndex];
+		let shooter = pList[currentPlayerIndex];
+		let isSuicide = playerIndex === currentPlayerIndex && shooter.maxPower < 1;
+		let personName = (playerIndex === currentPlayerIndex) ? "itself" : target.name;
+		return {
+			text: isSuicide ? (shooter.name + " suicided!") : (shooter.name + " " + str1 + personName + str2),
+			isSuicide: isSuicide,
+			shooterName: shooter.name,
+			shooterColor: shooter.color,
+			personName: personName,
+			personColor: target.color,
+			str1: str1,
+			str2: str2
+		};
+	}
+
+	function getRandomCommentSuffix() {
+		let r = Math.floor(Math.random() * 15);
+		if (r === 0) return " badly.";
+		if (r === 1) return " to pieces.";
+		if (r === 2) return " as oil starts to flow.";
+		if (r === 3) return " removing tons of metal.";
+		if (r === 4) return " making it unreconizable.";
+		if (r === 5) return " like a silly bug.";
+		if (r === 6) return " making sparks fly.";
+		if (r === 7) return " shattering delicate machinery.";
+		if (r === 8) return " crumbling the bodywork.";
+		if (r === 9) return " almost tipping it over.";
+		if (r === 10) return " messing up its paintjob.";
+		if (r === 11) return " wrecking its camouflage.";
+		if (r === 12) return " almost breaking its cannon.";
+		if (r === 13) return " making it really pissed off.";
+		return " fragments flying everywhere.";
 	}
 
 	function afterFallUpdateOfStats() {
@@ -239,8 +399,12 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 	}
 
 	function calcTankDam(player, shot) {
-		let dx = shot.px - player.posX;
-		let dy = shot.py - player.posY;
+		let shotX = Math.round(shot.px);
+		let shotY = Math.round(shot.py);
+		let playerX = Math.round(player.posX);
+		let playerY = Math.round(player.posY);
+		let dx = shotX - playerX;
+		let dy = shotY - playerY;
 		let d = dx * dx + dy * dy;
 		let dam = weaponInfo.dam * weaponInfo.dam;
 		let l = 0;
@@ -279,9 +443,6 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 			gameGraphics.setTankShieldVisibility(player.color, false);
 		}
 	 	player.maxPower -= loss;
-	 	if (lossexpall + lossfallall > 0 || headshots > 0) {
-	 		// TODO: Draw comment
-	 	}
 	 	if (player.maxPower < player.power) {
 	 		player.power = player.maxPower;
 	 	}

@@ -21,6 +21,7 @@ function createGameGraphics(assets, weapons, context) {
 	let tracersShape = null;
 	let roundNumberText = null;
 	let tanks = {}; // all 8 tanks, {color:{container, cannonShape, shieldShape, arrowShape, parachuteShape} 
+	let commentContainer = new createjs.Container();
 
 	let skyRGB = Palette.getRGBFromColor(GameColors.SKY);
 
@@ -51,6 +52,9 @@ function createGameGraphics(assets, weapons, context) {
 	let roundSign = createRoundSign();
 	mainContainer.addChild(roundSign)
 
+	commentContainer.visible = false;
+	mainContainer.addChild(commentContainer);
+
 	let weaponsListContentContainer;
 	let weaponsDescriptionContentContainer;
 	let weaponsContainer = new createjs.Container();
@@ -79,6 +83,8 @@ function createGameGraphics(assets, weapons, context) {
 		setTankShieldVisibility: setTankShieldVisibility,
 		setTankArrowVisibility: setTankArrowVisibility,
 		setTankParachuteVisibility: setTankParachuteVisibility,
+		showComment: showComment,
+		hideComment: hideComment,
 		showRoundSign: showRoundSign,
 		hideRoundSign: hideRoundSign,
 		showGuidance: showGuidance,
@@ -90,6 +96,69 @@ function createGameGraphics(assets, weapons, context) {
 		updateWeaponsContainer: updateWeaponsContainer,
 		hideWeaponsContainer: hideWeaponsContainer
 	};
+
+	function showComment(comment) {
+		commentContainer.removeAllChildren();
+		commentContainer.visible = true;
+		let charWidth = 8;
+		let textY = 24;
+		let boxTop = 22;
+		let boxBottom = 34;
+		let text = comment.text;
+		let textWidth = text.length * charWidth;
+		let startX = Math.round(GET_MAX_X / 2 - textWidth / 2);
+		let boxLeft = startX - 8;
+		let boxRight = startX + textWidth + 8;
+
+		let boxShape = new createjs.Shape();
+		bar(boxShape.graphics, GameColors.DARKGRAY, boxLeft, boxTop, boxRight, boxBottom);
+		rectangle(boxShape.graphics, GameColors.GRAY, boxLeft, boxTop, boxRight, boxBottom);
+		commentContainer.addChild(boxShape);
+
+		let x = startX;
+		if (comment.isSuicide) {
+			drawPlayerName(commentContainer, comment.shooterName, x, textY, comment.shooterColor);
+			x += comment.shooterName.length * charWidth;
+			drawText(commentContainer, " suicided!", x, textY, GameColors.WHITE);
+			return;
+		}
+
+		drawPlayerName(commentContainer, comment.shooterName, x, textY, comment.shooterColor);
+		x += comment.shooterName.length * charWidth + charWidth;
+		drawText(commentContainer, comment.str1, x, textY, GameColors.WHITE);
+		x += comment.str1.length * charWidth;
+		drawPlayerName(commentContainer, comment.personName, x, textY, comment.personColor);
+		x += comment.personName.length * charWidth;
+		drawText(commentContainer, comment.str2, x, textY, GameColors.WHITE);
+	}
+
+	function hideComment() {
+		commentContainer.removeAllChildren();
+		commentContainer.visible = false;
+	}
+
+	function drawText(container, text, x, y, color) {
+		let textObj = outTextXYAsText(color, text, x, y);
+		container.addChild(textObj);
+	}
+
+	function drawPlayerName(container, name, x, y, color) {
+		let shadowColor = getNameShadowColor(color);
+		let shadowText = outTextXYAsText(shadowColor, name, x + 1, y + 1);
+		let textObj = outTextXYAsText(color, name, x, y);
+		container.addChild(shadowText);
+		container.addChild(textObj);
+	}
+
+	function getNameShadowColor(color) {
+		if (color !== GameColors.GRAY && color !== GameColors.DARKMAGENTA &&
+			color !== GameColors.DARKGREEN && color !== GameColors.DARKBROWN &&
+			color !== GameColors.BLUE && color !== GameColors.RED &&
+			color !== GameColors.MAGENTA) {
+			return GameColors.GRAY;
+		}
+		return GameColors.BLACK;
+	}
 
 	function createGameShape() {
 		let gameShape = new createjs.Shape();
