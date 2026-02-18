@@ -19,7 +19,8 @@ let game = {
     currentState: "menuObj", // A reference to the *Obj letiables above (it is a reference so we can recreate the *Obj in a different resolution if needed)
     nextState: null,
     currentTransition: Transitions.preFadeIn,
-    fadingLayer: null
+    fadingLayer: null,
+    fadingEnabled: true
 };
 
 gameEngine.onInit = function onInit(stage, assets, context) {
@@ -27,6 +28,8 @@ gameEngine.onInit = function onInit(stage, assets, context) {
     let itemList = readEncodedFile(assets.getResult("item", true));
     let typeList = readEncodedTypeFile(assets.getResult("type", true));
     let configList = readConfigFile(assets.getResult("config", false));
+
+    game.fadingEnabled = getConfigBool(configList, "Fading", true);
 
     createGameObjects(assets);
 
@@ -48,11 +51,14 @@ gameEngine.onInit = function onInit(stage, assets, context) {
     game.fadingLayer.graphics.beginFill("black").drawRect(0, 0, GET_MAX_X, GET_MAX_Y).endFill();
     game.fadingLayer.cache(0, 0, GET_MAX_X, GET_MAX_Y);
     stage.addChild(game.fadingLayer);
+    if (!game.fadingEnabled) {
+        game.fadingLayer.alpha = 0;
+    }
     
     function createGameObjects(assets) {
         game.menuObj = createMenu(onSelectMainMenuItem, assets);
         game.aboutObj = createAbout(onExitAbout, assets);
-        game.gameSetupObj = createGameSetup(onGameSetupDone, onExitGameSetup, assets);
+        game.gameSetupObj = createGameSetup(onGameSetupDone, onExitGameSetup, assets, configList);
         game.gameObj = createGame(wepList, onExitGame, assets, context, configList);
 
         function onSelectMainMenuItem(menuItemIndex) {
@@ -101,6 +107,21 @@ gameEngine.onInit = function onInit(stage, assets, context) {
 
 gameEngine.onTick = function onTick(stage, deltaInSeconds) {
     let fadingDuration = 0.4;
+    if (!game.fadingEnabled && (game.currentTransition === Transitions.fadeIn || game.currentTransition === Transitions.fadeOut)) {
+        game.fadingLayer.alpha = 0;
+        if (game.currentTransition === Transitions.fadeOut) {
+            if (changeToNextState(stage)) {
+                game.currentTransition = Transitions.preRunning;
+            }
+            else {
+                game.currentTransition = Transitions.running;
+            }
+        }
+        else {
+            game.currentTransition = Transitions.running;
+        }
+        return;
+    }
     switch(game.currentTransition) {
         case Transitions.running:
             if (game.currentState) {

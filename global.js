@@ -104,3 +104,25 @@ function showPCX(assets, container, name, x, y, width, height) {
   bitmap.sourceRect = new createjs.Rectangle(0, 0, width + 1, height + 1); // +1, because that's how Show_PCX() worked in MM.
   container.addChild(bitmap);
 }
+
+function getConfigInt(configValues, key, fallback) {
+  if (!configValues || !(key in configValues)) {
+    return fallback;
+  }
+  let value = parseInt(configValues[key], 10);
+  return Number.isNaN(value) ? fallback : value;
+}
+
+function getConfigBool(configValues, key, fallback) {
+  if (!configValues || !(key in configValues)) {
+    return fallback;
+  }
+  let value = String(configValues[key]).toLowerCase();
+  if (value === "true") {
+    return true;
+  }
+  if (value === "false") {
+    return false;
+  }
+  return fallback;
+}

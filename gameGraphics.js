@@ -1,6 +1,6 @@
 "use strict";
 
-function createGameGraphics(assets, weapons, context) {
+function createGameGraphics(assets, weapons, context, options) {
 	let dirtColor = GameColors.BROWN;
 	let dirtColor2 = GameColors.DARKESTBROWN;
 	let rgbDirt = Palette.getRGBFromColor(dirtColor);
@@ -193,8 +193,8 @@ function createGameGraphics(assets, weapons, context) {
 	}
 
 	function generateLand() {
-		let landSmooth = 12; // TODO: Take from config
-		let landComplex = 35; // TODO: Take from config
+		let landSmooth = options && options.landSmooth ? options.landSmooth : 12;
+		let landComplex = options && options.landComplex ? options.landComplex : 35;
 		let halfLandSmooth = Math.floor(landSmooth / 2);
 		let landTop = [];
 		

@@ -1,10 +1,17 @@
 "use strict";
 
 function createGame(wepList, onExit, assets, context, config) {
-	let noWind = false; // TODO: Get from config (on/off)
+	let noWind = getConfigBool(config, "NoWind", false);
 	let shouldShufflePlayers = getConfigBool(config, "FStartOrder", true); // FRoundRandom in MM
 	let startOrder = getConfigInt(config, "StartOrder", 1);
 	let economyFactor = getConfigInt(config, "Economy", 3);
+	let landSmooth = getConfigInt(config, "LandSmooth", 12);
+	let landComplex = getConfigInt(config, "LandComplex", 35);
+	let fastShot = getConfigBool(config, "FastShot", false);
+	let tracers = getConfigBool(config, "Tracers", true);
+	let traceColorAsTank = getConfigBool(config, "TraceColAsTank", true);
+	let commentDelayMs = getConfigInt(config, "CommentDelay", 2000);
+	let pButDisabled = getConfigBool(config, "PBut", false);
 
 	let States = {
 		SHOW_ROUND_NUMBER: 0,
@@ -35,7 +42,10 @@ function createGame(wepList, onExit, assets, context, config) {
 	let selectedWeaponBottomIndex = 0; // used in SELECTING_WEAPON state - index into player.weaponList
 	let gameSettings = { numRounds: 15, winCon: 0 };
 
-	let gameGraphics = createGameGraphics(assets, wepList, context);
+	let gameGraphics = createGameGraphics(assets, wepList, context, {
+		landSmooth: landSmooth,
+		landComplex: landComplex
+	});
 	let roundStatsScreen = createRoundStatsScreen(gameGraphics);
 
 	return {
@@ -140,7 +150,9 @@ function createGame(wepList, onExit, assets, context, config) {
 				showWeaponsList(currentPlayer, wepList);
 				break;
 			case Keys.KEY_P:
-				switchToNextPlayer();
+				if (!pButDisabled) {
+					switchToNextPlayer();
+				}
 				break;
 			case Keys.PAGE_UP:
 				currentPlayer.currentWep--;
@@ -160,7 +172,11 @@ function createGame(wepList, onExit, assets, context, config) {
 				setCurrentTankArrowVisibility(false);
 				currentState = States.CANNON_FIRED;
 				let currentWeapon = wepList[currentPlayer.weaponList[currentPlayer.currentWep].weaponIndex];
-				firedCannon = fireCannon(currentWeapon, pList, currentPlayerIndex, wind, landTop, gameGraphics, fireCannonDone);
+				firedCannon = fireCannon(currentWeapon, pList, currentPlayerIndex, wind, landTop, gameGraphics, fireCannonDone, {
+					fastShot: fastShot,
+					tracers: tracers,
+					traceColorAsTank: traceColorAsTank
+				});
 				break;
 		}		
 	}
@@ -414,28 +430,6 @@ function createGame(wepList, onExit, assets, context, config) {
 		}
 	}
 
-	function getConfigInt(configValues, key, fallback) {
-		if (!configValues || !(key in configValues)) {
-			return fallback;
-		}
-		let value = parseInt(configValues[key], 10);
-		return Number.isNaN(value) ? fallback : value;
-	}
-
-	function getConfigBool(configValues, key, fallback) {
-		if (!configValues || !(key in configValues)) {
-			return fallback;
-		}
-		let value = String(configValues[key]).toLowerCase();
-		if (value === "true") {
-			return true;
-		}
-		if (value === "false") {
-			return false;
-		}
-		return fallback;
-	}
-
 	function showAllTanks() {
 		for (let i = 0; i < pList.length; ++i) {
 			gameGraphics.setCannonAngle(pList[i]);
@@ -450,7 +444,9 @@ function createGame(wepList, onExit, assets, context, config) {
 		firedCannon = null;
 		gameGraphics.moveDirt(landTop, hole);
 		currentState = States.ENDING_SHOT;
-		endingShot = endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, shots, wind, wepList, endingShotDone);
+		endingShot = endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, shots, wind, wepList, endingShotDone, {
+			commentDelayMs: commentDelayMs
+		});
 	}
 
 	function endingShotDone(playersLeft) {

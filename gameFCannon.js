@@ -1,6 +1,6 @@
 "use strict";
 
-function fireCannon(weapon, players, currentPlayerIndex, wind, landTop, gameGraphics, fireCannonDone) {
+function fireCannon(weapon, players, currentPlayerIndex, wind, landTop, gameGraphics, fireCannonDone, options) {
 	let States = { FLYING: 0, ROLLING: 1, EXPLODING: 2}; // This is not a per-shot state, as the whole game goes into rolling/exploding when a shot hits ground.
 	let currentState = States.FLYING; 
 
@@ -9,9 +9,9 @@ function fireCannon(weapon, players, currentPlayerIndex, wind, landTop, gameGrap
 		weapon.leaps = 1;
 	}
 
-	let fastShot = false; // TODO: Get from config
-	let tracers = true; // TODO: get from config
-	let traceColorAsTank = true; // TODO: get from config
+	let fastShot = options && options.fastShot !== undefined ? options.fastShot : false;
+	let tracers = options && options.tracers !== undefined ? options.tracers : true;
+	let traceColorAsTank = options && options.traceColorAsTank !== undefined ? options.traceColorAsTank : true;
 
 	// Timing constants
 	let milliSecondsBetweenShotMovement = fastShot ? 1 : 4;

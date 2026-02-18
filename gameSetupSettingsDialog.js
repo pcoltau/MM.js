@@ -1,11 +1,14 @@
 "use strict";
 
-function createGameSetupSettingsDialog(assets, onDone, onExit) {
+function createGameSetupSettingsDialog(assets, onDone, onExit, config) {
 	let winCon = ["Survival", "Most Hits", "Most Frags", "Most Damage", "Best Dam/Shot", "Most Headshots"];
+	let defaultPlayers = clampValue(getConfigInt(config, "Players", 2), 2, 8);
+	let defaultRounds = clampValue(getConfigInt(config, "Rounds", 15), 1, 99);
+	let defaultWinCon = clampValue(getConfigInt(config, "WinCondit", 1) - 1, 0, winCon.length - 1);
 	let menuItems = [
-		{name: "Number of Players", value: 4, min: 2, max: 8, textObj: null}, 
-		{name: "Number of Rounds", value: 15, min: 1, max: 99, textObj: null}, 
-		{name: "Points given for", value: 0, min: 0, max: winCon.length - 1, textObj: null}]; 
+		{name: "Number of Players", value: defaultPlayers, min: 2, max: 8, textObj: null}, 
+		{name: "Number of Rounds", value: defaultRounds, min: 1, max: 99, textObj: null}, 
+		{name: "Points given for", value: defaultWinCon, min: 0, max: winCon.length - 1, textObj: null}]; 
     let selectedItemShape = null;
     let selectedItemIndex = 0;
 
@@ -156,13 +159,17 @@ function createGameSetupSettingsDialog(assets, onDone, onExit) {
     }
 
     function onShow() {
-		menuItems[0].value = 2;
-		menuItems[1].value = 15;
-		menuItems[2].value = 0;
+		menuItems[0].value = defaultPlayers;
+		menuItems[1].value = defaultRounds;
+		menuItems[2].value = defaultWinCon;
 		for (let i = 0; i < menuItems.length; ++i) {
 			updateItemValue(i);
 		}
 	    selectedItemIndex = 0;
 	    updateSelectedItemShape();
+	}
+
+	function clampValue(value, min, max) {
+		return Math.max(min, Math.min(max, value));
 	}
 }

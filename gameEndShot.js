@@ -1,6 +1,6 @@
 "use strict";
 
-function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, shots, wind, wepList, endingShotDone) {
+function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, shots, wind, wepList, endingShotDone, options) {
 	let States = {FALLING: 0, EXPLODING: 1, SHOWING_COMMENT: 2};
 	let currentState = States.FALLING; 
 
@@ -23,7 +23,7 @@ function endShot(gameGraphics, landTop, currentPlayerIndex, pList, livePlayers, 
 	let killed = []; // players killed by this shot
 	let commentQueue = [];
 	let activeComment = null;
-	let commentDurationMs = 2000;
+	let commentDurationMs = options && options.commentDelayMs ? options.commentDelayMs : 2000;
 	let commentGenerated = [];
 
 	let initialState = calculateDamageAndCyclePlayers();

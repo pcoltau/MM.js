@@ -1,6 +1,6 @@
 "use strict";
 
-function createGameSetup(onDone, onExit, assets) {
+function createGameSetup(onDone, onExit, assets, config) {
 	let SettingsStates = {setup: 0, getPlayerNames: 1};
 	let currentState = SettingsStates.setup;
 	let gameSettings = null;
@@ -11,7 +11,7 @@ function createGameSetup(onDone, onExit, assets) {
 	let mainContainer = new createjs.Container();
 
 	let backgroundContainer = createBackground();
-    let settingsDialog = createGameSetupSettingsDialog(assets, onSettingsDone, onExit);
+	let settingsDialog = createGameSetupSettingsDialog(assets, onSettingsDone, onExit, config);
     let playerNamesDialog = createPlayerNamesDialog(assets, onPlayerNameDone);
 
 	mainContainer.addChild(backgroundContainer);
