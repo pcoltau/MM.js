@@ -6,6 +6,7 @@ function createGameSetup(onDone, onExit, assets) {
 	let gameSettings = null;
 	let currentPlayerIndex = 0;
 	let playerNames = [];
+	let lastSettings = null;
 
 	let mainContainer = new createjs.Container();
 
@@ -20,7 +21,8 @@ function createGameSetup(onDone, onExit, assets) {
 		container: mainContainer,
         onKeyDown: onKeyDown,
         onKeyPress: onKeyPress,
-        onShow: onShow
+		onShow: onShow,
+		getSettings: getSettings
 	};
 
 	function createBackground() {
@@ -52,6 +54,7 @@ function createGameSetup(onDone, onExit, assets) {
 
 	function onSettingsDone(settings) {
 		gameSettings = settings;
+		lastSettings = settings;
 		currentState = SettingsStates.getPlayerNames;
         mainContainer.removeChild(settingsDialog.container);
         mainContainer.addChild(playerNamesDialog.container);
@@ -76,9 +79,14 @@ function createGameSetup(onDone, onExit, assets) {
     	}
 		currentState = SettingsStates.setup;
 		gameSettings = null;
+		lastSettings = null;
 		currentPlayerIndex = 0;
 		playerNames = [];
         playerNamesDialog.setPlayerIndex(currentPlayerIndex)
         settingsDialog.onShow();
+	}
+
+	function getSettings() {
+		return lastSettings;
 	}
 }

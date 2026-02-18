@@ -1,8 +1,10 @@
 "use strict";
 
-function createGame(wepList, onExit, assets, context) {
+function createGame(wepList, onExit, assets, context, config) {
 	let noWind = false; // TODO: Get from config (on/off)
-	let shouldShufflePlayers = true; // FRoundRandom in MM
+	let shouldShufflePlayers = getConfigBool(config, "FStartOrder", true); // FRoundRandom in MM
+	let startOrder = getConfigInt(config, "StartOrder", 1);
+	let economyFactor = getConfigInt(config, "Economy", 3);
 
 	let States = {
 		SHOW_ROUND_NUMBER: 0,
@@ -10,7 +12,8 @@ function createGame(wepList, onExit, assets, context) {
 		ADJUSTING_CANNON: 2,
 		SELECTING_WEAPON: 3,
 		CANNON_FIRED: 4,
-		ENDING_SHOT: 5
+		ENDING_SHOT: 5,
+		SHOW_ROUND_STATS: 6
 	} 
 	let currentState = States.SHOW_ROUND_NUMBER;
 
@@ -30,27 +33,30 @@ function createGame(wepList, onExit, assets, context) {
 	let selectedWeaponIndex = 0; // used in SELECTING_WEAPON state - index into player.weaponList
 	let selectedWeaponTopIndex = 0; // used in SELECTING_WEAPON state - index into player.weaponList
 	let selectedWeaponBottomIndex = 0; // used in SELECTING_WEAPON state - index into player.weaponList
+	let gameSettings = { numRounds: 15, winCon: 0 };
 
 	let gameGraphics = createGameGraphics(assets, wepList, context);
+	let roundStatsScreen = createRoundStatsScreen(gameGraphics);
 
 	return {
 		container: gameGraphics.container,
         onKeyDown: onKeyDown,
 		onTick: onTick,
 		onShow: onShow,
-		setPlayerNames: setPlayerNames
+		initGame: initGame
 	}
 
 	function onShow() {
 		livePlayers = pList.length;
 		currentPlayerIndex = 0;
+		roundStatsScreen.hide();
 		gameGraphics.clearGameImage();
 		landTop = gameGraphics.generateLand();
 		gameGraphics.drawLand(landTop);
 		wind = noWind ? 0 : Math.floor(Math.random() * 41) - 20;
 		gameGraphics.updateWind(wind);
 
-		if (shouldShufflePlayers) {
+		if (shouldShufflePlayers && currentRound === 1) {
 			shufflePlayers(pList);
 		}
 		let currentPlayer = pList[currentPlayerIndex];
@@ -78,6 +84,10 @@ function createGame(wepList, onExit, assets, context) {
 			}
 			case States.SELECTING_WEAPON: {
 				handleSelectingWeapon(currentPlayer, key);
+				break;
+			}
+			case States.SHOW_ROUND_STATS: {
+				roundStatsScreen.onKeyDown(stage, key);
 				break;
 			}
 		}
@@ -229,6 +239,9 @@ function createGame(wepList, onExit, assets, context) {
 			case States.ENDING_SHOT:
 				endingShot.onTick(stage, deltaInSeconds);
 				break;
+			case States.SHOW_ROUND_STATS:
+				roundStatsScreen.onTick(stage, deltaInSeconds);
+				break;
 		}
 	}
 
@@ -253,7 +266,9 @@ function createGame(wepList, onExit, assets, context) {
 		gameGraphics.setTankArrowVisibility(pList[currentPlayerIndex].color, blinkingArrowVisible);
 	}
 
-	function setPlayerNames(playerNames) {
+	function initGame(playerNames, settings) {
+		setSettings(settings);
+		currentRound = 1;
 		pList = [];
 		for (let i = 0; i < playerNames.length; ++i) {
 			let player = createNewPlayer(playerNames[i], i);
@@ -386,6 +401,41 @@ function createGame(wepList, onExit, assets, context) {
 		}
 	}
 
+	function shuffleIndices(list) {
+		for (let i = 0; i < list.length; ++i) {
+			let m = Math.floor(Math.random() * list.length);
+			let n;
+			do {
+				n = Math.floor(Math.random() * list.length);
+			} while (n === m);
+			let mem = list[m];
+			list[m] = list[n];
+			list[n] = mem;
+		}
+	}
+
+	function getConfigInt(configValues, key, fallback) {
+		if (!configValues || !(key in configValues)) {
+			return fallback;
+		}
+		let value = parseInt(configValues[key], 10);
+		return Number.isNaN(value) ? fallback : value;
+	}
+
+	function getConfigBool(configValues, key, fallback) {
+		if (!configValues || !(key in configValues)) {
+			return fallback;
+		}
+		let value = String(configValues[key]).toLowerCase();
+		if (value === "true") {
+			return true;
+		}
+		if (value === "false") {
+			return false;
+		}
+		return fallback;
+	}
+
 	function showAllTanks() {
 		for (let i = 0; i < pList.length; ++i) {
 			gameGraphics.setCannonAngle(pList[i]);
@@ -407,15 +457,48 @@ function createGame(wepList, onExit, assets, context) {
 		livePlayers = playersLeft;
 		endingShot = null;
 		if (livePlayers < 2) {
-			// TODO: End round 
-			resetPlayersForNewRound();
-			currentState = States.SHOW_ROUND_NUMBER;
-			currentRound++;
-			onShow();
+			showRoundStats();
 		}
 		else {
 			switchToNextPlayer();
 		}
+	}
+
+	function showRoundStats() {
+		currentState = States.SHOW_ROUND_STATS;
+		roundStatsScreen.show(pList, currentRound, gameSettings.winCon, economyFactor, onRoundStatsDone);
+	}
+
+	function onRoundStatsDone() {
+		roundStatsScreen.hide();
+		applyStartOrder();
+		if (currentRound >= gameSettings.numRounds) {
+			onExit();
+			return;
+		}
+		currentRound++;
+		resetPlayersForNewRound();
+		currentState = States.SHOW_ROUND_NUMBER;
+		onShow();
+	}
+
+	function applyStartOrder() {
+		let roundOrder = roundStatsScreen.getRoundOrder();
+		if (!roundOrder || roundOrder.length === 0) {
+			return;
+		}
+		let order = roundOrder.slice();
+		if (startOrder === 1) {
+			order.reverse();
+		}
+		else if (startOrder === 3) {
+			shuffleIndices(order);
+		}
+		let newList = [];
+		for (let i = 0; i < order.length; ++i) {
+			newList.push(pList[order[i]]);
+		}
+		pList = newList;
 	}
 
 	function resetPlayersForNewRound() {
@@ -423,6 +506,14 @@ function createGame(wepList, onExit, assets, context) {
 			let player = pList[i];
 			initializePlayerForRound(player);
 		}
+	}
+
+	function setSettings(settings) {
+		if (!settings) {
+			return;
+		}
+		gameSettings.numRounds = settings.numRounds;
+		gameSettings.winCon = settings.winCon;
 	}
 
 	function initializePlayerForRound(player) {

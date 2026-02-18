@@ -33,7 +33,7 @@ gameEngine.onInit = function onInit(stage, assets, context) {
     if (game.currentState) {
         // <begin> FOR TESTING:
         if (game.currentState === "gameObj") {
-            game.gameObj.setPlayerNames(["test1", "test2", "test3", "test4"]);
+            game.gameObj.initGame(["test1", "test2", "test3", "test4"], null);
         }
         // <end> FOR TESTING
         let currentObj = game[game.currentState];
@@ -53,7 +53,7 @@ gameEngine.onInit = function onInit(stage, assets, context) {
         game.menuObj = createMenu(onSelectMainMenuItem, assets);
         game.aboutObj = createAbout(onExitAbout, assets);
         game.gameSetupObj = createGameSetup(onGameSetupDone, onExitGameSetup, assets);
-        game.gameObj = createGame(wepList, onExitGame, assets, context);
+        game.gameObj = createGame(wepList, onExitGame, assets, context, configList);
 
         function onSelectMainMenuItem(menuItemIndex) {
             switch (menuItemIndex) {
@@ -89,7 +89,7 @@ gameEngine.onInit = function onInit(stage, assets, context) {
         function onGameSetupDone(playerNames) {
             game.currentTransition = Transitions.fadeOut;
             game.nextState = "gameObj";
-            game.gameObj.setPlayerNames(playerNames);
+            game.gameObj.initGame(playerNames, game.gameSetupObj.getSettings());
         }
 
         function onExitGame() {
